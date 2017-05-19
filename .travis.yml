@@ -1,7 +1,5 @@
 language: cpp
 
-install:
- - sudo apt update && sudo apt install cmake
+install: sudo apt update && sudo apt install cmake
 
- script:
- - mkdir build && cd build && cmake ..
+ script: mkdir build && cd build && cmake ..
