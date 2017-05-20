@@ -116,6 +116,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="clause.h" />
+    <ClInclude Include="interval.h" />
+    <ClInclude Include="la_theory.h" />
+    <ClInclude Include="la_value_listener.h" />
+    <ClInclude Include="lin.h" />
     <ClInclude Include="lit.h" />
     <ClInclude Include="sat_core.h" />
     <ClInclude Include="sat_value_listener.h" />
@@ -124,6 +128,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="clause.cpp" />
+    <ClCompile Include="interval.cpp" />
+    <ClCompile Include="la_theory.cpp" />
+    <ClCompile Include="lin.cpp" />
     <ClCompile Include="lit.cpp" />
     <ClCompile Include="sat_core.cpp" />
     <ClCompile Include="theory.cpp" />

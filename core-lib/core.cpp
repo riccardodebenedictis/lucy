@@ -2,7 +2,7 @@
 
 namespace lucy {
 
-	core::core() {}
+	core::core() : scope(*this, *this), env(*this, this), sat() {}
 
 	core::~core() {}
 }
