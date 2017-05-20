@@ -137,12 +137,18 @@
   <ItemGroup>
     <ClCompile Include="core.cpp" />
     <ClCompile Include="env.cpp" />
+    <ClCompile Include="field.cpp" />
+    <ClCompile Include="item.cpp" />
     <ClCompile Include="scope.cpp" />
+    <ClCompile Include="type.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.h" />
     <ClInclude Include="env.h" />
+    <ClInclude Include="field.h" />
+    <ClInclude Include="item.h" />
     <ClInclude Include="scope.h" />
+    <ClInclude Include="type.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

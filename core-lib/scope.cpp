@@ -2,7 +2,7 @@
 
 namespace lucy {
 
-	scope::scope(core& cr) : cr(cr) { }
+	scope::scope(core& cr, scope& scp) : cr(cr), scp(scp) { }
 
 	scope::~scope() { }
 }
