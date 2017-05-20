@@ -31,7 +31,6 @@ namespace smt {
 		var new_eq(const lit& left, const lit& right);
 		var new_conj(const std::vector<lit>& ls);
 		var new_disj(const std::vector<lit>& ls);
-		var new_exct_one(const std::vector<lit>& ls);
 
 		bool assume(const lit& p);
 		void pop();

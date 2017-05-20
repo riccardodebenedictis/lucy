@@ -144,38 +144,6 @@ namespace smt {
 		}
 	}
 
-	var sat_core::new_exct_one(const std::vector<lit>& ls) {
-		std::vector<lit> c_lits = ls;
-		std::sort(c_lits.begin(), c_lits.end(), [](const lit& l0, const lit& l1) { return l0.v > l1.v; });
-		std::string s_expr;
-		for (std::vector<lit>::const_iterator it = c_lits.begin(); it != c_lits.end(); ++it) {
-			if (it == c_lits.begin()) { s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v); }
-			else { s_expr += (" ^ " + it->sign ? "b" : "!b") + std::to_string(it->v); }
-		}
-		if (exprs.find(s_expr) != exprs.end()) {
-			// the expression already exists..
-			return exprs.at(s_expr);
-		}
-		else {
-			// we need to create a new variable..
-			var eo = new_var();
-			std::vector<lit> lits;
-			lits.push_back(lit(eo, false));
-			bool nc;
-			for (size_t i = 0; i < ls.size(); i++) {
-				for (size_t j = i + 1; j < ls.size(); j++) {
-					nc = new_clause({ !ls[i], !ls[j], lit(eo, false) });
-					assert(nc);
-				}
-				lits.push_back(ls[i]);
-			}
-			nc = new_clause(lits);
-			assert(nc);
-			exprs.insert({ s_expr, eo });
-			return eo;
-		}
-	}
-
 	bool sat_core::assume(const lit & p) {
 		assert(assigns[p.v] == Undefined);
 		trail_lim.push_back(p);

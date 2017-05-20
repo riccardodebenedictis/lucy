@@ -3,6 +3,9 @@
 #include "scope.h"
 #include "env.h"
 #include "sat_core.h"
+#include "la_theory.h"
+
+using namespace smt;
 
 namespace lucy {
 
@@ -10,9 +13,11 @@ namespace lucy {
 	public:
 		core();
 		core(const core& orig) = delete;
-		virtual ~core();
+		~core();
+
 
 	public:
-		smt::sat_core sat;
+		sat_core sat;
+		la_theory la;
 	};
 }

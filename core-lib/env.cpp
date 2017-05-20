@@ -2,7 +2,7 @@
 
 namespace lucy {
 
-	env::env(core& cr, const context& ctx) : cr(cr), ctx(ctx) {}
+	env::env(core& cr) : cr(cr) { }
 
-	env::~env() {}
+	env::~env() { }
 }
