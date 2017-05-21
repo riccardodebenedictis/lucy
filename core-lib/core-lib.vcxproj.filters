@@ -33,6 +33,12 @@
     <ClCompile Include="type.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="atom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="predicate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.h">
@@ -51,6 +57,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="atom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="predicate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
