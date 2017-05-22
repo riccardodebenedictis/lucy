@@ -16,6 +16,12 @@
     <Filter Include="Resource Files\parser">
       <UniqueIdentifier>{b809e7f4-05fe-4689-954b-57270190522a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\parser">
+      <UniqueIdentifier>{444658e6-01f9-4be1-a6fc-86f14bde7bd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\parser">
+      <UniqueIdentifier>{d370b442-079d-43d1-95dd-589f905760f8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core.cpp">
@@ -51,6 +57,24 @@
     <ClCompile Include="constructor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="parser\ratioBaseListener.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\ratioBaseVisitor.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\ratioLexer.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\ratioListener.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\ratioParser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="parser\ratioVisitor.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.h">
@@ -85,6 +109,24 @@
     </ClInclude>
     <ClInclude Include="constructor.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\ratioBaseListener.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\ratioBaseVisitor.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\ratioLexer.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\ratioListener.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\ratioParser.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="parser\ratioVisitor.h">
+      <Filter>Header Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
