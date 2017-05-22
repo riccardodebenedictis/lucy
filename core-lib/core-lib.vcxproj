@@ -160,6 +160,9 @@
     <ClInclude Include="scope.h" />
     <ClInclude Include="type.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="parser\ratio.g4" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
