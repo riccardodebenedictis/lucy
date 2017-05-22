@@ -18,6 +18,7 @@ namespace lucy {
 
 #pragma warning( disable : 4251 )
 	class DLL_PUBLIC scope {
+		friend class type_refinement_listener;
 	public:
 		scope(core& cr, scope& scp);
 		scope(const scope& orig) = delete;

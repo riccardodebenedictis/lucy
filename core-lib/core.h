@@ -5,6 +5,8 @@
 #include "sat_core.h"
 #include "la_theory.h"
 #include "set_theory.h"
+#include "parser/ratioLexer.h"
+#include "parser/ratioParser.h"
 
 #define BOOL_KEYWORD "bool"
 #define INT_KEYWORD "int"
@@ -22,6 +24,10 @@ namespace lucy {
 
 	class DLL_PUBLIC core : public scope, public env {
 		friend class type;
+		friend class type_declaration_listener;
+		friend class type_refinement_listener;
+		friend class type_visitor;
+		friend class expression_visitor;
 	public:
 		core();
 		core(const core& orig) = delete;
@@ -60,7 +66,7 @@ namespace lucy {
 
 		bool_expr eq(expr i0, expr i1);
 
-		bool assert_facts(const std::vector<smt::lit>& facts);
+		bool assert_facts(const std::vector<lit>& facts);
 
 		field & get_field(const std::string& name) const override;
 
@@ -79,8 +85,8 @@ namespace lucy {
 
 		expr get(const std::string& name) const override;
 
-		smt::lbool bool_value(const bool_expr& var) const noexcept;
-		smt::interval arith_bounds(const arith_expr& var) const noexcept;
+		lbool bool_value(const bool_expr& var) const noexcept;
+		interval arith_bounds(const arith_expr& var) const noexcept;
 		double arith_value(const arith_expr& var) const noexcept;
 		std::unordered_set<set_item*> enum_value(const enum_expr& var) const noexcept;
 
@@ -107,5 +113,23 @@ namespace lucy {
 		std::unordered_map<std::string, std::vector<method*>> methods;
 		std::unordered_map<std::string, type*> types;
 		std::unordered_map<std::string, predicate*> predicates;
+
+	private:
+		std::vector<ratioParser*> parsers;
+		std::map<antlr4::tree::ParseTree*, scope*> scopes;
+		ratioParser * p;
+
+		class snippet {
+			friend class core;
+		private:
+
+			snippet(const std::string& file, ratioParser& p, ratioParser::Compilation_unitContext * const cu) : file(file), p(p), cu(cu) { }
+			snippet(const snippet& that) = delete;
+
+		private:
+			const std::string file;
+			ratioParser& p;
+			ratioParser::Compilation_unitContext * const cu;
+		};
 	};
 }

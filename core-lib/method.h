@@ -9,6 +9,7 @@ namespace lucy {
 	class method : public scope {
 		friend class type;
 		friend class core;
+		friend class expression_visitor;
 	public:
 		method(core& cr, scope& scp, const std::string& name, const std::vector<field*>& args, const type* const return_type = nullptr);
 		method(const method& orig) = delete;

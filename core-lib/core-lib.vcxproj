@@ -144,11 +144,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="atom.cpp" />
+    <ClCompile Include="conjunction.cpp" />
     <ClCompile Include="constructor.cpp" />
     <ClCompile Include="context.cpp" />
     <ClCompile Include="core.cpp" />
+    <ClCompile Include="default_constructor.cpp" />
+    <ClCompile Include="defined_conjunction.cpp" />
+    <ClCompile Include="defined_constructor.cpp" />
+    <ClCompile Include="defined_method.cpp" />
+    <ClCompile Include="defined_predicate.cpp" />
+    <ClCompile Include="disjunction.cpp" />
+    <ClCompile Include="enum_type.cpp" />
     <ClCompile Include="env.cpp" />
+    <ClCompile Include="expression_visitor.cpp" />
     <ClCompile Include="field.cpp" />
+    <ClCompile Include="instantiated_field.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="method.cpp" />
     <ClCompile Include="parser\ratioBaseListener.cpp" />
@@ -159,15 +169,30 @@
     <ClCompile Include="parser\ratioVisitor.cpp" />
     <ClCompile Include="predicate.cpp" />
     <ClCompile Include="scope.cpp" />
+    <ClCompile Include="statement_visitor.cpp" />
     <ClCompile Include="type.cpp" />
+    <ClCompile Include="typedef_type.cpp" />
+    <ClCompile Include="type_declaration_listener.cpp" />
+    <ClCompile Include="type_refinement_listener.cpp" />
+    <ClCompile Include="type_visitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atom.h" />
+    <ClInclude Include="conjunction.h" />
     <ClInclude Include="constructor.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="default_constructor.h" />
+    <ClInclude Include="defined_conjunction.h" />
+    <ClInclude Include="defined_constructor.h" />
+    <ClInclude Include="defined_method.h" />
+    <ClInclude Include="defined_predicate.h" />
+    <ClInclude Include="disjunction.h" />
+    <ClInclude Include="enum_type.h" />
     <ClInclude Include="env.h" />
+    <ClInclude Include="expression_visitor.h" />
     <ClInclude Include="field.h" />
+    <ClInclude Include="instantiated_field.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="method.h" />
     <ClInclude Include="parser\ratioBaseListener.h" />
@@ -178,7 +203,12 @@
     <ClInclude Include="parser\ratioVisitor.h" />
     <ClInclude Include="predicate.h" />
     <ClInclude Include="scope.h" />
+    <ClInclude Include="statement_visitor.h" />
     <ClInclude Include="type.h" />
+    <ClInclude Include="typedef_type.h" />
+    <ClInclude Include="type_declaration_listener.h" />
+    <ClInclude Include="type_refinement_listener.h" />
+    <ClInclude Include="type_visitor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="parser\ratio.g4" />

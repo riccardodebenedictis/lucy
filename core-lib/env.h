@@ -13,6 +13,7 @@ namespace lucy {
 	class DLL_PUBLIC env {
 		friend class context;
 		friend class scope;
+		friend class expression_visitor;
 	public:
 		env(core& cr, const context ctx);
 		env(const env& orig) = delete;
@@ -23,7 +24,9 @@ namespace lucy {
 		context get_ctx() const { return ctx; }
 
 		virtual expr get(const std::string& name) const;
-		std::unordered_map<std::string, expr> get_items() const noexcept;
+		std::unordered_map<std::string, expr> get_items() const noexcept { return items; }
+
+		bool is_instantiated(const std::string& name) const { return items.find(name) != items.end(); }
 
 	private:
 		unsigned ref_count;
