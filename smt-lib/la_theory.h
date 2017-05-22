@@ -11,7 +11,7 @@ namespace smt {
 	class DLL_PUBLIC la_theory : public theory {
 		friend class la_value_listener;
 	public:
-		la_theory(sat_core& c);
+		la_theory(sat_core& sat);
 		la_theory(const la_theory& orig) = delete;
 		virtual ~la_theory();
 

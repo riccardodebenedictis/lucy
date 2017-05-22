@@ -123,6 +123,8 @@
     <ClInclude Include="lit.h" />
     <ClInclude Include="sat_core.h" />
     <ClInclude Include="sat_value_listener.h" />
+    <ClInclude Include="set_theory.h" />
+    <ClInclude Include="set_value_listener.h" />
     <ClInclude Include="theory.h" />
     <ClInclude Include="visibility.h" />
   </ItemGroup>
@@ -133,6 +135,7 @@
     <ClCompile Include="lin.cpp" />
     <ClCompile Include="lit.cpp" />
     <ClCompile Include="sat_core.cpp" />
+    <ClCompile Include="set_theory.cpp" />
     <ClCompile Include="theory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

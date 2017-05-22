@@ -32,6 +32,25 @@ namespace smt {
 		var new_conj(const std::vector<lit>& ls);
 		var new_disj(const std::vector<lit>& ls);
 
+		bool eq(const lit& left, const lit& right) {
+			return new_clause({ !left, right }) && new_clause({ left, !right });
+		}
+
+		bool exct_one(const std::vector<lit>& lits) {
+			// the at-least-one clause..
+			std::vector<lit> ls;
+			for (size_t i = 0; i < lits.size(); i++) {
+				for (size_t j = i + 1; j < lits.size(); j++) {
+					// the at-most-one clauses..
+					if (!new_clause({ !lits[i], !lits[j] })) {
+						return false;
+					}
+				}
+				ls.push_back(lits[i]);
+			}
+			return new_clause(ls);
+		}
+
 		bool assume(const lit& p);
 		void pop();
 

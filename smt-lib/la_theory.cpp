@@ -6,7 +6,7 @@
 
 namespace smt {
 
-	la_theory::la_theory(sat_core& c) : theory(c) { }
+	la_theory::la_theory(sat_core& sat) : theory(sat) { }
 
 	la_theory::~la_theory() { }
 	var la_theory::new_var() {
