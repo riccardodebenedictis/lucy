@@ -1,9 +1,19 @@
 #include "env.h"
-#include "context.h"
+#include "core.h"
+#include <cassert>
 
 namespace lucy {
 
-	env::env(core& cr, const context ctx) : cr(cr), ctx(ctx) { }
+	env::env(core& cr, const context ctx) : ref_count(this == &cr), cr(cr), ctx(ctx) { }
 
-	env::~env() { }
+	env::~env() { assert(!ref_count || (this == &*ctx && ref_count)); }
+
+	expr env::get(const std::string & name) const {
+		if (items.find(name) != items.end()) {
+			return items.at(name);
+		}
+
+		// if not here, check any enclosing environment
+		return ctx->get(name);
+	}
 }

@@ -136,22 +136,26 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="atom.cpp" />
+    <ClCompile Include="constructor.cpp" />
     <ClCompile Include="context.cpp" />
     <ClCompile Include="core.cpp" />
     <ClCompile Include="env.cpp" />
     <ClCompile Include="field.cpp" />
     <ClCompile Include="item.cpp" />
+    <ClCompile Include="method.cpp" />
     <ClCompile Include="predicate.cpp" />
     <ClCompile Include="scope.cpp" />
     <ClCompile Include="type.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atom.h" />
+    <ClInclude Include="constructor.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="env.h" />
     <ClInclude Include="field.h" />
     <ClInclude Include="item.h" />
+    <ClInclude Include="method.h" />
     <ClInclude Include="predicate.h" />
     <ClInclude Include="scope.h" />
     <ClInclude Include="type.h" />
