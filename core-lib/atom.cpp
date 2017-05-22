@@ -3,7 +3,7 @@
 
 namespace lucy {
 
-	atom::atom(core& cr, const predicate& pred) : item(cr,pred) {}
+	atom::atom(core& cr, const context ctx, const predicate& pred) : item(cr, ctx, pred) {}
 
 	atom::~atom() {}
 }

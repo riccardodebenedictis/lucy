@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="atom.cpp" />
+    <ClCompile Include="context.cpp" />
     <ClCompile Include="core.cpp" />
     <ClCompile Include="env.cpp" />
     <ClCompile Include="field.cpp" />
@@ -146,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atom.h" />
+    <ClInclude Include="context.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="env.h" />
     <ClInclude Include="field.h" />

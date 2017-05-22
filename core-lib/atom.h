@@ -8,7 +8,7 @@ namespace lucy {
 
 	class DLL_PUBLIC atom : public item {
 	public:
-		atom(core& cr, const predicate& pred);
+		atom(core& cr, const context ctx, const predicate& pred);
 		atom(const atom& orig) = delete;
 		virtual ~atom();
 	};

@@ -11,7 +11,7 @@ namespace lucy {
 
 	class DLL_PUBLIC item : public env {
 	public:
-		item(core& cr, const type& tp);
+		item(core& cr, const context ctx, const type& tp);
 		item(const item& orig) = delete;
 		virtual ~item();
 
