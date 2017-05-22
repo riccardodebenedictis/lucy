@@ -21,11 +21,14 @@ namespace lucy {
 	class arith_expr;
 	class string_expr;
 	class enum_expr;
+	class atom;
+	class disjunction;
 
 	class DLL_PUBLIC core : public scope, public env {
 		friend class type;
 		friend class type_declaration_listener;
 		friend class type_refinement_listener;
+		friend class statement_visitor;
 		friend class type_visitor;
 		friend class expression_visitor;
 	public:
@@ -89,6 +92,13 @@ namespace lucy {
 		interval arith_bounds(const arith_expr& var) const noexcept;
 		double arith_value(const arith_expr& var) const noexcept;
 		std::unordered_set<set_item*> enum_value(const enum_expr& var) const noexcept;
+
+		virtual bool solve() = 0;
+
+	protected:
+		virtual bool new_fact(atom& a) { return true; }
+		virtual bool new_goal(atom& a) { return true; }
+		virtual void new_disjunction(context& e, disjunction& d) = 0;
 
 	protected:
 		void set_var(var v) {

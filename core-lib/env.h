@@ -13,6 +13,7 @@ namespace lucy {
 	class DLL_PUBLIC env {
 		friend class context;
 		friend class scope;
+		friend class statement_visitor;
 		friend class expression_visitor;
 	public:
 		env(core& cr, const context ctx);
