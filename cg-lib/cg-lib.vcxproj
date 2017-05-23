@@ -156,6 +156,7 @@
     <ClInclude Include="enum_flaw.h" />
     <ClInclude Include="flaw.h" />
     <ClInclude Include="resolver.h" />
+    <ClInclude Include="reusable_resource.h" />
     <ClInclude Include="smart_type.h" />
     <ClInclude Include="state_variable.h" />
   </ItemGroup>
@@ -166,6 +167,7 @@
     <ClCompile Include="enum_flaw.cpp" />
     <ClCompile Include="flaw.cpp" />
     <ClCompile Include="resolver.cpp" />
+    <ClCompile Include="reusable_resource.cpp" />
     <ClCompile Include="state_variable.cpp" />
   </ItemGroup>
   <ItemGroup>

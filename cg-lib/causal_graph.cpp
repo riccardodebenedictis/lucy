@@ -4,6 +4,7 @@
 #include "disjunction_flaw.h"
 #include "smart_type.h"
 #include "state_variable.h"
+#include "reusable_resource.h"
 
 namespace cg {
 
@@ -11,6 +12,7 @@ namespace cg {
 		bool r = read(std::vector<std::string>({ "init.rddl" }));
 		assert(r);
 		types.insert({ STATE_VARIABLE_NAME, new state_variable(*this) });
+		types.insert({ REUSABLE_RESOURCE_NAME, new reusable_resource(*this) });
 	}
 
 	causal_graph::~causal_graph() {
