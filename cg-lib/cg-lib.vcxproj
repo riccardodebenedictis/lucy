@@ -155,6 +155,8 @@
     <ClInclude Include="disjunction_flaw.h" />
     <ClInclude Include="enum_flaw.h" />
     <ClInclude Include="flaw.h" />
+    <ClInclude Include="propositional_agent.h" />
+    <ClInclude Include="propositional_state.h" />
     <ClInclude Include="resolver.h" />
     <ClInclude Include="reusable_resource.h" />
     <ClInclude Include="smart_type.h" />
@@ -166,6 +168,8 @@
     <ClCompile Include="disjunction_flaw.cpp" />
     <ClCompile Include="enum_flaw.cpp" />
     <ClCompile Include="flaw.cpp" />
+    <ClCompile Include="propositional_agent.cpp" />
+    <ClCompile Include="propositional_state.cpp" />
     <ClCompile Include="resolver.cpp" />
     <ClCompile Include="reusable_resource.cpp" />
     <ClCompile Include="state_variable.cpp" />

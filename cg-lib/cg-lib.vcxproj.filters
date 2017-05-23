@@ -54,6 +54,12 @@
     <ClInclude Include="reusable_resource.h">
       <Filter>Header Files\types</Filter>
     </ClInclude>
+    <ClInclude Include="propositional_agent.h">
+      <Filter>Header Files\types</Filter>
+    </ClInclude>
+    <ClInclude Include="propositional_state.h">
+      <Filter>Header Files\types</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="causal_graph.cpp">
@@ -78,6 +84,12 @@
       <Filter>Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="reusable_resource.cpp">
+      <Filter>Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="propositional_state.cpp">
+      <Filter>Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="propositional_agent.cpp">
       <Filter>Source Files\types</Filter>
     </ClCompile>
   </ItemGroup>
