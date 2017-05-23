@@ -31,7 +31,7 @@ namespace cg {
 	class atom_listener : public sat_value_listener, public la_value_listener, public set_value_listener {
 	public:
 
-		atom_listener(atom& atm) : sat_value_listener(atm.get_core().sat), la_value_listener(atm.get_core().la), set_value_listener(atm.get_core().set), a(atm) {
+		atom_listener(atom& atm) : sat_value_listener(atm.get_core().sat), la_value_listener(atm.get_core().la), set_value_listener(atm.get_core().set), atm(atm) {
 			std::queue<const type*> q;
 			q.push(&atm.tp);
 			while (!q.empty()) {
@@ -62,6 +62,6 @@ namespace cg {
 		virtual ~atom_listener() { }
 
 	protected:
-		atom& a;
+		atom& atm;
 	};
 }

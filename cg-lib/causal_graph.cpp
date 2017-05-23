@@ -3,10 +3,15 @@
 #include "atom_flaw.h"
 #include "disjunction_flaw.h"
 #include "smart_type.h"
+#include "state_variable.h"
 
 namespace cg {
 
-	causal_graph::causal_graph() : core(), theory(core::sat) {}
+	causal_graph::causal_graph() : core(), theory(core::sat) {
+		bool r = read(std::vector<std::string>({ "init.rddl" }));
+		assert(r);
+		types.insert({ STATE_VARIABLE_NAME, new state_variable(*this) });
+	}
 
 	causal_graph::~causal_graph() {
 		for (const auto& f : in_plan) {

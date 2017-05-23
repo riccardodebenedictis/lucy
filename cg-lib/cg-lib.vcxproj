@@ -145,6 +145,7 @@
     <ClInclude Include="flaw.h" />
     <ClInclude Include="resolver.h" />
     <ClInclude Include="smart_type.h" />
+    <ClInclude Include="state_variable.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="atom_flaw.cpp" />
@@ -153,6 +154,7 @@
     <ClCompile Include="enum_flaw.cpp" />
     <ClCompile Include="flaw.cpp" />
     <ClCompile Include="resolver.cpp" />
+    <ClCompile Include="state_variable.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

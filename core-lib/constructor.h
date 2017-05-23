@@ -7,7 +7,7 @@ namespace lucy {
 	class context;
 	class item;
 
-	class constructor : public scope {
+	class DLL_PUBLIC constructor : public scope {
 		friend class type;
 	public:
 		constructor(core& cr, scope& scp, const std::vector<field*>& args);

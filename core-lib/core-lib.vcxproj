@@ -178,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="atom.h" />
+    <ClInclude Include="combinations.h" />
     <ClInclude Include="conjunction.h" />
     <ClInclude Include="constructor.h" />
     <ClInclude Include="context.h" />

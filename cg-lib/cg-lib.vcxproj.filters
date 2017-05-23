@@ -19,6 +19,12 @@
     <Filter Include="Source Files\flaws">
       <UniqueIdentifier>{8f7cb4ce-0d1d-4fa8-b03d-97c09cd380ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\types">
+      <UniqueIdentifier>{7181bbc0-aaaa-4d49-a77b-4c3ae4776190}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\types">
+      <UniqueIdentifier>{1f794ea8-ef23-4a00-8dcd-f4e37a28a20b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="causal_graph.h">
@@ -42,6 +48,9 @@
     <ClInclude Include="smart_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="state_variable.h">
+      <Filter>Header Files\types</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="causal_graph.cpp">
@@ -61,6 +70,9 @@
     </ClCompile>
     <ClCompile Include="resolver.cpp">
       <Filter>Source Files\flaws</Filter>
+    </ClCompile>
+    <ClCompile Include="state_variable.cpp">
+      <Filter>Source Files\types</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

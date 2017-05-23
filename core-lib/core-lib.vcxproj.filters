@@ -218,6 +218,9 @@
     <ClInclude Include="defined_conjunction.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="combinations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="parser\ratio.g4">
