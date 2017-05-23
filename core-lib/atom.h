@@ -6,7 +6,7 @@ namespace lucy {
 
 	class predicate;
 
-	class atom_state : public set_item {
+	class DLL_PUBLIC atom_state : public set_item {
 		friend class atom;
 	private:
 		atom_state() { }
@@ -28,4 +28,8 @@ namespace lucy {
 	public:
 		const var state;
 	};
+
+	__declspec(selectany) atom_state* const atom::active = new atom_state();
+	__declspec(selectany) atom_state* const atom::inactive = new atom_state();
+	__declspec(selectany) atom_state* const atom::unified = new atom_state();
 }
