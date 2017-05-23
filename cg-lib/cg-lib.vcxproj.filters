@@ -39,6 +39,9 @@
     <ClInclude Include="resolver.h">
       <Filter>Header Files\flaws</Filter>
     </ClInclude>
+    <ClInclude Include="smart_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="causal_graph.cpp">
