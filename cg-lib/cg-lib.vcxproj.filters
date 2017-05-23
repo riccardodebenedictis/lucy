@@ -60,6 +60,9 @@
     <ClInclude Include="propositional_state.h">
       <Filter>Header Files\types</Filter>
     </ClInclude>
+    <ClInclude Include="causal_graph_listener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="causal_graph.cpp">
@@ -91,6 +94,9 @@
     </ClCompile>
     <ClCompile Include="propositional_agent.cpp">
       <Filter>Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="causal_graph_listener.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

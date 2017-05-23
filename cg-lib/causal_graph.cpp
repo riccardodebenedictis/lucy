@@ -5,6 +5,7 @@
 #include "smart_type.h"
 #include "state_variable.h"
 #include "reusable_resource.h"
+#include "causal_graph_listener.h"
 
 namespace cg {
 
@@ -160,9 +161,14 @@ namespace cg {
 			in_plan.insert({ f.in_plan, &f });
 			bind(f.in_plan);
 		}
+
+		// we notify the listeners that a new flaw has arised..
+		for (const auto& l : listeners) { l->new_flaw(f); }
 	}
 
 	void causal_graph::new_resolver(resolver& r) {
+		// we notify the listeners that a new resolver has arised..
+		for (const auto& l : listeners) { l->new_resolver(r); }
 	}
 
 	void causal_graph::new_causal_link(flaw& f, resolver& r) {
@@ -170,6 +176,9 @@ namespace cg {
 		f.supports.push_back(&r);
 		bool new_clause = core::sat.new_clause({ smt::lit(r.chosen, false), smt::lit(f.in_plan, true) });
 		assert(new_clause);
+
+		// we notify the listeners that a new causal link has been created..
+		for (const auto& l : listeners) { l->causal_link_added(f, r); }
 	}
 
 	bool causal_graph::propagate(const lit& p, std::vector<lit>& cnfl) {
@@ -188,6 +197,9 @@ namespace cg {
 				// a flaw has been removed from the current partial solution..
 				set_cost(*f, std::numeric_limits<double>::infinity());
 			}
+
+			// we notify the listeners that the state of a flaw has changed..
+			for (const auto& l : listeners) { l->flaw_state_changed(*f); }
 		}
 		else {
 			flaw_costs_q.push(&chosen.at(p.v)->effect);
@@ -239,6 +251,10 @@ namespace cg {
 		for (const auto& c : trail.back().old_costs) {
 			c.first->cost = c.second;
 		}
+
+		// we notify the listeners that the cost of some flaws has been restored..
+		for (const auto& l : listeners) { for (const auto& c : trail.back().old_costs) { l->flaw_cost_changed(*c.first); } }
+
 		// we manage structural flaws..
 		if (!resolvers.empty() && resolvers.back() == trail.back().r) {
 			resolvers.pop_back();
@@ -366,6 +382,9 @@ namespace cg {
 			}
 			f.cost = cost;
 
+			// we notify the listeners that a flaw cost has changed..
+			for (const auto& l : listeners) { l->flaw_cost_changed(f); }
+
 			for (const auto& supp : f.supports) {
 				flaw_costs_q.push(&supp->effect);
 			}
@@ -387,6 +406,10 @@ namespace cg {
 					trail.back().old_costs.insert({ flaw_costs_q.front(), flaw_costs_q.front()->cost });
 				}
 				flaw_costs_q.front()->cost = f_cost;
+
+				// we notify the listeners that a flaw cost has changed..
+				for (const auto& l : listeners) { l->flaw_cost_changed(*flaw_costs_q.front()); }
+
 				for (const auto& supp : flaw_costs_q.front()->supports) {
 					flaw_costs_q.push(&supp->effect);
 				}
@@ -454,6 +477,10 @@ namespace cg {
 				++it;
 			}
 		}
+
+		// we notify the listeners that we have chosen a flaw..
+		if (f_next) { for (const auto& l : listeners) { l->current_flaw(*f_next); } }
+
 		return f_next;
 	}
 
@@ -467,6 +494,10 @@ namespace cg {
 				r_next = r;
 			}
 		}
+
+		// we notify the listeners that we have chosen a resolver..
+		for (const auto& l : listeners) { l->current_resolver(*r_next); }
+
 		return *r_next;
 	}
 }

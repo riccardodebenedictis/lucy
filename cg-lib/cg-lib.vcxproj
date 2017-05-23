@@ -152,6 +152,7 @@
   <ItemGroup>
     <ClInclude Include="atom_flaw.h" />
     <ClInclude Include="causal_graph.h" />
+    <ClInclude Include="causal_graph_listener.h" />
     <ClInclude Include="disjunction_flaw.h" />
     <ClInclude Include="enum_flaw.h" />
     <ClInclude Include="flaw.h" />
@@ -165,6 +166,7 @@
   <ItemGroup>
     <ClCompile Include="atom_flaw.cpp" />
     <ClCompile Include="causal_graph.cpp" />
+    <ClCompile Include="causal_graph_listener.cpp" />
     <ClCompile Include="disjunction_flaw.cpp" />
     <ClCompile Include="enum_flaw.cpp" />
     <ClCompile Include="flaw.cpp" />

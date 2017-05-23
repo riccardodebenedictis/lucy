@@ -11,6 +11,7 @@ namespace cg {
 	class DLL_PUBLIC causal_graph : public core, public theory {
 		friend class flaw;
 		friend class atom_flaw;
+		friend class causal_graph_listener;
 	public:
 		causal_graph();
 		causal_graph(const causal_graph& orig) = delete;
@@ -82,5 +83,6 @@ namespace cg {
 		resolver* res;
 		// the list of resolvers in chronological order..
 		std::vector<layer> trail;
+		std::vector<causal_graph_listener*> listeners;
 	};
 }
