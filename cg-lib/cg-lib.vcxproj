@@ -138,10 +138,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="atom_flaw.h" />
     <ClInclude Include="causal_graph.h" />
+    <ClInclude Include="disjunction_flaw.h" />
+    <ClInclude Include="enum_flaw.h" />
+    <ClInclude Include="flaw.h" />
+    <ClInclude Include="resolver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="atom_flaw.cpp" />
     <ClCompile Include="causal_graph.cpp" />
+    <ClCompile Include="disjunction_flaw.cpp" />
+    <ClCompile Include="enum_flaw.cpp" />
+    <ClCompile Include="flaw.cpp" />
+    <ClCompile Include="resolver.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

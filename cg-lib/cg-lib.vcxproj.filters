@@ -13,15 +13,51 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\flaws">
+      <UniqueIdentifier>{13a14c85-9c44-466b-aa16-8becf2be65d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\flaws">
+      <UniqueIdentifier>{8f7cb4ce-0d1d-4fa8-b03d-97c09cd380ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="causal_graph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="atom_flaw.h">
+      <Filter>Header Files\flaws</Filter>
+    </ClInclude>
+    <ClInclude Include="disjunction_flaw.h">
+      <Filter>Header Files\flaws</Filter>
+    </ClInclude>
+    <ClInclude Include="enum_flaw.h">
+      <Filter>Header Files\flaws</Filter>
+    </ClInclude>
+    <ClInclude Include="flaw.h">
+      <Filter>Header Files\flaws</Filter>
+    </ClInclude>
+    <ClInclude Include="resolver.h">
+      <Filter>Header Files\flaws</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="causal_graph.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="atom_flaw.cpp">
+      <Filter>Source Files\flaws</Filter>
+    </ClCompile>
+    <ClCompile Include="disjunction_flaw.cpp">
+      <Filter>Source Files\flaws</Filter>
+    </ClCompile>
+    <ClCompile Include="enum_flaw.cpp">
+      <Filter>Source Files\flaws</Filter>
+    </ClCompile>
+    <ClCompile Include="flaw.cpp">
+      <Filter>Source Files\flaws</Filter>
+    </ClCompile>
+    <ClCompile Include="resolver.cpp">
+      <Filter>Source Files\flaws</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

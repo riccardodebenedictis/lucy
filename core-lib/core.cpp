@@ -123,6 +123,8 @@ namespace lucy {
 	}
 
 	expr core::new_enum(const type& t, const std::unordered_set<item*>& allowed_vals) {
+		assert(!allowed_vals.empty());
+		if (allowed_vals.size() == 1) return *allowed_vals.begin();
 		std::unordered_set<set_item*> vals(allowed_vals.begin(), allowed_vals.end());
 		if (t.name.compare(BOOL_KEYWORD) == 0) {
 			bool_expr b = new_bool();

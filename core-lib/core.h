@@ -47,7 +47,7 @@ namespace lucy {
 		arith_expr new_real(const double& val);
 		string_expr new_string();
 		string_expr new_string(const std::string& val);
-		virtual expr new_enum(const type& t, const std::unordered_set<item*>& allowed_vals);
+		virtual expr new_enum(const type& tp, const std::unordered_set<item*>& allowed_vals);
 
 		bool_expr negate(bool_expr var);
 		bool_expr eq(bool_expr left, bool_expr right);
@@ -96,9 +96,9 @@ namespace lucy {
 		virtual bool solve() = 0;
 
 	protected:
-		virtual bool new_fact(atom& a) { return true; }
-		virtual bool new_goal(atom& a) { return true; }
-		virtual void new_disjunction(context& e, disjunction& d) = 0;
+		virtual bool new_fact(atom& atm) { return true; }
+		virtual bool new_goal(atom& atm) { return true; }
+		virtual void new_disjunction(context& ctx, disjunction& disj) = 0;
 
 	protected:
 		void set_var(var v) {
