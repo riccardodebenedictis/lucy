@@ -13,7 +13,7 @@ namespace cg {
 	class causal_graph_listener {
 		friend class causal_graph;
 	public:
-		causal_graph_listener(causal_graph& g);
+		causal_graph_listener(causal_graph& graph);
 		causal_graph_listener(const causal_graph_listener& orig) = delete;
 		virtual ~causal_graph_listener();
 
@@ -33,7 +33,7 @@ namespace cg {
 		virtual void resolver_state_changed(const resolver& r) {}
 		virtual void current_resolver(const resolver& r) {}
 
-		virtual void causal_link_added(const flaw& f, const resolver& r) { }
+		virtual void causal_link_added(const flaw& f, const resolver& r) {}
 
 		class flaw_listener : public sat_value_listener {
 		public:
