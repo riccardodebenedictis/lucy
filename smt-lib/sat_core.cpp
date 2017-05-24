@@ -342,7 +342,26 @@ namespace smt {
 	}
 
 	bool sat_core::enqueue(const lit & p, clause * const c) {
-		return false;
+		switch (value(p)) {
+		case True:
+			return true;
+		case False:
+			return false;
+		case Undefined:
+			assigns[p.v] = p.sign ? True : False;
+			level[p.v] = trail_lim.size();
+			reason[p.v] = c;
+			trail.push_back(p);
+			prop_q.push(p);
+			if (listening.find(p.v) != listening.end()) {
+				for (const auto& l : listening[p.v]) {
+					l->sat_value_change(p.v);
+				}
+			}
+			return true;
+		default:
+			std::unexpected();
+		}
 	}
 
 	void sat_core::pop_one() {
