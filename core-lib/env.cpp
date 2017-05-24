@@ -4,7 +4,7 @@
 
 namespace lucy {
 
-	env::env(core& cr, const context ctx) : ref_count(this == &cr), cr(cr), ctx(ctx) { }
+	env::env(core& cr, const context ctx) : ref_count(this == &cr ? 2 : 0), cr(cr), ctx(ctx) { }
 
 	env::~env() { assert(!ref_count || (this == &*ctx && ref_count)); }
 

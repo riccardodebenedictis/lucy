@@ -68,5 +68,55 @@ public:
 		Assert::IsTrue(a);
 	}
 
+	TEST_METHOD(testLA1) {
+		sat_core c;
+		la_theory la(c);
+
+		var b0 = c.new_var();
+		var x0 = la.new_var();
+
+		var b5 = la.new_geq(lin(x0, 1), lin(10));
+		var b6 = la.new_leq(lin(x0, 1), lin(0));
+
+		bool cs;
+		cs = c.new_clause({ lit(b0, false), lit(b5, true) });
+		Assert::IsTrue(cs);
+		cs = c.new_clause({ lit(b5, false), lit(b6, true) });
+		Assert::IsTrue(cs);
+
+		bool p = c.check();
+		Assert::IsTrue(p);
+
+		bool a;
+		a = c.assume(lit(b0, true)) && c.check();
+		Assert::IsTrue(a);
+	}
+
+	TEST_METHOD(testTheoryPropagation) {
+		sat_core c;
+		la_theory la(c);
+
+		var x0 = la.new_var();
+		var b2 = la.new_geq(lin(x0, 1), lin(1));
+		var b3 = la.new_geq(lin(x0, 1), lin(0));
+		var b4 = la.new_leq(lin(x0, 1), lin(-1));
+
+		bool a;
+		a = c.assume(lit(b2, true)) && c.check();
+		Assert::IsTrue(a);
+		Assert::IsTrue(True == c.value(b3));
+		Assert::IsTrue(False == c.value(b4));
+
+		var x1 = la.new_var();
+		var b5 = la.new_leq(lin(x1, 1), lin(-1));
+		var b6 = la.new_leq(lin(x1, 1), lin(0));
+		var b7 = la.new_geq(lin(x1, 1), lin(1));
+
+		a = c.assume(lit(b5, true)) && c.check();
+		Assert::IsTrue(a);
+		Assert::IsTrue(True == c.value(b6));
+		Assert::IsTrue(False == c.value(b7));
+	}
+
 	};
 }

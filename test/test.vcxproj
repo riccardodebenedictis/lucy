@@ -77,22 +77,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
+    <IncludePath>../smt-lib;../core-lib;../cg-lib;C:\Program Files (x86)\ANTLR4\include\antlr4-runtime;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files (x86)\VTK\lib;C:\Program Files (x86)\VTK\bin;C:\Program Files (x86)\ANTLR4\lib\x64\Debug DLL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
+    <IncludePath>../smt-lib;../core-lib;../cg-lib;C:\Program Files (x86)\ANTLR4\include\antlr4-runtime;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x86\Debug DLL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
+    <IncludePath>../smt-lib;../core-lib;../cg-lib;C:\Program Files (x86)\ANTLR4\include\antlr4-runtime;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x86\Release DLL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
+    <IncludePath>../smt-lib;../core-lib;../cg-lib;C:\Program Files (x86)\ANTLR4\include\antlr4-runtime;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files (x86)\VTK\lib;C:\Program Files (x86)\VTK\bin;C:\Program Files (x86)\ANTLR4\lib\x64\Release DLL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -160,6 +160,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cg_test.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
