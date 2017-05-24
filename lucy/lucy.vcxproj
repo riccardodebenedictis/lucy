@@ -71,19 +71,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x86\Debug DLL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x86\Release DLL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x64;C:\Program Files (x86)\VTK\lib;C:\Program Files (x86)\VTK\bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x64\Debug DLL;C:\Program Files (x86)\VTK\lib;C:\Program Files (x86)\VTK\bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x64;C:\Program Files (x86)\VTK\lib;C:\Program Files (x86)\VTK\bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x64\Release DLL;C:\Program Files (x86)\VTK\lib;C:\Program Files (x86)\VTK\bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
