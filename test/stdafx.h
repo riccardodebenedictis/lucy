@@ -11,3 +11,4 @@
 #include "CppUnitTest.h"
 
 #include "sat_core.h"
+#include "la_theory.h"

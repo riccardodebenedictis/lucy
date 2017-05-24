@@ -45,5 +45,28 @@ public:
 		Assert::IsTrue(a);
 	}
 
+	TEST_METHOD(TestLA0) {
+		sat_core c;
+		la_theory la(c);
+
+		var x0 = la.new_var();
+		var x1 = la.new_var();
+
+		var leq_0 = la.new_leq(lin(x0, 1), lin(-4));
+		var geq_0 = la.new_geq(lin(x0, 1), lin(-8));
+		var leq_1 = la.new_leq(lin(x0, -1) + lin(x1, 1), lin(1));
+		var geq_1 = la.new_geq(lin(x0, 1) + lin(x1, 1), lin(-3));
+
+		bool a;
+		a = c.assume(lit(leq_0, true)) && c.check();
+		Assert::IsTrue(a);
+		a = c.assume(lit(geq_0, true)) && c.check();
+		Assert::IsTrue(a);
+		a = c.assume(lit(leq_1, true)) && c.check();
+		Assert::IsTrue(a);
+		a = c.assume(lit(geq_1, true)) && c.check();
+		Assert::IsTrue(a);
+	}
+
 	};
 }
