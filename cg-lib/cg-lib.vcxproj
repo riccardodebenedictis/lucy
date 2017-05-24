@@ -95,6 +95,9 @@
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
     </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>antlr4-runtime.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -106,6 +109,9 @@
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
     </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>antlr4-runtime.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -119,6 +125,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>antlr4-runtime.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
@@ -136,6 +143,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>antlr4-runtime.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
