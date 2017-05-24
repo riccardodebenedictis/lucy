@@ -1,10 +1,13 @@
 #include "vtk_graph.h"
+#include "vtkCylinderSource.h"
 
 namespace cg {
 
 	namespace gui {
 
-		vtk_graph::vtk_graph(causal_graph& graph) : causal_graph_listener(graph) { }
+		vtk_graph::vtk_graph(causal_graph& graph) : causal_graph_listener(graph) {
+			vtkCylinderSource* cylinder = vtkCylinderSource::New();
+		}
 
 		vtk_graph::~vtk_graph() { }
 

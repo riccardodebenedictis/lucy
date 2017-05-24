@@ -96,7 +96,7 @@
       <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalDependencies>antlr4-runtime.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>antlr4-runtime.lib;vtkFiltersSources-8.0.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -110,7 +110,7 @@
       <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalDependencies>antlr4-runtime.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>antlr4-runtime.lib;vtkFiltersSources-8.0.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -125,7 +125,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>antlr4-runtime.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>antlr4-runtime.lib;vtkFiltersSources-8.0.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
@@ -143,7 +143,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>antlr4-runtime.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>antlr4-runtime.lib;vtkFiltersSources-8.0.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>

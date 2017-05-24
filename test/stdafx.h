@@ -13,3 +13,4 @@
 #include "sat_core.h"
 #include "la_theory.h"
 #include "causal_graph.h"
+#include "vtk_graph.h"

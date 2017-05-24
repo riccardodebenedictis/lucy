@@ -9,6 +9,7 @@ namespace test {
 public:
 	TEST_METHOD(TestCG0) {
 		causal_graph g;
+		gui::vtk_graph vtk_g(g);
 	}
 
 	};
