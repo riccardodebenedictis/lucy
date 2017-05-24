@@ -69,7 +69,22 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\ANTLR4\lib\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\VTK\lib;C:\Program Files (x86)\VTK\bin;C:\Program Files (x86)\ANTLR4\lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>../smt-lib;../core-lib;../cg-lib;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\VTK\lib;C:\Program Files (x86)\VTK\bin;C:\Program Files (x86)\ANTLR4\lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
