@@ -104,7 +104,7 @@
       <PreprocessorDefinitions>BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)$init.rddl"</Command>
+      <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -138,7 +138,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)$init.rddl"</Command>
+      <Command>copy /Y "$(SolutionDir)$(ProjectName)\init.rddl" "$(TargetDir)init.rddl"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
