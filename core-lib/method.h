@@ -2,30 +2,33 @@
 
 #include "scope.h"
 
-namespace lucy {
+namespace lucy
+{
 
-	class context;
+class context;
 
-	class method : public scope {
-		friend class type;
-		friend class core;
-		friend class expression_visitor;
-	public:
-		method(core& cr, scope& scp, const std::string& name, const std::vector<field*>& args, const type* const return_type = nullptr);
-		method(const method& orig) = delete;
-		virtual ~method();
+class method : public scope
+{
+	friend class type;
+	friend class core;
+	friend class expression_visitor;
 
-		const std::vector<field*> get_args() const { return args; }
+  public:
+	method(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args, const type *const return_type = nullptr);
+	method(const method &orig) = delete;
+	virtual ~method();
 
-		virtual bool invoke(context& ctx, const std::vector<expr>& exprs) = 0;
+	const std::vector<field *> get_args() const { return args; }
 
-	public:
-		const std::string name;
+	virtual bool invoke(context &ctx, const std::vector<expr> &exprs) = 0;
 
-	protected:
-		const std::vector<field*> args;
+  public:
+	const std::string name;
 
-	public:
-		const type * const return_type;
-	};
+  protected:
+	const std::vector<field *> args;
+
+  public:
+	const type *const return_type;
+};
 }

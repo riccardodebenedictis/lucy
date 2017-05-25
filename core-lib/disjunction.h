@@ -2,22 +2,26 @@
 
 #include "scope.h"
 
-namespace lucy {
+namespace lucy
+{
 
-	class conjunction;
+class conjunction;
 
-	class disjunction : public scope {
-		friend class type_refinement_listener;
-	public:
-		disjunction(core& cr, scope& scp);
-		disjunction(const disjunction& orig) = delete;
-		virtual ~disjunction();
+class disjunction : public scope
+{
+	friend class type_refinement_listener;
 
-		std::vector<conjunction*> get_conjunctions() const {
-			return conjunctions;
-		}
+  public:
+	disjunction(core &cr, scope &scp);
+	disjunction(const disjunction &orig) = delete;
+	virtual ~disjunction();
 
-	private:
-		std::vector<conjunction*> conjunctions;
-	};
+	std::vector<conjunction *> get_conjunctions() const
+	{
+		return conjunctions;
+	}
+
+  private:
+	std::vector<conjunction *> conjunctions;
+};
 }

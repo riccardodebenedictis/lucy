@@ -1,17 +1,21 @@
 #include "lit.h"
 
-namespace smt {
+namespace smt
+{
 
-	lit::lit(var v, bool sign) : v(v), sign(sign) {}
+lit::lit(var v, bool sign) : v(v), sign(sign) {}
 
-	lit::~lit() {}
+lit::~lit() {}
 
-	std::string lit::to_string() const {
-		if (sign) {
-			return "b" + std::to_string(v);
-		}
-		else {
-			return"!b" + std::to_string(v);
-		}
+std::string lit::to_string() const
+{
+	if (sign)
+	{
+		return "{ \"var\" : \"b" + std::to_string(v) + "\", \"sign\" : true }";
 	}
+	else
+	{
+		return "{ \"var\" : \"b" + std::to_string(v) + "\", \"sign\" : false }";
+	}
+}
 }

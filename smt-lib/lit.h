@@ -3,31 +3,36 @@
 #include "visibility.h"
 #include <string>
 
-namespace smt {
+namespace smt
+{
 
-	typedef size_t var;
+typedef size_t var;
 
-	class DLL_PUBLIC lit {
-	public:
-		lit(var v, bool sign);
-		virtual ~lit();
+class DLL_PUBLIC lit
+{
+  public:
+	lit(var v, bool sign);
+	virtual ~lit();
 
-		lit operator!() const {
-			return lit(v, !sign);
-		}
+	lit operator!() const
+	{
+		return lit(v, !sign);
+	}
 
-		bool operator==(const lit& rhs) const {
-			return v == rhs.v && sign == rhs.sign;
-		}
+	bool operator==(const lit &rhs) const
+	{
+		return v == rhs.v && sign == rhs.sign;
+	}
 
-		bool operator!=(const lit& rhs) const {
-			return !operator==(rhs);
-		}
+	bool operator!=(const lit &rhs) const
+	{
+		return !operator==(rhs);
+	}
 
-		std::string to_string() const;
+	std::string to_string() const;
 
-	public:
-		var v;
-		bool sign;
-	};
+  public:
+	var v;
+	bool sign;
+};
 }

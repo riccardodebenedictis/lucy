@@ -7,37 +7,40 @@
 
 using namespace lucy;
 
-namespace cg {
+namespace cg
+{
 
-	class disjunction_flaw : public flaw {
-	public:
-		disjunction_flaw(causal_graph& graph, const context& ctx, disjunction& disj);
-		disjunction_flaw(const disjunction_flaw& orig) = delete;
-		virtual ~disjunction_flaw();
+class disjunction_flaw : public flaw
+{
+public:
+  disjunction_flaw(causal_graph &graph, const context &ctx, disjunction &disj);
+  disjunction_flaw(const disjunction_flaw &orig) = delete;
+  virtual ~disjunction_flaw();
 
-		std::string get_label() const override { return "disj"; }
+  std::string get_label() const override { return "disj"; }
 
-	private:
-		void compute_resolvers() override;
+private:
+  void compute_resolvers() override;
 
-		class choose_conjunction : public resolver {
-		public:
-			choose_conjunction(causal_graph& graph, disjunction_flaw& disj_flaw, const context& ctx, conjunction& conj);
-			choose_conjunction(const choose_conjunction& that) = delete;
-			virtual ~choose_conjunction();
+  class choose_conjunction : public resolver
+  {
+  public:
+    choose_conjunction(causal_graph &graph, disjunction_flaw &disj_flaw, const context &ctx, conjunction &conj);
+    choose_conjunction(const choose_conjunction &that) = delete;
+    virtual ~choose_conjunction();
 
-			std::string get_label() const override { return "conj"; }
+    std::string get_label() const override { return "conj"; }
 
-		private:
-			bool apply() override;
+  private:
+    bool apply() override;
 
-		private:
-			context ctx;
-			conjunction& conj;
-		};
+  private:
+    context ctx;
+    conjunction &conj;
+  };
 
-	private:
-		context ctx;
-		disjunction& disj;
-	};
+private:
+  context ctx;
+  disjunction &disj;
+};
 }

@@ -7,76 +7,82 @@
 
 using namespace smt;
 
-namespace lucy {
+namespace lucy
+{
 
-	class type;
+class type;
 
-	class DLL_PUBLIC item : public env, public set_item {
-	public:
-		item(core& cr, const context ctx, const type& tp);
-		item(const item& orig) = delete;
-		virtual ~item();
+class DLL_PUBLIC item : public env, public set_item
+{
+public:
+	item(core &cr, const context ctx, const type &tp);
+	item(const item &orig) = delete;
+	virtual ~item();
 
-		virtual var eq(item& i) noexcept;
-		virtual bool equates(const item& i) const noexcept;
+	virtual var eq(item &i) noexcept;
+	virtual bool equates(const item &i) const noexcept;
 
-	public:
-		const type& tp;
-	};
+public:
+	const type &tp;
+};
 
-	class DLL_PUBLIC bool_item : public item {
-	public:
-		bool_item(core& cr, const lit& l);
-		bool_item(const bool_item& that) = delete;
-		virtual ~bool_item();
+class DLL_PUBLIC bool_item : public item
+{
+public:
+	bool_item(core &cr, const lit &l);
+	bool_item(const bool_item &that) = delete;
+	virtual ~bool_item();
 
-		var eq(item& i) noexcept override;
-		bool equates(const item& i) const noexcept override;
+	var eq(item &i) noexcept override;
+	bool equates(const item &i) const noexcept override;
 
-	public:
-		lit l;
-	};
+public:
+	lit l;
+};
 
-	class DLL_PUBLIC arith_item : public item {
-	public:
-		arith_item(core& cr, const type& t, const lin& l);
-		arith_item(const arith_item& that) = delete;
-		virtual ~arith_item();
+class DLL_PUBLIC arith_item : public item
+{
+public:
+	arith_item(core &cr, const type &t, const lin &l);
+	arith_item(const arith_item &that) = delete;
+	virtual ~arith_item();
 
-		var eq(item& i) noexcept override;
-		bool equates(const item& i) const noexcept override;
+	var eq(item &i) noexcept override;
+	bool equates(const item &i) const noexcept override;
 
-	public:
-		const lin l;
-	};
+public:
+	const lin l;
+};
 
-	class DLL_PUBLIC string_item : public item {
-	public:
-		string_item(core& cr, const std::string& l);
-		string_item(const string_item& that) = delete;
-		virtual ~string_item();
+class DLL_PUBLIC string_item : public item
+{
+public:
+	string_item(core &cr, const std::string &l);
+	string_item(const string_item &that) = delete;
+	virtual ~string_item();
 
-		std::string get_value() { return l; }
+	std::string get_value() { return l; }
 
-		var eq(item& i) noexcept override;
-		bool equates(const item& i) const noexcept override;
+	var eq(item &i) noexcept override;
+	bool equates(const item &i) const noexcept override;
 
-	private:
-		std::string l;
-	};
+private:
+	std::string l;
+};
 
-	class DLL_PUBLIC enum_item : public item {
-	public:
-		enum_item(core& cr, const type& t, var ev);
-		enum_item(const enum_item& that) = delete;
-		virtual ~enum_item();
+class DLL_PUBLIC enum_item : public item
+{
+public:
+	enum_item(core &cr, const type &t, var ev);
+	enum_item(const enum_item &that) = delete;
+	virtual ~enum_item();
 
-		expr get(const std::string& name) const override;
+	expr get(const std::string &name) const override;
 
-		var eq(item& i) noexcept override;
-		bool equates(const item& i) const noexcept override;
+	var eq(item &i) noexcept override;
+	bool equates(const item &i) const noexcept override;
 
-	public:
-		const var ev;
-	};
+public:
+	const var ev;
+};
 }

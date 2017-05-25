@@ -1,10 +1,13 @@
 #include "causal_graph.h"
+#include "vtk_graph.h"
 #include <iostream>
 
 using namespace smt;
 
-int main(int argc, char *argv[], char *envp[]) {
-	std::cout << "starting lucy.." << std::endl;
+int main(int argc, char *argv[], char *envp[])
+{
+    std::cout << "starting lucy.." << std::endl;
 
-	cg::causal_graph g;
+    cg::causal_graph g;
+    cg::gui::vtk_graph vtk_g(g);
 }
