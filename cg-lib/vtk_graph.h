@@ -1,6 +1,8 @@
 #pragma once
 
 #include "causal_graph_listener.h"
+#include "vtkSmartPointer.h"
+#include "vtkMutableDirectedGraph.h"
 
 namespace cg
 {
@@ -25,6 +27,9 @@ private:
   void current_resolver(const resolver &r) override;
 
   void causal_link_added(const flaw &f, const resolver &r) override;
+
+private:
+  vtkSmartPointer<vtkMutableDirectedGraph> g;
 };
 }
 }

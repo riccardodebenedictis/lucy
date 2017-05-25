@@ -1,5 +1,7 @@
 #include "vtk_graph.h"
-#include "vtkCylinderSource.h"
+#include "vtkGraphLayoutView.h"
+#include "vtkRenderWindowInteractor.h"
+#include "vtkCircularLayoutStrategy.h"
 
 namespace cg
 {
@@ -7,9 +9,27 @@ namespace cg
 namespace gui
 {
 
-vtk_graph::vtk_graph(causal_graph &graph) : causal_graph_listener(graph)
+vtk_graph::vtk_graph(causal_graph &graph) : causal_graph_listener(graph), g(vtkSmartPointer<vtkMutableDirectedGraph>::New())
 {
-    vtkCylinderSource *cylinder = vtkCylinderSource::New();
+    // Create 3 vertices
+    vtkIdType v1 = g->AddVertex();
+    vtkIdType v2 = g->AddVertex();
+    vtkIdType v3 = g->AddVertex();
+    vtkIdType v4 = g->AddVertex();
+
+    // Create a fully connected graph
+    vtkEdgeType e1 = g->AddEdge(v1, v2);
+    vtkEdgeType e2 = g->AddEdge(v2, v3);
+    vtkEdgeType e3 = g->AddEdge(v1, v3);
+
+    vtkSmartPointer<vtkCircularLayoutStrategy> circularLayoutStrategy = vtkSmartPointer<vtkCircularLayoutStrategy>::New();
+
+    vtkSmartPointer<vtkGraphLayoutView> graphLayoutView = vtkSmartPointer<vtkGraphLayoutView>::New();
+    graphLayoutView->AddRepresentationFromInput(g);
+    graphLayoutView->SetLayoutStrategy(circularLayoutStrategy);
+    graphLayoutView->ResetCamera();
+    graphLayoutView->Render();
+    graphLayoutView->GetInteractor()->Start();
 }
 
 vtk_graph::~vtk_graph() {}
