@@ -8,7 +8,7 @@ namespace cg
 namespace gui
 {
 
-class vtk_graph : public causal_graph_listener
+class DLL_PUBLIC vtk_graph : public causal_graph_listener
 {
 public:
   vtk_graph(causal_graph &graph);

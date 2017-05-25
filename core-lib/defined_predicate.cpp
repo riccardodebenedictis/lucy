@@ -12,16 +12,16 @@ defined_predicate::~defined_predicate() {}
 
 bool defined_predicate::apply_rule(atom &a) const
 {
-	for (const auto &sp : supertypes)
-	{
-		if (!static_cast<predicate *>(sp)->apply_rule(a))
-		{
-			return false;
-		}
-	}
+    for (const auto &sp : supertypes)
+    {
+        if (!static_cast<predicate *>(sp)->apply_rule(a))
+        {
+            return false;
+        }
+    }
 
-	context ctx(new env(cr, &a));
-	set(*ctx, THIS_KEYWORD, &a);
-	return statement_visitor(cr, ctx).visit(&block).as<bool>();
+    context ctx(new env(cr, &a));
+    set(*ctx, THIS_KEYWORD, &a);
+    return statement_visitor(cr, ctx).visit(&block).as<bool>();
 }
 }

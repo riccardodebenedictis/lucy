@@ -8,14 +8,14 @@ namespace lucy
 
 class defined_conjunction : public conjunction
 {
-  public:
-	defined_conjunction(core &cr, scope &scp, const lin &cst, ratioParser::BlockContext &b);
-	defined_conjunction(const defined_conjunction &orig) = delete;
-	virtual ~defined_conjunction();
+public:
+  defined_conjunction(core &cr, scope &scp, const lin &cst, ratioParser::BlockContext &b);
+  defined_conjunction(const defined_conjunction &orig) = delete;
+  virtual ~defined_conjunction();
 
-  private:
-	ratioParser::BlockContext &block;
+private:
+  ratioParser::BlockContext &block;
 
-	bool apply(context &ctx) const override;
+  bool apply(context &ctx) const override;
 };
 }

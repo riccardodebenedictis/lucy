@@ -19,7 +19,7 @@ endif()
 
 include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib )
 
-file( GLOB SOURCES "*.cpp" "parser/*.cpp" )
+file( GLOB SOURCES "*.cpp" )
 
 configure_file(init.rddl ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/init.rddl COPYONLY)
 

@@ -12,7 +12,7 @@ defined_conjunction::~defined_conjunction() {}
 
 bool defined_conjunction::apply(context &ctx) const
 {
-	context c(new env(cr, ctx));
-	return statement_visitor(cr, c).visit(&block).as<bool>();
+    context c(new env(cr, ctx));
+    return statement_visitor(cr, c).visit(&block).as<bool>();
 }
 }

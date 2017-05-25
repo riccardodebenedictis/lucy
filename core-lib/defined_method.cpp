@@ -10,6 +10,6 @@ defined_method::~defined_method() {}
 
 bool defined_method::invoke(context &ctx, const std::vector<expr> &exprs)
 {
-	return statement_visitor(cr, ctx).visit(&block).as<bool>();
+    return statement_visitor(cr, ctx).visit(&block).as<bool>();
 }
 }

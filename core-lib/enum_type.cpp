@@ -11,22 +11,22 @@ enum_type::~enum_type() {}
 
 expr enum_type::new_instance(context &ctx)
 {
-	return cr.new_enum(*this, get_all_instances());
+    return cr.new_enum(*this, get_all_instances());
 }
 
 std::unordered_set<item *> enum_type::get_all_instances() const
 {
-	std::unordered_set<item *> c_instances;
-	for (const auto &i : instances)
-	{
-		c_instances.insert(&*i);
-	}
+    std::unordered_set<item *> c_instances;
+    for (const auto &i : instances)
+    {
+        c_instances.insert(&*i);
+    }
 
-	for (const auto &es : enums)
-	{
-		std::unordered_set<item *> es_instances = es->get_all_instances();
-		c_instances.insert(es_instances.begin(), es_instances.end());
-	}
-	return c_instances;
+    for (const auto &es : enums)
+    {
+        std::unordered_set<item *> es_instances = es->get_all_instances();
+        c_instances.insert(es_instances.begin(), es_instances.end());
+    }
+    return c_instances;
 }
 }

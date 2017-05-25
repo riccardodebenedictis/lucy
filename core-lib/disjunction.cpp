@@ -7,9 +7,9 @@ disjunction::disjunction(core &cr, scope &scp) : scope(cr, scp) {}
 
 disjunction::~disjunction()
 {
-	for (const auto &c : conjunctions)
-	{
-		delete c;
-	}
+    for (const auto &c : conjunctions)
+    {
+        delete c;
+    }
 }
 }

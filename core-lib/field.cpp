@@ -12,14 +12,14 @@ field::~field() {}
 
 expr field::new_instance(context &ctx)
 {
-	assert(!synthetic);
-	if (tp.primitive)
-	{
-		return const_cast<type &>(tp).new_instance(ctx);
-	}
-	else
-	{
-		return const_cast<type &>(tp).new_existential();
-	}
+    assert(!synthetic);
+    if (tp.primitive)
+    {
+        return const_cast<type &>(tp).new_instance(ctx);
+    }
+    else
+    {
+        return const_cast<type &>(tp).new_existential();
+    }
 }
 }

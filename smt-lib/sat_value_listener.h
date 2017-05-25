@@ -2,32 +2,36 @@
 
 #include "sat_core.h"
 
-namespace smt {
+namespace smt
+{
 
-	class DLL_PUBLIC sat_value_listener {
-		friend class sat_core;
-	public:
+class DLL_PUBLIC sat_value_listener
+{
+    friend class sat_core;
 
-		sat_value_listener(sat_core& s) : sat(s) { }
-		sat_value_listener(const sat_value_listener& that) = delete;
+  public:
+    sat_value_listener(sat_core &s) : sat(s) {}
+    sat_value_listener(const sat_value_listener &that) = delete;
 
-		virtual ~sat_value_listener() {
-			for (const auto& v : sat_vars) {
-				sat.forget(v, this);
-			}
-		}
+    virtual ~sat_value_listener()
+    {
+        for (const auto &v : sat_vars)
+        {
+            sat.forget(v, this);
+        }
+    }
 
-	protected:
+  protected:
+    void listen_sat(var v)
+    {
+        sat.listen(v, this);
+        sat_vars.push_back(v);
+    }
 
-		void listen_sat(var v) {
-			sat.listen(v, this);
-			sat_vars.push_back(v);
-		}
+    virtual void sat_value_change(var v) {}
 
-		virtual void sat_value_change(var v) { }
-
-	private:
-		sat_core& sat;
-		std::vector<var> sat_vars;
-	};
+  private:
+    sat_core &sat;
+    std::vector<var> sat_vars;
+};
 }
