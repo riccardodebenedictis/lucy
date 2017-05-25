@@ -21,6 +21,8 @@ include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib )
 
 file( GLOB SOURCES "*.cpp" "parser/*.cpp" )
 
+configure_file(init.rddl ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/init.rddl COPYONLY)
+
 add_library( cg-lib SHARED ${SOURCES} )
 
 target_link_libraries( cg-lib core-lib ${VTK_LIBRARIES} )

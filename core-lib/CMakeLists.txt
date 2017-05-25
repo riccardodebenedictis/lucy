@@ -14,7 +14,7 @@ if( UNIX )
   link_directories( /usr/local/lib )
 endif()
 
-include_directories( ${CMAKE_SOURCE_DIR}/smt-lib parser )
+include_directories( ${CMAKE_SOURCE_DIR}/smt-lib )
 
 file( GLOB SOURCES "*.cpp" "parser/*.cpp" )
 
