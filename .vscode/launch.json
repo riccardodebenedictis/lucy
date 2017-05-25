@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(Windows) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/lucy.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "%PATH%;${workspaceRoot}/build/smt-lib;${workspaceRoot}/build/core-lib;${workspaceRoot}/build/cg-lib;C:/Program Files (x86)/LIBANTLR4/lib;C:/Program Files (x86)/VTK/bin"
+                }
+            ],
+            "externalConsole": true
+        }
+    ]
+}
