@@ -1,17 +1,1 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/.vs
-/Debug
-/x64
-/smt-lib/Debug
-/smt-lib/x64
-/cg-lib/Debug
-/cg-lib/x64
-/core-lib/Debug
-/core-lib/x64
-/lucy/Debug
-/lucy/x64
-/test/Debug
-/test/x64
+﻿/build
