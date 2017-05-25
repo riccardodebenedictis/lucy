@@ -43,7 +43,7 @@
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/ucrt",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/shared",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/winrt",
-                "C:/Program Files (x86)/ANTLR4/include/antlr4-runtime",
+                "C:/Program Files (x86)/LIBANTLR4/include/antlr4-runtime",
                 "C:/Program Files (x86)/VTK/include/vtk-8.0"
             ],
             "defines": [
@@ -57,7 +57,7 @@
                     "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/ucrt",
                     "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/shared",
                     "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/winrt",
-                    "C:/Program Files (x86)/ANTLR4/include/antlr4-runtime",
+                    "C:/Program Files (x86)/LIBANTLR4/include/antlr4-runtime",
                     "C:/Program Files (x86)/VTK/include/vtk-8.0"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
