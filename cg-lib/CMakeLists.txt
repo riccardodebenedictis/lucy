@@ -4,9 +4,6 @@ project ( cg-lib )
 
 add_definitions(-DBUILDING_DLL)
 
-find_package(VTK 8.0 REQUIRED NO_MODULE)
-include(${VTK_USE_FILE})
-
 if( WIN32 )
   include_directories( "C:/Program Files (x86)/LIBANTLR4/include/antlr4-runtime" )
   link_directories( "C:/Program Files (x86)/LIBANTLR4/lib" )
@@ -25,7 +22,7 @@ configure_file(init.rddl ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/init.rddl COPYONLY)
 
 add_library( cg-lib SHARED ${SOURCES} )
 
-target_link_libraries( cg-lib core-lib ${VTK_LIBRARIES} )
+target_link_libraries( cg-lib core-lib )
 
 if( WIN32 )
   install( TARGETS cg-lib DESTINATION "C:/Program Files (x86)/cg-lib" )

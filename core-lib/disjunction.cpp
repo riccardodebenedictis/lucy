@@ -1,4 +1,5 @@
 #include "disjunction.h"
+#include "conjunction.h"
 
 namespace lucy
 {

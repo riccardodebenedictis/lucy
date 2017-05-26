@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.7)
 
 project ( lucy )
 
-find_package(VTK 8.0 REQUIRED NO_MODULE)
-include(${VTK_USE_FILE})
-
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
@@ -28,3 +25,5 @@ include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${
 add_executable( lucy main.cpp )
 
 target_link_libraries( lucy cg-lib core-lib smt-lib )
+
+enable_testing()
