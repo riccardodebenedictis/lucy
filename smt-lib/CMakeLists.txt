@@ -15,3 +15,5 @@ endif()
 if( UNIX )
   install( TARGETS smt-lib DESTINATION /usr/lib )
 endif()
+
+add_subdirectory( tests )

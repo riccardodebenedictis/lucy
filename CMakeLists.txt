@@ -25,5 +25,3 @@ include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${
 add_executable( lucy main.cpp )
 
 target_link_libraries( lucy cg-lib core-lib smt-lib )
-
-enable_testing()
