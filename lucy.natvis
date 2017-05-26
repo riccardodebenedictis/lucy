@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="cg::causal_graph">
+    <DisplayString>{{causal graph}}</DisplayString>
+  </Type>
+  <Type Name="lucy::core">
+    <DisplayString>{{core}}</DisplayString>
+  </Type>
+  <Type Name="lucy::item" Inheritable="false">
+    <DisplayString>{{item}}</DisplayString>
+  </Type>
+  <Type Name="lucy::bool_item">
+    <DisplayString>{{bool}}</DisplayString>
+  </Type>
+  <Type Name="lucy::arith_item">
+    <DisplayString>{{arith}}</DisplayString>
+  </Type>
+  <Type Name="lucy::string_item">
+    <DisplayString>{{string}}</DisplayString>
+  </Type>
+  <Type Name="lucy::enum_item">
+    <DisplayString>{{enum}}</DisplayString>
+  </Type>
+  <Type Name="smt::sat_core">
+    <DisplayString>{{sat core}}</DisplayString>
+  </Type>
+  <Type Name="smt::la_theory">
+    <DisplayString>{{linear arithmetic theory}}</DisplayString>
+  </Type>
+  <Type Name="smt::set_theory">
+    <DisplayString>{{set theory}}</DisplayString>
+  </Type>
+</AutoVisualizer>

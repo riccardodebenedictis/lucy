@@ -1,4 +1,5 @@
 #include "causal_graph.h"
+#include "causal_graph_listener.h"
 #include <iostream>
 
 using namespace smt;
@@ -12,6 +13,10 @@ int main(int argc, char *argv[], char *envp[])
     std::cout << ".." << std::endl;
 
     cg::causal_graph g;
+
+#ifndef NDEBUG
+    cg::causal_graph_listener gl(g);
+#endif
 
     std::vector<std::string> file_names;
     for (int i = 1; i < argc - 1; i++)

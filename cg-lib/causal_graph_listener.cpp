@@ -12,6 +12,7 @@ namespace cg
 causal_graph_listener::causal_graph_listener(causal_graph &graph) : graph(graph)
 {
     graph.listeners.push_back(this);
+    WRITE(GRAPH_FILE, to_string());
 }
 
 causal_graph_listener::~causal_graph_listener()

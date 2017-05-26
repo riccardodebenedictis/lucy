@@ -17,7 +17,8 @@
                     "value": "%PATH%;C:/Program Files (x86)/LIBANTLR4/lib"
                 }
             ],
-            "externalConsole": true
+            "externalConsole": true,
+            "visualizerFile": "${workspaceRoot}/lucy.natvis"
         }
     ]
 }
