@@ -1,15 +1,23 @@
 #include "la_theory.h"
 #include "sat_core.h"
 #include "la_value_listener.h"
+#include "log.h"
 #include <cassert>
 #include <algorithm>
 
 namespace smt
 {
 
-la_theory::la_theory(sat_core &sat) : theory(sat) {}
+la_theory::la_theory(sat_core &sat) : theory(sat)
+{
+    LOG("creating linear arithmetic theory..");
+}
 
-la_theory::~la_theory() {}
+la_theory::~la_theory()
+{
+    LOG("deleting linear arithmetic theory..");
+}
+
 var la_theory::new_var()
 {
     var id = assigns.size();

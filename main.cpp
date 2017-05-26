@@ -5,7 +5,12 @@ using namespace smt;
 
 int main(int argc, char *argv[], char *envp[])
 {
-    std::cout << "starting lucy.." << std::endl;
+    std::cout << "starting lucy";
+#ifndef NDEBUG
+    std::cout << " in debug mode";
+#endif
+    std::cout << ".." << std::endl;
+
     cg::causal_graph g;
 
     std::vector<std::string> file_names;

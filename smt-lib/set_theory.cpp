@@ -1,14 +1,21 @@
 #include "set_theory.h"
 #include "sat_core.h"
 #include "set_value_listener.h"
+#include "log.h"
 #include <cassert>
 
 namespace smt
 {
 
-set_theory::set_theory(sat_core &sat) : theory(sat) {}
+set_theory::set_theory(sat_core &sat) : theory(sat)
+{
+    LOG("creating set theory..");
+}
 
-set_theory::~set_theory() {}
+set_theory::~set_theory()
+{
+    LOG("deleting set theory..");
+}
 
 var set_theory::new_var(const std::unordered_set<set_item *> &items)
 {

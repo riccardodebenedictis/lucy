@@ -6,6 +6,7 @@
 #include "type_declaration_listener.h"
 #include "type_refinement_listener.h"
 #include "statement_visitor.h"
+#include "log.h"
 #include <iostream>
 #include <cassert>
 
@@ -14,6 +15,7 @@ namespace lucy
 
 core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat)
 {
+    LOG("creating lucy core..");
     types.insert({BOOL_KEYWORD, new bool_type(*this)});
     types.insert({INT_KEYWORD, new int_type(*this)});
     types.insert({REAL_KEYWORD, new real_type(*this)});
@@ -22,6 +24,7 @@ core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(
 
 core::~core()
 {
+    LOG("deleting lucy core..");
     for (const auto &p : parsers)
     {
         delete p;

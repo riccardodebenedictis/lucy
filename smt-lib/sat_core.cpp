@@ -2,6 +2,7 @@
 #include "clause.h"
 #include "theory.h"
 #include "sat_value_listener.h"
+#include "log.h"
 #include <cassert>
 
 namespace smt
@@ -9,6 +10,7 @@ namespace smt
 
 sat_core::sat_core()
 {
+    LOG("creating sat core..");
     var c_false = new_var();
     var c_true = new_var();
     assert(c_false == FALSE);
@@ -21,6 +23,7 @@ sat_core::sat_core()
 
 sat_core::~sat_core()
 {
+    LOG("deleting sat core..");
     for (const auto &c : constrs)
     {
         delete c;
