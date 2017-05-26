@@ -3,7 +3,6 @@
 #ifdef NDEBUG
 #define LOG(msg) ((void)0)
 #define WRITE(file_name, content) ((void)0)
-#define DELETE(file_name) ((void)0)
 #else
 #include <iostream>
 #if defined _WIN32 || defined __CYGWIN__
@@ -17,5 +16,4 @@
     ofs.open(file_name);          \
     ofs << content;               \
     ofs.close();
-#define DELETE(file_name) std::remove(file_name)
 #endif
