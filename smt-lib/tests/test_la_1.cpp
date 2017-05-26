@@ -9,16 +9,16 @@ int main()
     sat_core sat;
     la_theory la_th(sat);
 
-    var b0 = c.new_var();
+    var b0 = sat.new_var();
     var x0 = la_th.new_var();
 
     var b5 = la_th.new_geq(lin(x0, 1), lin(10));
     var b6 = la_th.new_leq(lin(x0, 1), lin(0));
 
     bool cs;
-    cs = c.new_clause({lit(b0, false), lit(b5, true)});
+    cs = sat.new_clause({lit(b0, false), lit(b5, true)});
     assert(cs);
-    cs = c.new_clause({lit(b5, false), lit(b6, true)});
+    cs = sat.new_clause({lit(b5, false), lit(b6, true)});
     assert(cs);
 
     bool p = sat.check();

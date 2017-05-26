@@ -7,7 +7,7 @@ using namespace smt;
 int main()
 {
     sat_core sat;
-    la_theory la_th(c);
+    la_theory la_th(sat);
 
     var x0 = la_th.new_var();
     var b2 = la_th.new_geq(lin(x0, 1), lin(1));
