@@ -12,7 +12,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "%PATH%;C:/Program Files (x86)/LIBANTLR4/lib;C:/Program Files (x86)/VTK/bin"
+                    "value": "%PATH%;C:/Program Files (x86)/LIBANTLR4/lib"
                 }
             ],
             "externalConsole": true

@@ -31,3 +31,5 @@ endif()
 if( UNIX )
   install( TARGETS cg-lib DESTINATION /usr/lib )
 endif()
+
+add_subdirectory( tests )
