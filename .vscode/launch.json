@@ -6,7 +6,9 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceRoot}/build/dist/lucy.exe",
-            "args": [],
+            "args": [
+                "output.json"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}/build/dist",
             "environment": [
