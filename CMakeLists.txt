@@ -24,10 +24,10 @@ add_executable( lucy main.cpp )
 
 target_link_libraries( lucy cg-lib core-lib smt-lib )
 
-string( REPLACE ";" "\\;" PATH_STRING "${PATH_STRING}" )
-
 add_test( NAME TestCG0 COMMAND lucy WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestCG1 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/example_0.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 if( WIN32 )
   set( PATH_STRING "$ENV{PATH};${CMAKE_BINARY_DIR}/smt-lib;${CMAKE_BINARY_DIR}/core-lib;${CMAKE_BINARY_DIR}/cg-lib;C:/Program Files (x86)/LIBANTLR4/lib" )
-  set_tests_properties( TestCG0 PROPERTIES ENVIRONMENT "PATH=${PATH_STRING}" )
+  string( REPLACE ";" "\\;" PATH_STRING "${PATH_STRING}" )
+  set_tests_properties( TestCG0 TestCG1 PROPERTIES ENVIRONMENT "PATH=${PATH_STRING}" )
 endif()
