@@ -21,6 +21,7 @@ la_theory::~la_theory()
 var la_theory::new_var()
 {
     var id = assigns.size();
+    LOG("creating new var x" << std::to_string(id) << "..");
     assigns.push_back(interval());
     vals.push_back(0);
     exprs.insert({"x" + std::to_string(id), id});
@@ -31,6 +32,7 @@ var la_theory::new_var()
 
 var la_theory::new_leq(const lin &left, const lin &right)
 {
+    LOG("creating " << left.to_string() << " <= " << right.to_string());
     lin expr = left - right;
     std::vector<var> vars;
     for (const auto &term : expr.vars)
@@ -84,6 +86,7 @@ var la_theory::new_leq(const lin &left, const lin &right)
 
 var la_theory::new_geq(const lin &left, const lin &right)
 {
+    LOG("creating " << left.to_string() << " >= " << right.to_string());
     lin expr = left - right;
     std::vector<var> vars;
     for (const auto &term : expr.vars)
