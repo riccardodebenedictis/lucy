@@ -18,7 +18,7 @@ include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib )
 
 file( GLOB SOURCES "*.cpp" )
 
-configure_file(init.rddl ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/init.rddl COPYONLY)
+configure_file(init.rddl ${CMAKE_BINARY_DIR}/init.rddl COPYONLY)
 
 add_library( cg-lib SHARED ${SOURCES} )
 
@@ -31,5 +31,3 @@ endif()
 if( UNIX )
   install( TARGETS cg-lib DESTINATION /usr/lib )
 endif()
-
-add_subdirectory( tests )

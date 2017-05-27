@@ -5,16 +5,16 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/build/dist/lucy.exe",
+            "program": "${workspaceRoot}/build/lucy.exe",
             "args": [
                 "output.json"
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceRoot}/build/dist",
+            "cwd": "${workspaceRoot}/build",
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "%PATH%;C:/Program Files (x86)/LIBANTLR4/lib"
+                    "value": "%PATH%;${workspaceRoot}/build/smt-lib;${workspaceRoot}/build/core-lib;${workspaceRoot}/build/cg-lib;C:/Program Files (x86)/LIBANTLR4/lib"
                 }
             ],
             "externalConsole": true,
