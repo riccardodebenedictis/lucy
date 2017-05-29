@@ -10,10 +10,10 @@ namespace lucy
 {
 
 /**
-     * This class provides an empty implementation of ratioListener,
-     * which can be extended to create a listener which only needs to handle a subset
-     * of the available methods.
-     */
+ * This class provides an empty implementation of ratioListener,
+ * which can be extended to create a listener which only needs to handle a subset
+ * of the available methods.
+ */
 class ratioBaseListener : public ratioListener
 {
 public:
