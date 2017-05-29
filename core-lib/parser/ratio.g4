@@ -89,10 +89,10 @@ assignment
 expr
     :   literal                                                         # literal_expression
     |   '(' expr ')'                                                    # parentheses_expression
-    |   expr ('*' expr)+                                                # multiplication_expression
+    |   expr '*' expr                                                   # multiplication_expression
     |   expr '/' expr                                                   # division_expression
-    |   expr ('+' expr)+                                                # addition_expression
-    |   expr ('-' expr)+                                                # subtraction_expression
+    |   expr '+' expr                                                   # addition_expression
+    |   expr '-' expr                                                   # subtraction_expression
     |   '+' expr                                                        # plus_expression
     |   '-' expr                                                        # minus_expression
     |   '!' expr                                                        # not_expression
@@ -108,9 +108,9 @@ expr
     |   expr '<' expr                                                   # lt_expression
     |   expr '!=' expr                                                  # neq_expression
     |   expr '->' expr                                                  # implication_expression
-    |   expr ('|' expr)+                                                # disjunction_expression
-    |   expr ('&' expr)+                                                # conjunction_expression
-    |   expr ('^' expr)+                                                # extc_one_expression;
+    |   expr '|' expr                                                   # disjunction_expression
+    |   expr '&' expr                                                   # conjunction_expression
+    |   expr '^' expr                                                   # extc_one_expression;
 
 expr_list
     :   expr (',' expr)*;
