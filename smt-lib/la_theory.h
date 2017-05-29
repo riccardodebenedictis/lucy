@@ -105,6 +105,8 @@ private:
     assertion(const assertion &orig) = delete;
     virtual ~assertion();
 
+    std::string to_string() const;
+
   private:
     bool propagate_lb(var x, std::vector<lit> &cnfl);
     bool propagate_ub(var x, std::vector<lit> &cnfl);
@@ -125,6 +127,8 @@ private:
     t_row(la_theory &th, var x, lin l);
     t_row(const assertion &orig) = delete;
     virtual ~t_row();
+
+    std::string to_string() const;
 
   private:
     bool propagate_lb(var x, std::vector<lit> &cnfl);

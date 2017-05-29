@@ -536,6 +536,36 @@ la_theory::assertion::assertion(la_theory &th, op o, var b, var x, double v) : t
 
 la_theory::assertion::~assertion() {}
 
+std::string la_theory::assertion::to_string() const
+{
+    std::string asrt;
+    asrt += "{ \"var\" : \"b" + std::to_string(b) + "\", \"val\" : \"";
+    switch (th.get_core().value(b))
+    {
+    case True:
+        asrt += "True";
+        break;
+    case False:
+        asrt += "False";
+        break;
+    case Undefined:
+        asrt += "Undefined";
+        break;
+    }
+    asrt += "\", \"constr\" : \"x" + std::to_string(x);
+    switch (o)
+    {
+    case leq:
+        asrt += " <= ";
+        break;
+    case geq:
+        asrt += " >= ";
+        break;
+    }
+    asrt += std::to_string(v) + "\" }";
+    return asrt;
+}
+
 bool la_theory::assertion::propagate_lb(var x, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
@@ -643,6 +673,11 @@ bool la_theory::assertion::propagate_ub(var x, std::vector<lit> &cnfl)
 la_theory::t_row::t_row(la_theory &th, var x, lin l) : th(th), x(x), l(l) {}
 
 la_theory::t_row::~t_row() {}
+
+std::string la_theory::t_row::to_string() const
+{
+    return "{ \"basic-var\" : \"x" + std::to_string(x) + "\", \"expr\" : \"" + l.to_string() + "\" }";
+}
 
 bool la_theory::t_row::propagate_lb(var v, std::vector<lit> &cnfl)
 {
@@ -1009,8 +1044,7 @@ bool la_theory::t_row::propagate_ub(var v, std::vector<lit> &cnfl)
 std::string la_theory::to_string()
 {
     std::string la;
-    la += "{";
-    la += "\"vars\" : [";
+    la += "{ \"vars\" : [";
     for (size_t i = 0; i < assigns.size(); i++)
     {
         if (!i)
@@ -1028,8 +1062,25 @@ std::string la_theory::to_string()
         }
         la += "}";
     }
+    la += "], \"asrts\" : [";
+    for (std::unordered_map<var, assertion *>::const_iterator it = v_asrts.begin(); it != v_asrts.end(); ++it)
+    {
+        if (it != v_asrts.begin())
+        {
+            la += ", ";
+        }
+        la += it->second->to_string();
+    }
+    la += "], \"tableau\" : [";
+    for (std::map<var, t_row *>::const_iterator it = tableau.begin(); it != tableau.end(); ++it)
+    {
+        if (it != tableau.begin())
+        {
+            la += ", ";
+        }
+        la += it->second->to_string();
+    }
     la += "]";
-
     la += "}";
     return la;
 }
