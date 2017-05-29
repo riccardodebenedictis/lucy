@@ -7,6 +7,10 @@ using namespace lucy;
 namespace cg
 {
 
+class flaw;
+class atom_flaw;
+class causal_graph_listener;
+
 class resolver;
 
 class DLL_PUBLIC causal_graph : public core, public theory

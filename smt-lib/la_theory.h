@@ -5,9 +5,12 @@
 #include "lin.h"
 #include "interval.h"
 #include <unordered_map>
+#include <list>
 
 namespace smt
 {
+
+class la_value_listener;
 
 class DLL_PUBLIC la_theory : public theory
 {

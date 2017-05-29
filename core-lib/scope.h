@@ -2,6 +2,7 @@
 
 #include "visibility.h"
 #include <unordered_map>
+#include <vector>
 
 #define THIS_KEYWORD "this"
 #define RETURN_KEYWORD "return"
@@ -22,7 +23,7 @@ class DLL_PUBLIC scope
 {
 	friend class type_refinement_listener;
 
-  public:
+public:
 	scope(core &cr, scope &scp);
 	scope(const scope &orig) = delete;
 	virtual ~scope();
@@ -42,10 +43,10 @@ class DLL_PUBLIC scope
 	virtual predicate &get_predicate(const std::string &name) const;
 	virtual std::unordered_map<std::string, predicate *> get_predicates() const noexcept;
 
-  protected:
+protected:
 	static void set(env &nv, const std::string &name, expr xpr);
 
-  protected:
+protected:
 	core &cr;
 	scope &scp;
 	std::unordered_map<std::string, field *> fields;

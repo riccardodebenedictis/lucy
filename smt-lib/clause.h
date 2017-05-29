@@ -18,7 +18,7 @@ class clause
     ~clause();
 
     bool propagate(const lit &p);
-    std::string clause::to_string() const;
+    std::string to_string() const;
 
   private:
     sat_core &s;

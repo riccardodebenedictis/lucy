@@ -7,6 +7,9 @@ using namespace smt;
 namespace cg
 {
 
+class causal_graph;
+class flaw;
+
 class resolver
 {
   friend class causal_graph;

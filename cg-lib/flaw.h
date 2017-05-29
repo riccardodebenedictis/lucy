@@ -1,53 +1,57 @@
 #pragma once
 
 #include "la_theory.h"
+#include <limits>
 
 using namespace smt;
 
 namespace cg
 {
 
+class causal_graph;
+class resolver;
+
 class flaw
 {
-    friend class causal_graph;
-    friend class resolver;
+  friend class causal_graph;
+  friend class resolver;
 
-  public:
-    flaw(causal_graph &graph, bool disjunctive = false);
-    flaw(const flaw &orig) = delete;
-    virtual ~flaw();
+public:
+  flaw(causal_graph &graph, bool disjunctive = false);
+  flaw(const flaw &orig) = delete;
+  virtual ~flaw();
 
-    bool is_expanded() const { return expanded; }
-    bool is_initialized() const { return initialized; }
-    smt::var get_in_plan() const { return in_plan; }
-    std::vector<resolver *> get_causes() const { return causes; }
-    double get_cost() const { return cost; }
+  bool is_expanded() const { return expanded; }
+  bool is_initialized() const { return initialized; }
+  smt::var get_in_plan() const { return in_plan; }
+  std::vector<resolver *> get_causes() const { return causes; }
+  double get_cost() const { return cost; }
 
-    virtual std::string get_label() const;
+  virtual std::string get_label() const;
 
-  private:
-    virtual void init();
-    bool expand();
-    virtual void compute_resolvers() = 0;
-    bool has_subgoals();
+private:
+  virtual void init();
+  bool expand();
+  virtual void compute_resolvers() = 0;
+  bool has_subgoals();
 
-  protected:
-    void add_resolver(resolver &r);
+protected:
+  void add_resolver(resolver &r);
 
-  protected:
-    causal_graph &graph;
+protected:
+  causal_graph &graph;
 
-  private:
-    const bool exclusive;
-    bool initialized = false;
-    bool expanded = false;
-    var in_plan;
-    // the resolvers for this flaw..
-    std::vector<resolver *> resolvers;
-    // the causes for having this flaw..
-    std::vector<resolver *> causes;
-    // the resolvers supported by this flaw..
-    std::vector<resolver *> supports;
-    double cost = std::numeric_limits<double>::infinity();
+private:
+  const bool exclusive;
+  bool initialized = false;
+  bool expanded = false;
+  var in_plan;
+  // the resolvers for this flaw..
+  std::vector<resolver *> resolvers;
+  // the causes for having this flaw..
+  std::vector<resolver *> causes;
+  // the resolvers supported by this flaw..
+  std::vector<resolver *> supports;
+  double cost = std::numeric_limits<double>::infinity();
 };
 }

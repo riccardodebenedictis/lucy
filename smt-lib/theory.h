@@ -8,6 +8,8 @@
 namespace smt
 {
 
+class sat_core;
+
 #pragma warning(disable : 4251)
 class DLL_PUBLIC theory
 {

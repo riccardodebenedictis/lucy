@@ -4,6 +4,7 @@
 #include "sat_value_listener.h"
 #include "log.h"
 #include <cassert>
+#include <algorithm>
 
 namespace smt
 {
