@@ -6,6 +6,7 @@
 #else
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #if defined _WIN32 || defined __CYGWIN__
 #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #else
