@@ -5,7 +5,7 @@
 namespace lucy
 {
 
-predicate::predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args) : type(cr, scp, name)
+predicate::predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args) : type(cr, scp, name), args(args)
 {
 	if (type *t = dynamic_cast<type *>(&scp))
 	{
@@ -22,6 +22,7 @@ predicate::~predicate() {}
 expr predicate::new_instance(context &ctx)
 {
 	atom *a = new atom(cr, ctx, *this);
+	// we add the new atom to the instances of this predicate and to the instances of all the super-predicates..
 	std::queue<predicate *> q;
 	q.push(this);
 	while (!q.empty())

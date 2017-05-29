@@ -74,6 +74,7 @@ var la_theory::new_leq(const lin &left, const lin &right)
         else
         {
             var ctr = sat.new_var();
+            LOG("creating b" << std::to_string(ctr) << ": " << s_assertion);
             bind(ctr);
             s_asrts.insert({s_assertion, ctr});
             assertion *a = new assertion(*this, op::leq, ctr, slack, c_right);
@@ -128,6 +129,7 @@ var la_theory::new_geq(const lin &left, const lin &right)
         else
         {
             var ctr = sat.new_var();
+            LOG("creating b" << std::to_string(ctr) << ": " << s_assertion);
             bind(ctr);
             s_asrts.insert({s_assertion, ctr});
             assertion *a = new assertion(*this, op::geq, ctr, slack, c_right);
@@ -151,6 +153,7 @@ var la_theory::mk_slack(const lin &l)
     {
         // we need to create a new slack variable..
         slack = new_var();
+        LOG("enforcing x" << std::to_string(slack) << " == " << s_expr);
         exprs.insert({s_expr, slack});
         // we set the initial bounds of the new slack variable..
         assigns[slack] = bounds(l);
@@ -215,6 +218,7 @@ bool la_theory::check(std::vector<lit> &cnfl)
     assert(cnfl.empty());
     while (true)
     {
+        WRITE("la.json", to_string());
         auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, t_row *> &v) { return vals[v.first] < assigns[v.first].lb || vals[v.first] > assigns[v.first].ub; });
         if (x_i_it == tableau.end())
         {
@@ -1047,7 +1051,7 @@ std::string la_theory::to_string()
     la += "{ \"vars\" : [";
     for (size_t i = 0; i < assigns.size(); i++)
     {
-        if (!i)
+        if (i)
         {
             la += ", ";
         }
