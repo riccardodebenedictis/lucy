@@ -8,20 +8,13 @@
 namespace smt
 {
 
-la_theory::la_theory(sat_core &sat) : theory(sat)
-{
-    LOG("creating linear arithmetic theory..");
-}
+la_theory::la_theory(sat_core &sat) : theory(sat) {}
 
-la_theory::~la_theory()
-{
-    LOG("deleting linear arithmetic theory..");
-}
+la_theory::~la_theory() {}
 
 var la_theory::new_var()
 {
     var id = assigns.size();
-    LOG("creating new var x" << std::to_string(id) << "..");
     assigns.push_back(interval());
     vals.push_back(0);
     exprs.insert({"x" + std::to_string(id), id});
@@ -32,7 +25,6 @@ var la_theory::new_var()
 
 var la_theory::new_leq(const lin &left, const lin &right)
 {
-    LOG("creating " << left.to_string() << " <= " << right.to_string());
     lin expr = left - right;
     std::vector<var> vars;
     for (const auto &term : expr.vars)
@@ -74,7 +66,6 @@ var la_theory::new_leq(const lin &left, const lin &right)
         else
         {
             var ctr = sat.new_var();
-            LOG("creating b" << std::to_string(ctr) << ": " << s_assertion);
             bind(ctr);
             s_asrts.insert({s_assertion, ctr});
             assertion *a = new assertion(*this, op::leq, ctr, slack, c_right);
@@ -87,7 +78,6 @@ var la_theory::new_leq(const lin &left, const lin &right)
 
 var la_theory::new_geq(const lin &left, const lin &right)
 {
-    LOG("creating " << left.to_string() << " >= " << right.to_string());
     lin expr = left - right;
     std::vector<var> vars;
     for (const auto &term : expr.vars)
@@ -129,7 +119,6 @@ var la_theory::new_geq(const lin &left, const lin &right)
         else
         {
             var ctr = sat.new_var();
-            LOG("creating b" << std::to_string(ctr) << ": " << s_assertion);
             bind(ctr);
             s_asrts.insert({s_assertion, ctr});
             assertion *a = new assertion(*this, op::geq, ctr, slack, c_right);
@@ -153,7 +142,6 @@ var la_theory::mk_slack(const lin &l)
     {
         // we need to create a new slack variable..
         slack = new_var();
-        LOG("enforcing x" << std::to_string(slack) << " == " << s_expr);
         exprs.insert({s_expr, slack});
         // we set the initial bounds of the new slack variable..
         assigns[slack] = bounds(l);

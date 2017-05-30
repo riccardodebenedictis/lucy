@@ -15,7 +15,6 @@ namespace lucy
 
 core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat), active(new atom_state()), inactive(new atom_state()), unified(new atom_state())
 {
-    LOG("creating lucy core..");
     types.insert({BOOL_KEYWORD, new bool_type(*this)});
     types.insert({INT_KEYWORD, new int_type(*this)});
     types.insert({REAL_KEYWORD, new real_type(*this)});
@@ -24,19 +23,25 @@ core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(
 
 core::~core()
 {
-    LOG("deleting lucy core..");
+    // we delete the parsers..
     for (const auto &p : parsers)
     {
         delete p;
     }
+
+    // we delete the predicates..
     for (const auto &p : predicates)
     {
         delete p.second;
     }
+
+    // we delete the types..
     for (const auto &t : types)
     {
         delete t.second;
     }
+
+    // we delete the methods..
     for (const auto &ms : methods)
     {
         for (const auto &m : ms.second)
@@ -44,6 +49,8 @@ core::~core()
             delete m;
         }
     }
+
+    // we delete the atom states..
     delete active;
     delete inactive;
     delete unified;

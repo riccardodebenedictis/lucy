@@ -8,15 +8,9 @@
 namespace smt
 {
 
-set_theory::set_theory(sat_core &sat) : theory(sat)
-{
-    LOG("creating set theory..");
-}
+set_theory::set_theory(sat_core &sat) : theory(sat) {}
 
-set_theory::~set_theory()
-{
-    LOG("deleting set theory..");
-}
+set_theory::~set_theory() {}
 
 var set_theory::new_var(const std::unordered_set<set_item *> &items)
 {

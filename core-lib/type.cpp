@@ -15,14 +15,19 @@ type::type(core &cr, scope &scp, const std::string &name, bool primitive) : scop
 
 type::~type()
 {
+    // we delete the predicates..
     for (const auto &p : predicates)
     {
         delete p.second;
     }
+
+    // we delete the types..
     for (const auto &t : types)
     {
         delete t.second;
     }
+
+    // we delete the methods..
     for (const auto &ms : methods)
     {
         for (const auto &m : ms.second)
@@ -30,6 +35,8 @@ type::~type()
             delete m;
         }
     }
+
+    // we delete the constructors..
     for (const auto &c : constructors)
     {
         delete c;

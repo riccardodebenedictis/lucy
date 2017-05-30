@@ -10,7 +10,7 @@ namespace lucy
 
 class context;
 
-class conjunction : public scope
+class DLL_PUBLIC conjunction : public scope
 {
 public:
   conjunction(core &cr, scope &scp, const lin &cst);

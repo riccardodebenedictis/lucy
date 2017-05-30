@@ -6,6 +6,8 @@
 #include "state_variable.h"
 #include "reusable_resource.h"
 #include "causal_graph_listener.h"
+#include "propositional_state.h"
+#include "propositional_agent.h"
 #include "log.h"
 
 namespace cg
@@ -17,6 +19,8 @@ causal_graph::causal_graph() : core(), theory(core::sat)
     assert(r);
     types.insert({STATE_VARIABLE_NAME, new state_variable(*this)});
     types.insert({REUSABLE_RESOURCE_NAME, new reusable_resource(*this)});
+    types.insert({PROPOSITIONAL_STATE_NAME, new propositional_state(*this)});
+    types.insert({PROPOSITIONAL_AGENT_NAME, new propositional_agent(*this)});
 }
 
 causal_graph::~causal_graph()

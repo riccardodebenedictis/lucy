@@ -6,7 +6,6 @@
 namespace lucy
 {
 
-#pragma warning(disable : 4251)
 class typedef_type : public type
 {
 public:

@@ -7,7 +7,7 @@ namespace lucy
 
 class conjunction;
 
-class disjunction : public scope
+class DLL_PUBLIC disjunction : public scope
 {
   friend class type_refinement_listener;
 
