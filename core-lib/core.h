@@ -24,6 +24,7 @@ class string_expr;
 class enum_expr;
 class atom;
 class disjunction;
+class atom_state;
 
 class DLL_PUBLIC core : public scope, public env
 {
@@ -132,6 +133,10 @@ public:
   la_theory la_th;   // the linear arithmetic theory..
   set_theory set_th; // the set theory..
 
+  atom_state *const active;
+  atom_state *const inactive;
+  atom_state *const unified;
+
 private:
   var tmp_var;
   var ctr_var = TRUE;
@@ -159,5 +164,15 @@ private:
     ratioParser &p;
     ratioParser::Compilation_unitContext *const cu;
   };
+};
+
+class DLL_PUBLIC atom_state : public set_item
+{
+  friend class core;
+
+private:
+  atom_state() {}
+  atom_state(const atom_state &that) = delete;
+  virtual ~atom_state() {}
 };
 }

@@ -40,7 +40,7 @@ void propositional_state::new_predicate(predicate &pred)
 bool propositional_state::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
-    set_var(graph.set_th.allows(atm.state, *atom::active));
+    set_var(graph.set_th.allows(atm.state, *graph.active));
     if (!static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm))
     {
         return false;

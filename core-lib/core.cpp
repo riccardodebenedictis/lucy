@@ -13,7 +13,7 @@
 namespace lucy
 {
 
-core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat)
+core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat), active(new atom_state()), inactive(new atom_state()), unified(new atom_state())
 {
     LOG("creating lucy core..");
     types.insert({BOOL_KEYWORD, new bool_type(*this)});
@@ -44,6 +44,9 @@ core::~core()
             delete m;
         }
     }
+    delete active;
+    delete inactive;
+    delete unified;
 }
 
 bool core::read(const std::string &script)
@@ -558,15 +561,15 @@ std::string core::to_string(atom *a)
         {
             as += ", ";
         }
-        if (*vals_it == atom::active)
+        if (*vals_it == active)
         {
             as += "\"Active\"";
         }
-        else if (*vals_it == atom::inactive)
+        else if (*vals_it == inactive)
         {
             as += "\"Inactive\"";
         }
-        else if (*vals_it == atom::unified)
+        else if (*vals_it == unified)
         {
             as += "\"Unified\"";
         }

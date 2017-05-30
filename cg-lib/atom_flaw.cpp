@@ -15,7 +15,7 @@ void atom_flaw::compute_resolvers()
     bool solved = false;
     std::unordered_set<set_item *> a_state = graph.set_th.value(atm.state);
     assert(!a_state.empty());
-    if (a_state.find(atom::unified) != a_state.end())
+    if (a_state.find(graph.unified) != a_state.end())
     {
         for (const auto &i : atm.tp.get_instances())
         {
@@ -31,7 +31,7 @@ void atom_flaw::compute_resolvers()
             }
             std::unordered_set<set_item *> c_state = graph.set_th.value(c_a->state);
             assert(!c_state.empty());
-            if (c_state.find(atom::active) == c_state.end() || !atm.equates(*c_a))
+            if (c_state.find(graph.active) == c_state.end() || !atm.equates(*c_a))
             {
                 continue;
             }
@@ -67,13 +67,13 @@ void atom_flaw::compute_resolvers()
             }
             if (a_state.size() > 1)
             {
-                assert(graph.core::sat.value(graph.set_th.allows(atm.state, *atom::unified)) != False);
-                unif_lits.push_back(lit(graph.set_th.allows(atm.state, *atom::unified), true));
+                assert(graph.core::sat.value(graph.set_th.allows(atm.state, *graph.unified)) != False);
+                unif_lits.push_back(lit(graph.set_th.allows(atm.state, *graph.unified), true));
             }
             if (c_state.size() > 1)
             {
-                assert(graph.core::sat.value(graph.set_th.allows(c_a->state, *atom::active)) != False);
-                unif_lits.push_back(lit(graph.set_th.allows(c_a->state, *atom::active), true));
+                assert(graph.core::sat.value(graph.set_th.allows(c_a->state, *graph.active)) != False);
+                unif_lits.push_back(lit(graph.set_th.allows(c_a->state, *graph.active), true));
             }
             var eq_v = atm.eq(*c_a);
             if (graph.core::sat.value(eq_v) == False)
@@ -101,7 +101,7 @@ void atom_flaw::compute_resolvers()
     if (!solved)
     {
         // we remove unification from atom state..
-        bool not_unify = graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *atom::unified), false)});
+        bool not_unify = graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *graph.unified), false)});
         assert(not_unify);
     }
     if (is_fact)
@@ -120,7 +120,7 @@ atom_flaw::add_fact::~add_fact() {}
 
 bool atom_flaw::add_fact::apply()
 {
-    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *atom::active), true)});
+    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)});
 }
 
 atom_flaw::expand_goal::expand_goal(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(1), atm_flaw), atm(atm) {}
@@ -129,7 +129,7 @@ atom_flaw::expand_goal::~expand_goal() {}
 
 bool atom_flaw::expand_goal::apply()
 {
-    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *atom::active), true)}) && static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
+    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)}) && static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
 }
 
 atom_flaw::unify_atom::unify_atom(causal_graph &graph, atom_flaw &atm_flaw, atom &atm, atom &with, const std::vector<lit> &unif_lits) : resolver(graph, lin(0), atm_flaw), atm(atm), with(with), unif_lits(unif_lits) {}

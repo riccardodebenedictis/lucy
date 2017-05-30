@@ -28,7 +28,7 @@ std::vector<flaw *> propositional_agent::get_flaws()
 bool propositional_agent::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
-    set_var(graph.set_th.allows(atm.state, *atom::active));
+    set_var(graph.set_th.allows(atm.state, *graph.active));
     for (const auto &p : atm.tp.get_supertypes())
     {
         if (!static_cast<predicate *>(p)->apply_rule(atm))

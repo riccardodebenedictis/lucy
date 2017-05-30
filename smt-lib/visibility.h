@@ -24,9 +24,3 @@
 #define DLL_LOCAL
 #endif
 #endif
-
-#if defined _WIN32 || defined __CYGWIN__
-#define WEAK __declspec(selectany)
-#else
-#define WEAK __attribute__((weak))
-#endif
