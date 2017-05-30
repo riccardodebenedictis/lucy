@@ -254,9 +254,9 @@ void sat_core::pop()
 
 bool sat_core::check()
 {
+    std::vector<lit> cnfl;
     while (true)
     {
-        std::vector<lit> cnfl;
         if (!propagate(cnfl))
         {
             if (root_level())
@@ -275,6 +275,7 @@ bool sat_core::check()
             }
             // we record the no-good..
             record(no_good);
+            cnfl.clear();
         }
         else
         {
