@@ -375,8 +375,6 @@ bool causal_graph::build()
                 }
                 resolvers.pop_front();
             }
-            WRITE("la.json", la_th.to_string());
-            WRITE("output.json", to_string());
         }
         flaw_q.pop();
     }

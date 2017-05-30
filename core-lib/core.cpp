@@ -108,8 +108,6 @@ bool core::read(const std::vector<std::string> &files)
     }
     else
     {
-        WRITE("la.json", la_th.to_string());
-        WRITE("output.json", to_string());
         return true;
     }
 }
