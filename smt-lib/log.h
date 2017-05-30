@@ -14,8 +14,10 @@
 #endif
 #define LOG(msg) std::cout << __FILENAME__ << "(" << __LINE__ << "): " << msg << std::endl
 #define WRITE(file_name, content) \
-    std::ofstream ofs;            \
-    ofs.open(file_name);          \
-    ofs << content;               \
-    ofs.close();
+    {                             \
+        std::ofstream ofs;        \
+        ofs.open(file_name);      \
+        ofs << content;           \
+        ofs.close();              \
+    }
 #endif

@@ -90,15 +90,18 @@ antlrcpp::Any statement_visitor::visitFormula_statement(ratioParser::Formula_sta
     std::unordered_map<std::string, expr> assignments;
     if (ctx->object)
     {
+        // the scope is explicitely declared..
         expr itm = expression_visitor(cr, cntx).visit(ctx->object).as<expr>();
         p = &itm->tp.get_predicate(ctx->predicate->getText());
         if (enum_item *ee = dynamic_cast<enum_item *>(&*itm))
         {
+            // the scope is an enumerative expression..
             assignments.insert({"scope", ee});
         }
         else
         {
-            assignments.insert({"scope", cr.new_enum(itm->tp, {&*itm})});
+            // the scope is a single item..
+            assignments.insert({"scope", &*itm});
         }
     }
     else
@@ -122,11 +125,13 @@ antlrcpp::Any statement_visitor::visitFormula_statement(ratioParser::Formula_sta
     atom *a;
     if (assignments.find("scope") == assignments.end())
     {
+        // the new atom's scope is the core..
         context c_scope = &cr;
         a = static_cast<atom *>(&*p->new_instance(c_scope));
     }
     else
     {
+        // we have computed the new atom's scope above..
         context c_scope = assignments.at("scope");
         a = static_cast<atom *>(&*p->new_instance(c_scope));
     }

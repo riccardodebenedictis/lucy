@@ -6,6 +6,7 @@
 #include "state_variable.h"
 #include "reusable_resource.h"
 #include "causal_graph_listener.h"
+#include "log.h"
 
 namespace cg
 {
@@ -374,6 +375,8 @@ bool causal_graph::build()
                 }
                 resolvers.pop_front();
             }
+            WRITE("la.json", la_th.to_string());
+            WRITE("output.json", to_string());
         }
         flaw_q.pop();
     }

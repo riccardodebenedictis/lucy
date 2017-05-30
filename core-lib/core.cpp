@@ -108,6 +108,8 @@ bool core::read(const std::vector<std::string> &files)
     }
     else
     {
+        WRITE("la.json", la_th.to_string());
+        WRITE("output.json", to_string());
         return true;
     }
 }
@@ -155,9 +157,7 @@ string_expr core::new_string(const std::string &val)
 
 expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_vals)
 {
-    assert(!allowed_vals.empty());
-    if (allowed_vals.size() == 1)
-        return *allowed_vals.begin();
+    assert(allowed_vals.size() > 1);
     std::unordered_set<set_item *> vals(allowed_vals.begin(), allowed_vals.end());
     if (t.name.compare(BOOL_KEYWORD) == 0)
     {
@@ -424,6 +424,52 @@ interval core::arith_bounds(const arith_expr &var) const noexcept { return la_th
 double core::arith_value(const arith_expr &var) const noexcept { return la_th.value(var->l); }
 
 std::unordered_set<set_item *> core::enum_value(const enum_expr &var) const noexcept { return set_th.value(var->ev); }
+
+bool core::new_fact(atom &atm)
+{
+    if (&atm.tp.get_scope() == this)
+    {
+        return true;
+    }
+    std::queue<type *> q;
+    q.push(static_cast<type *>(&atm.tp.get_scope()));
+    while (!q.empty())
+    {
+        if (!q.front()->new_fact(atm))
+        {
+            return false;
+        }
+        for (const auto &st : q.front()->get_supertypes())
+        {
+            q.push(st);
+        }
+        q.pop();
+    }
+    return true;
+}
+
+bool core::new_goal(atom &atm)
+{
+    if (&atm.tp.get_scope() == this)
+    {
+        return true;
+    }
+    std::queue<type *> q;
+    q.push(static_cast<type *>(&atm.tp.get_scope()));
+    while (!q.empty())
+    {
+        if (!q.front()->new_goal(atm))
+        {
+            return false;
+        }
+        for (const auto &st : q.front()->get_supertypes())
+        {
+            q.push(st);
+        }
+        q.pop();
+    }
+    return true;
+}
 
 std::string core::to_string(std::unordered_map<std::string, expr> items)
 {

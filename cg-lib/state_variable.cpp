@@ -36,14 +36,20 @@ std::vector<flaw *> state_variable::get_flaws()
             // we filter out those which are not strictly active..
             if (graph.core::sat.value(graph.set_th.allows(atm.first->state, *atom::active)) == True)
             {
-                enum_expr c_scope = atm.first->get("scope");
-                for (const auto &i : graph.set_th.value(c_scope->ev))
+                expr c_scope = atm.first->get("scope");
+                if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
                 {
-                    if (to_check.find(static_cast<item *>(i)) != to_check.end())
+                    for (const auto &val : graph.set_th.value(enum_scope->ev))
                     {
-                        instances[static_cast<item *>(i)].push_back(atm.first);
-                        break;
+                        if (to_check.find(static_cast<item *>(val)) != to_check.end())
+                        {
+                            instances[static_cast<item *>(val)].push_back(atm.first);
+                        }
                     }
+                }
+                else
+                {
+                    instances[static_cast<item *>(&*c_scope)].push_back(atm.first);
                 }
             }
         }
@@ -115,10 +121,17 @@ bool state_variable::new_fact(atom &atm)
     restore_var();
 
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
-    enum_expr c_scope = atm.get("scope");
-    for (const auto &val : graph.set_th.value(c_scope->ev))
+    expr c_scope = atm.get("scope");
+    if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
     {
-        to_check.insert(static_cast<item *>(val));
+        for (const auto &val : graph.set_th.value(enum_scope->ev))
+        {
+            to_check.insert(static_cast<item *>(val));
+        }
+    }
+    else
+    {
+        to_check.insert(&*c_scope);
     }
     return true;
 }
@@ -126,10 +139,17 @@ bool state_variable::new_fact(atom &atm)
 bool state_variable::new_goal(atom &atm)
 {
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
-    enum_expr c_scope = atm.get("scope");
-    for (const auto &val : graph.set_th.value(c_scope->ev))
+    expr c_scope = atm.get("scope");
+    if (enum_item *multi_scope = dynamic_cast<enum_item *>(&*c_scope))
     {
-        to_check.insert(static_cast<item *>(val));
+        for (const auto &val : graph.set_th.value(multi_scope->ev))
+        {
+            to_check.insert(static_cast<item *>(val));
+        }
+    }
+    else
+    {
+        to_check.insert(&*c_scope);
     }
     return true;
 }
@@ -140,10 +160,17 @@ state_variable::sv_atom_listener::~sv_atom_listener() {}
 
 void state_variable::sv_atom_listener::something_changed()
 {
-    enum_expr c_scope = atm.get("scope");
-    for (const auto &val : atm.get_core().set_th.value(c_scope->ev))
+    expr c_scope = atm.get("scope");
+    if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
     {
-        sv.to_check.insert(static_cast<item *>(val));
+        for (const auto &val : atm.get_core().set_th.value(enum_scope->ev))
+        {
+            sv.to_check.insert(static_cast<item *>(val));
+        }
+    }
+    else
+    {
+        sv.to_check.insert(&*c_scope);
     }
 }
 
@@ -172,23 +199,29 @@ void state_variable::sv_flaw::compute_resolvers()
             add_resolver(*new order_resolver(graph, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
         }
 
-        enum_expr a0_scope = as[0]->get("scope");
-        std::unordered_set<set_item *> a0_scopes = graph.set_th.value(a0_scope->ev);
-        if (a0_scopes.size() > 1)
+        expr a0_scope = as[0]->get("scope");
+        if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a0_scope))
         {
-            for (const auto &sc : a0_scopes)
+            std::unordered_set<set_item *> a0_scopes = graph.set_th.value(enum_scope->ev);
+            if (a0_scopes.size() > 1)
             {
-                add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(graph.set_th.allows(a0_scope->ev, *sc), false)));
+                for (const auto &sc : a0_scopes)
+                {
+                    add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(graph.set_th.allows(enum_scope->ev, *sc), false)));
+                }
             }
         }
 
-        enum_expr a1_scope = as[1]->get("scope");
-        std::unordered_set<set_item *> a1_scopes = graph.set_th.value(a1_scope->ev);
-        if (a1_scopes.size() > 1)
+        expr a1_scope = as[1]->get("scope");
+        if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a0_scope))
         {
-            for (const auto &sc : a1_scopes)
+            std::unordered_set<set_item *> a1_scopes = graph.set_th.value(enum_scope->ev);
+            if (a1_scopes.size() > 1)
             {
-                add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(graph.set_th.allows(a1_scope->ev, *sc), false)));
+                for (const auto &sc : a1_scopes)
+                {
+                    add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(graph.set_th.allows(enum_scope->ev, *sc), false)));
+                }
             }
         }
     }

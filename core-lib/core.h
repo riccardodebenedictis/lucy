@@ -103,8 +103,8 @@ public:
   virtual bool solve() = 0;
 
 protected:
-  virtual bool new_fact(atom &atm) { return true; }
-  virtual bool new_goal(atom &atm) { return true; }
+  virtual bool new_fact(atom &atm);
+  virtual bool new_goal(atom &atm);
   virtual void new_disjunction(context &ctx, disjunction &disj) = 0;
 
 protected:

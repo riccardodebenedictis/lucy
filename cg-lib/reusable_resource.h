@@ -128,6 +128,7 @@ private:
 
     std::string get_label() const override
     {
+      // this should be an enumerative expression (or the resolver should not have been created)..
       enum_expr scp = a.get("scope");
       return "scope (e" + std::to_string(scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }

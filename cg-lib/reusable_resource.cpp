@@ -30,14 +30,20 @@ std::vector<flaw *> reusable_resource::get_flaws()
             // we filter out those which are not strictly active..
             if (graph.core::sat.value(graph.set_th.allows(a.first->state, *atom::active)) == True)
             {
-                enum_expr c_scope = a.first->get("scope");
-                for (const auto &i : graph.set_th.value(c_scope->ev))
+                expr c_scope = a.first->get("scope");
+                if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
                 {
-                    if (to_check.find(static_cast<item *>(i)) != to_check.end())
+                    for (const auto &val : graph.set_th.value(enum_scope->ev))
                     {
-                        instances[static_cast<item *>(i)].push_back(a.first);
-                        break;
+                        if (to_check.find(static_cast<item *>(val)) != to_check.end())
+                        {
+                            instances[static_cast<item *>(val)].push_back(a.first);
+                        }
                     }
+                }
+                else
+                {
+                    instances[static_cast<item *>(&*c_scope)].push_back(a.first);
                 }
             }
         }
@@ -106,32 +112,39 @@ void reusable_resource::new_predicate(predicate &p)
     throw std::logic_error("it is not possible to define predicates on a reusable resource..");
 }
 
-bool reusable_resource::new_fact(atom &a)
+bool reusable_resource::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
-    set_var(graph.set_th.allows(a.state, *atom::active));
-    if (!static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(a))
+    set_var(graph.set_th.allows(atm.state, *atom::active));
+    if (!static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm))
     {
         return false;
     }
     restore_var();
 
     // reusable resource facts cannot unify..
-    if (!graph.core::sat.new_clause({lit(graph.set_th.allows(a.state, *atom::unified), false)}))
+    if (!graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *atom::unified), false)}))
     {
         return false;
     }
 
-    atoms.push_back({&a, new rr_atom_listener(*this, a)});
-    enum_expr c_scope = a.get("scope");
-    for (const auto &val : graph.set_th.value(c_scope->ev))
+    atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
+    expr c_scope = atm.get("scope");
+    if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
     {
-        to_check.insert(static_cast<item *>(val));
+        for (const auto &val : graph.set_th.value(enum_scope->ev))
+        {
+            to_check.insert(static_cast<item *>(val));
+        }
+    }
+    else
+    {
+        to_check.insert(&*c_scope);
     }
     return true;
 }
 
-bool reusable_resource::new_goal(atom &a)
+bool reusable_resource::new_goal(atom &atm)
 {
     throw std::logic_error("it is not possible to define goals on a reusable resource..");
 }
@@ -154,10 +167,17 @@ reusable_resource::rr_atom_listener::~rr_atom_listener() {}
 
 void reusable_resource::rr_atom_listener::something_changed()
 {
-    enum_expr c_scope = atm.get("scope");
-    for (const auto &val : atm.get_core().set_th.value(c_scope->ev))
+    expr c_scope = atm.get("scope");
+    if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
     {
-        rr.to_check.insert(static_cast<item *>(val));
+        for (const auto &val : atm.get_core().set_th.value(enum_scope->ev))
+        {
+            rr.to_check.insert(static_cast<item *>(val));
+        }
+    }
+    else
+    {
+        rr.to_check.insert(&*c_scope);
     }
 }
 
@@ -186,23 +206,29 @@ void reusable_resource::rr_flaw::compute_resolvers()
             add_resolver(*new order_resolver(graph, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
         }
 
-        enum_expr a0_scope = as[0]->get("scope");
-        std::unordered_set<set_item *> a0_scopes = graph.set_th.value(a0_scope->ev);
-        if (a0_scopes.size() > 1)
+        expr a0_scope = as[0]->get("scope");
+        if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a0_scope))
         {
-            for (const auto &sc : a0_scopes)
+            std::unordered_set<set_item *> a0_scopes = graph.set_th.value(enum_scope->ev);
+            if (a0_scopes.size() > 1)
             {
-                add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(graph.set_th.allows(a0_scope->ev, *sc), false)));
+                for (const auto &sc : a0_scopes)
+                {
+                    add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(graph.set_th.allows(enum_scope->ev, *sc), false)));
+                }
             }
         }
 
-        enum_expr a1_scope = as[1]->get("scope");
-        std::unordered_set<set_item *> a1_scopes = graph.set_th.value(a1_scope->ev);
-        if (a1_scopes.size() > 1)
+        expr a1_scope = as[1]->get("scope");
+        if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a1_scope))
         {
-            for (const auto &sc : a1_scopes)
+            std::unordered_set<set_item *> a1_scopes = graph.set_th.value(enum_scope->ev);
+            if (a1_scopes.size() > 1)
             {
-                add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(graph.set_th.allows(a1_scope->ev, *sc), false)));
+                for (const auto &sc : a1_scopes)
+                {
+                    add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(graph.set_th.allows(enum_scope->ev, *sc), false)));
+                }
             }
         }
     }

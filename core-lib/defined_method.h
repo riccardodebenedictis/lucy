@@ -6,6 +6,7 @@
 namespace lucy
 {
 
+#pragma warning(disable : 4251)
 class defined_method : public method
 {
 public:
