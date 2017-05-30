@@ -5,3 +5,9 @@
 !.vscode/extensions.json
 !.vscode/c_cpp_properties.json
 /build
+/gui/nbproject/private/
+/gui/build/
+/gui/dist/
+/translators/pddl3ratio/nbproject/private/
+/translators/pddl3ratio/build/
+/translators/pddl3ratio/dist/
