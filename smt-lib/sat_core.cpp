@@ -230,7 +230,6 @@ var sat_core::new_exct_one(const std::vector<lit> &ls)
 
 bool sat_core::assume(const lit &p)
 {
-    assert(assigns[p.v] == Undefined);
     trail_lim.push_back(p);
     for (const auto &th : theories)
     {
@@ -290,6 +289,7 @@ bool sat_core::check(const std::vector<lit> &lits)
     std::vector<lit> cnfl;
     for (const auto &p : lits)
     {
+        // notice that these literals can be modified by propagation..
         if (!assume(p) || !propagate(cnfl))
         {
             while (trail_lim.size() > c_level)
