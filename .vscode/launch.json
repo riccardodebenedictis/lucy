@@ -27,7 +27,7 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/build/lucy.exe",
+            "program": "${workspaceRoot}/build/smt-lib/tests/test_sat_0.exe",
             "args": [
                 "${workspaceRoot}/examples/blocks_3.rddl",
                 "output.json"

@@ -230,7 +230,7 @@ var sat_core::new_exct_one(const std::vector<lit> &ls)
 
 bool sat_core::assume(const lit &p)
 {
-    trail_lim.push_back(p);
+    trail_lim.push_back(trail.size());
     for (const auto &th : theories)
     {
         th->push();
@@ -240,11 +240,10 @@ bool sat_core::assume(const lit &p)
 
 void sat_core::pop()
 {
-    while (trail_lim.back() != trail.back())
+    while (trail_lim.back() < trail.size())
     {
         pop_one();
     }
-    pop_one();
     trail_lim.pop_back();
     for (const auto &th : theories)
     {
@@ -269,7 +268,7 @@ bool sat_core::check()
             size_t bt_level;
             // we analyze the conflict..
             analyze(cnfl, no_good, bt_level);
-            while (trail_lim.size() > bt_level)
+            while (decision_level() > bt_level)
             {
                 pop();
             }
@@ -286,21 +285,21 @@ bool sat_core::check()
 
 bool sat_core::check(const std::vector<lit> &lits)
 {
-    size_t c_level = trail_lim.size();
+    size_t c_level = decision_level();
     std::vector<lit> cnfl;
     for (const auto &p : lits)
     {
         // notice that these literals can be modified by propagation..
         if (!assume(p) || !propagate(cnfl))
         {
-            while (trail_lim.size() > c_level)
+            while (decision_level() > c_level)
             {
                 pop();
             }
             return false;
         }
     }
-    while (trail_lim.size() > c_level)
+    while (decision_level() > c_level)
     {
         pop();
     }
@@ -317,6 +316,7 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
         {
             if (!tmp[i]->propagate(prop_q.front()))
             {
+                // constraint is conflicting..
                 for (size_t j = i + 1; j < tmp.size(); j++)
                 {
                     watches[index(prop_q.front())].push_back(tmp[j]);
@@ -364,50 +364,39 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
 
 void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learnt, size_t &out_btlevel)
 {
+    std::set<var> seen;
+    int counter = 0;
+    lit p = lit(FALSE, 0);
+    std::vector<lit> p_reason = cnfl;
     out_learnt.push_back(lit(0, false));
     out_btlevel = 0;
-    lit p = trail_lim.back();
-    if (trail_lim.back() == trail.back())
-    {
-        // a theory generated the conflict as a direct consequence of last decision..
-        for (const auto &q : cnfl)
-        {
-            if (p.v != q.v)
-            {
-                out_learnt.push_back(q);
-                out_btlevel = std::max(out_btlevel, level[q.v]);
-            }
-        }
-        out_learnt[0] = !p;
-        return;
-    }
-    std::set<var> seen;
-    std::vector<lit> p_reason = cnfl;
-    int counter = 0;
     do
     {
+        // trace reason for 'p'..
         for (const auto &q : p_reason)
         {
-            if (p.v != q.v && seen.find(q.v) == seen.end())
+            if (seen.find(q.v) == seen.end())
             {
                 seen.insert(q.v);
-                if (level[q.v] == trail_lim.size())
+                if (level[q.v] == decision_level())
                 {
                     counter++;
                 }
-                else if (level[q.v] > 0)
+                else if (level[q.v] > 0) // exclude variables from decision level 0..
                 {
                     out_learnt.push_back(q);
                     out_btlevel = std::max(out_btlevel, level[q.v]);
                 }
             }
         }
+        // select next literal to look at..
         do
         {
             p = trail.back();
             if (reason[p.v])
             {
-                p_reason = reason[p.v]->lits;
+                p_reason.clear();
+                p_reason.insert(p_reason.end(), reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end());
             }
             pop_one();
         } while (seen.find(p.v) == seen.end());
@@ -445,7 +434,7 @@ bool sat_core::enqueue(const lit &p, clause *const c)
         return false;
     case Undefined:
         assigns[p.v] = p.sign ? True : False;
-        level[p.v] = trail_lim.size();
+        level[p.v] = decision_level();
         reason[p.v] = c;
         trail.push_back(p);
         prop_q.push(p);

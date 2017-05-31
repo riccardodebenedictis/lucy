@@ -129,8 +129,8 @@ class DLL_PUBLIC sat_core
     std::vector<lbool> assigns;
     // the list of assignment in chronological order..
     std::vector<lit> trail;
-    // separator literals for different decision levels in 'trail'..
-    std::vector<lit> trail_lim;
+    // separator indices for different decision levels in 'trail'..
+    std::vector<size_t> trail_lim;
     // for each variable, the constraint that implied its value..
     std::vector<clause *> reason;
     // for each variable, the decision level it was assigned..
