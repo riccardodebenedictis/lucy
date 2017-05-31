@@ -6,7 +6,6 @@
 #include "type_declaration_listener.h"
 #include "type_refinement_listener.h"
 #include "statement_visitor.h"
-#include "log.h"
 #include <iostream>
 #include <cassert>
 

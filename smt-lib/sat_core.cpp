@@ -2,7 +2,6 @@
 #include "clause.h"
 #include "theory.h"
 #include "sat_value_listener.h"
-#include "log.h"
 #include <cassert>
 #include <algorithm>
 

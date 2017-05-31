@@ -1,7 +1,6 @@
 #include "set_theory.h"
 #include "sat_core.h"
 #include "set_value_listener.h"
-#include "log.h"
 #include <cassert>
 #include <algorithm>
 

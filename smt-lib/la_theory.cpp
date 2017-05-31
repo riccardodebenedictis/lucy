@@ -1,7 +1,6 @@
 #include "la_theory.h"
 #include "sat_core.h"
 #include "la_value_listener.h"
-#include "log.h"
 #include <cassert>
 #include <algorithm>
 
@@ -204,7 +203,6 @@ bool la_theory::check(std::vector<lit> &cnfl)
     assert(cnfl.empty());
     while (true)
     {
-        WRITE("la.json", to_string());
         auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, t_row *> &v) { return vals[v.first] < assigns[v.first].lb || vals[v.first] > assigns[v.first].ub; });
         if (x_i_it == tableau.end())
         {
