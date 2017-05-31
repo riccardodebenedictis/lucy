@@ -71,10 +71,10 @@ class DLL_PUBLIC sat_core
     bool assume(const lit &p);
     void pop();
 
-    lbool value(var x) const
-    {
-        return assigns[x];
-    }
+    size_t n_vars() { return assigns.size(); }      // the number of variables..
+    size_t n_assigns() { return trail.size(); }     // the number of assigned variables..
+    size_t n_constrs() { return constrs.size(); }   // the number of constraints..
+    lbool value(var x) const { return assigns[x]; } // returns the value of variable 'v'..
 
     lbool value(const lit &p) const
     {
@@ -91,7 +91,8 @@ class DLL_PUBLIC sat_core
         }
     }
 
-    bool root_level() { return trail_lim.empty(); }
+    size_t decision_level() { return trail_lim.size(); } // returns the current decision level..
+    bool root_level() { return trail_lim.empty(); }      // checks whether this decision level is root level..
 
     bool check();
     bool check(const std::vector<lit> &lits);
