@@ -143,8 +143,6 @@ var la_theory::mk_slack(const lin &l)
         // we need to create a new slack variable..
         slack = new_var();
         exprs.insert({s_expr, slack});
-        // we set the initial bounds of the new slack variable..
-        assigns[slack] = bounds(l);
         // we set the initial value of the new slack variable..
         vals[slack] = value(l);
         t_row *row = new t_row(*this, slack, l);
