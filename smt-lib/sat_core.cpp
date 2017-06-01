@@ -47,24 +47,22 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
     {
         return true;
     }
-    else if (std::all_of(lits.begin(), lits.end(), [&](const lit &p) { return value(p) == False; }))
+
+    std::vector<lit> c_lits;
+    std::copy_if(lits.begin(), lits.end(), std::back_inserter(c_lits), [&](const lit &p) { return value(p) == Undefined; });
+    if (c_lits.empty())
     {
         return false;
     }
+    else if (c_lits.size() == 1)
+    {
+        enqueue(c_lits[0]);
+    }
     else
     {
-        std::vector<lit> c_lits;
-        std::copy_if(lits.begin(), lits.end(), std::back_inserter(c_lits), [&](const lit &p) { return value(p) == Undefined; });
-        if (c_lits.size() == 1)
-        {
-            enqueue(c_lits[0]);
-        }
-        else
-        {
-            constrs.push_back(new clause(*this, c_lits));
-        }
-        return true;
+        constrs.push_back(new clause(*this, c_lits));
     }
+    return true;
 }
 
 var sat_core::new_eq(const lit &left, const lit &right)
