@@ -415,9 +415,10 @@ void sat_core::record(const std::vector<lit> &lits)
     }
     else
     {
-        constrs.push_back(new clause(*this, lits));
-        bool e = enqueue(lits[0]);
+        clause *c = new clause(*this, lits);
+        bool e = enqueue(lits[0], c);
         assert(e);
+        constrs.push_back(c);
     }
 }
 
