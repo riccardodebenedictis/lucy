@@ -162,37 +162,9 @@ bool la_theory::propagate(const lit &p, std::vector<lit> &cnfl)
     switch (a->o)
     {
     case op::leq:
-        if (p.sign)
-        {
-            if (!assert_upper(a->x, a->v, p, cnfl))
-            {
-                return false;
-            }
-        }
-        else
-        {
-            if (!assert_lower(a->x, a->v, p, cnfl))
-            {
-                return false;
-            }
-        }
-        break;
+        return p.sign ? assert_upper(a->x, a->v, p, cnfl) : assert_lower(a->x, a->v, p, cnfl);
     case op::geq:
-        if (p.sign)
-        {
-            if (!assert_lower(a->x, a->v, p, cnfl))
-            {
-                return false;
-            }
-        }
-        else
-        {
-            if (!assert_upper(a->x, a->v, p, cnfl))
-            {
-                return false;
-            }
-        }
-        break;
+        return p.sign ? assert_lower(a->x, a->v, p, cnfl) : assert_upper(a->x, a->v, p, cnfl);
     }
 
     return true;
@@ -301,20 +273,14 @@ bool la_theory::assert_lower(var x_i, double val, const lit &p, std::vector<lit>
     }
     else
     {
-        if (!layers.empty())
+        if (!layers.empty() && layers.back().lbs.find(x_i) == layers.back().lbs.end())
         {
-            if (layers.back().lbs.find(x_i) == layers.back().lbs.end())
-            {
-                layers.back().lbs.insert({x_i, assigns[x_i].lb});
-            }
+            layers.back().lbs.insert({x_i, assigns[x_i].lb});
         }
         assigns[x_i].lb = val;
-        if (vals[x_i] < val)
+        if (vals[x_i] < val && tableau.find(x_i) == tableau.end())
         {
-            if (tableau.find(x_i) == tableau.end())
-            {
-                update(x_i, val);
-            }
+            update(x_i, val);
         }
 
         // unate propagation..
@@ -353,20 +319,14 @@ bool la_theory::assert_upper(var x_i, double val, const lit &p, std::vector<lit>
     }
     else
     {
-        if (!layers.empty())
+        if (!layers.empty() && layers.back().ubs.find(x_i) == layers.back().ubs.end())
         {
-            if (layers.back().ubs.find(x_i) == layers.back().ubs.end())
-            {
-                layers.back().ubs.insert({x_i, assigns[x_i].ub});
-            }
+            layers.back().ubs.insert({x_i, assigns[x_i].ub});
         }
         assigns[x_i].ub = val;
-        if (vals[x_i] > val)
+        if (vals[x_i] > val && tableau.find(x_i) == tableau.end())
         {
-            if (tableau.find(x_i) == tableau.end())
-            {
-                update(x_i, val);
-            }
+            update(x_i, val);
         }
 
         // unate propagation..
