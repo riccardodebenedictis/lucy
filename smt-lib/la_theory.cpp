@@ -51,24 +51,22 @@ var la_theory::new_leq(const lin &left, const lin &right)
     {
         return FALSE; // the constraint is unsatisfable..
     }
+
+    var slack = mk_slack(expr);
+    std::string s_assertion = "x" + std::to_string(slack) + " <= " + std::to_string(c_right);
+    if (s_asrts.find(s_assertion) != s_asrts.end())
+    {
+        return s_asrts.at(s_assertion); // this assertion already exists..
+    }
     else
     {
-        var slack = mk_slack(expr);
-        std::string s_assertion = "x" + std::to_string(slack) + " <= " + std::to_string(c_right);
-        if (s_asrts.find(s_assertion) != s_asrts.end())
-        {
-            return s_asrts.at(s_assertion); // this assertion already exists..
-        }
-        else
-        {
-            var ctr = sat.new_var();
-            bind(ctr);
-            s_asrts.insert({s_assertion, ctr});
-            assertion *a = new assertion(*this, op::leq, ctr, slack, c_right);
-            v_asrts.insert({ctr, a});
-            a_watches[slack].push_back(a);
-            return ctr;
-        }
+        var ctr = sat.new_var();
+        bind(ctr);
+        s_asrts.insert({s_assertion, ctr});
+        assertion *a = new assertion(*this, op::leq, ctr, slack, c_right);
+        v_asrts.insert({ctr, a});
+        a_watches[slack].push_back(a);
+        return ctr;
     }
 }
 
@@ -101,24 +99,22 @@ var la_theory::new_geq(const lin &left, const lin &right)
     {
         return FALSE; // the constraint is unsatisfable..
     }
+
+    var slack = mk_slack(expr);
+    std::string s_assertion = "x" + std::to_string(slack) + " >= " + std::to_string(c_right);
+    if (s_asrts.find(s_assertion) != s_asrts.end())
+    {
+        return s_asrts.at(s_assertion); // this assertion already exists..
+    }
     else
     {
-        var slack = mk_slack(expr);
-        std::string s_assertion = "x" + std::to_string(slack) + " >= " + std::to_string(c_right);
-        if (s_asrts.find(s_assertion) != s_asrts.end())
-        {
-            return s_asrts.at(s_assertion); // this assertion already exists..
-        }
-        else
-        {
-            var ctr = sat.new_var();
-            bind(ctr);
-            s_asrts.insert({s_assertion, ctr});
-            assertion *a = new assertion(*this, op::geq, ctr, slack, c_right);
-            v_asrts.insert({ctr, a});
-            a_watches[slack].push_back(a);
-            return ctr;
-        }
+        var ctr = sat.new_var();
+        bind(ctr);
+        s_asrts.insert({s_assertion, ctr});
+        assertion *a = new assertion(*this, op::geq, ctr, slack, c_right);
+        v_asrts.insert({ctr, a});
+        a_watches[slack].push_back(a);
+        return ctr;
     }
 }
 
