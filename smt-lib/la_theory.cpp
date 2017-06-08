@@ -257,7 +257,9 @@ bool la_theory::assert_lower(var x_i, double val, const lit &p, std::vector<lit>
     }
     else if (val > assigns[x_i].ub)
     {
+        // either the literal 'p' is false ..
         cnfl.push_back(!p);
+        // .. or what asserted the upper bound is false..
         cnfl.push_back(lit(s_asrts["x" + std::to_string(x_i) + " <= " + std::to_string(assigns[x_i].ub)], false));
         return false;
     }
@@ -303,7 +305,9 @@ bool la_theory::assert_upper(var x_i, double val, const lit &p, std::vector<lit>
     }
     else if (val < assigns[x_i].lb)
     {
+        // either the literal 'p' is false ..
         cnfl.push_back(!p);
+        // .. or what asserted the lower bound is false..
         cnfl.push_back(lit(s_asrts["x" + std::to_string(x_i) + " >= " + std::to_string(assigns[x_i].lb)], false));
         return false;
     }
