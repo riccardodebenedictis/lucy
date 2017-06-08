@@ -11,10 +11,14 @@ namespace smt
 {
 
 class la_value_listener;
+class assertion;
+class row;
 
 class DLL_PUBLIC la_theory : public theory
 {
   friend class la_value_listener;
+  friend class assertion;
+  friend class row;
 
 public:
   la_theory(sat_core &sat);
@@ -98,7 +102,7 @@ private:
   class assertion
   {
     friend class la_theory;
-    friend class t_row;
+    friend class row;
 
   public:
     assertion(la_theory &th, op o, var b, var x, double v);
@@ -119,14 +123,14 @@ private:
     double v;
   };
 
-  class t_row
+  class row
   {
     friend class la_theory;
 
   public:
-    t_row(la_theory &th, var x, lin l);
-    t_row(const assertion &orig) = delete;
-    virtual ~t_row();
+    row(la_theory &th, var x, lin l);
+    row(const assertion &orig) = delete;
+    virtual ~row();
 
     std::string to_string() const;
 
@@ -145,7 +149,7 @@ private:
   // the current values..
   std::vector<double> vals;
   // the sparse matrix..
-  std::map<var, t_row *> tableau;
+  std::map<var, row *> tableau;
   // the expressions (string to numeric variable) for which already exist slack variables..
   std::unordered_map<std::string, var> exprs;
   // the assertions (string to boolean variable) used both for reducing the number of boolean variables and for generating explanations..
@@ -155,7 +159,7 @@ private:
   // for each variable v, a list of assertions watching v..
   std::vector<std::vector<assertion *>> a_watches;
   // for each variable v, a list of tableau rows watching v..
-  std::vector<std::set<t_row *>> t_watches;
+  std::vector<std::set<row *>> t_watches;
   // we store the updated bounds..
   std::vector<layer> layers;
   std::unordered_map<var, std::list<la_value_listener *>> listening;

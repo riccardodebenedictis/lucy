@@ -18,7 +18,7 @@ var la_theory::new_var()
     vals.push_back(0);
     exprs.insert({"x" + std::to_string(id), id});
     a_watches.push_back(std::vector<assertion *>());
-    t_watches.push_back(std::set<t_row *>());
+    t_watches.push_back(std::set<row *>());
     return id;
 }
 
@@ -63,9 +63,7 @@ var la_theory::new_leq(const lin &left, const lin &right)
         var ctr = sat.new_var();
         bind(ctr);
         s_asrts.insert({s_assertion, ctr});
-        assertion *a = new assertion(*this, op::leq, ctr, slack, c_right);
-        v_asrts.insert({ctr, a});
-        a_watches[slack].push_back(a);
+        v_asrts.insert({ctr, new assertion(*this, op::leq, ctr, slack, c_right)});
         return ctr;
     }
 }
@@ -111,9 +109,7 @@ var la_theory::new_geq(const lin &left, const lin &right)
         var ctr = sat.new_var();
         bind(ctr);
         s_asrts.insert({s_assertion, ctr});
-        assertion *a = new assertion(*this, op::geq, ctr, slack, c_right);
-        v_asrts.insert({ctr, a});
-        a_watches[slack].push_back(a);
+        v_asrts.insert({ctr, new assertion(*this, op::geq, ctr, slack, c_right)});
         return ctr;
     }
 }
@@ -134,13 +130,8 @@ var la_theory::mk_slack(const lin &l)
         exprs.insert({s_expr, slack});
         // we set the initial value of the new slack variable..
         vals[slack] = value(l);
-        t_row *row = new t_row(*this, slack, l);
         // we add a new row into the tableau..
-        tableau.insert({slack, row});
-        for (const auto &term : row->l.vars)
-        {
-            t_watches[term.first].insert(row);
-        }
+        tableau.insert({slack, new row(*this, slack, l)});
     }
     return slack;
 }
@@ -165,7 +156,7 @@ bool la_theory::check(std::vector<lit> &cnfl)
     assert(cnfl.empty());
     while (true)
     {
-        auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, t_row *> &v) { return vals[v.first] < assigns[v.first].lb || vals[v.first] > assigns[v.first].ub; });
+        auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, row *> &v) { return vals[v.first] < assigns[v.first].lb || vals[v.first] > assigns[v.first].ub; });
         if (x_i_it == tableau.end())
         {
             return true;
@@ -173,7 +164,7 @@ bool la_theory::check(std::vector<lit> &cnfl)
         // the current value of the x_i variable is out of its bounds..
         var x_i = (*x_i_it).first;
         // the flawed row..
-        t_row *f_row = (*x_i_it).second;
+        row *f_row = (*x_i_it).second;
         if (vals[x_i] < assigns[x_i].lb)
         {
             auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars.at(v.first) > 0 && vals[v.first] < assigns[v.first].ub) || (f_row->l.vars.at(v.first) < 0 && vals[v.first] > assigns[v.first].lb); });
@@ -417,21 +408,21 @@ void la_theory::pivot_and_update(var x_i, var x_j, double v)
 void la_theory::pivot(var x_i, var x_j)
 {
     // the exiting row..
-    t_row *ex_row = tableau.at(x_i);
-    for (const auto &c : ex_row->l.vars)
+    row *ex_row = tableau.at(x_i);
+    lin expr = std::move(ex_row->l);
+    tableau.erase(x_i);
+    for (const auto &c : expr.vars)
     {
         t_watches[c.first].erase(ex_row);
     }
-    tableau.erase(x_i);
-
-    lin expr = std::move(ex_row->l);
     delete ex_row;
+
     double c = expr.vars.at(x_j);
     expr.vars.erase(x_j);
     expr /= -c;
     expr.vars.insert({x_i, 1 / c});
 
-    std::vector<t_row *> rows;
+    std::vector<row *> rows;
     for (const auto &c : t_watches[x_j])
     {
         rows.push_back(c);
@@ -451,13 +442,8 @@ void la_theory::pivot(var x_i, var x_j)
         }
     }
 
-    t_row *row = new t_row(*this, x_j, expr);
     // we add a new row into the tableau..
-    tableau.insert({x_j, row});
-    for (const auto &term : row->l.vars)
-    {
-        t_watches[term.first].insert(row);
-    }
+    tableau.insert({x_j, new row(*this, x_j, expr)});
 }
 
 void la_theory::listen(var v, la_value_listener *const l)
@@ -474,7 +460,7 @@ void la_theory::forget(var v, la_value_listener *const l)
     }
 }
 
-la_theory::assertion::assertion(la_theory &th, op o, var b, var x, double v) : th(th), o(o), b(b), x(x), v(v) {}
+la_theory::assertion::assertion(la_theory &th, op o, var b, var x, double v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
 
 la_theory::assertion::~assertion() {}
 
@@ -612,16 +598,22 @@ bool la_theory::assertion::propagate_ub(var x, std::vector<lit> &cnfl)
     return true;
 }
 
-la_theory::t_row::t_row(la_theory &th, var x, lin l) : th(th), x(x), l(l) {}
+la_theory::row::row(la_theory &th, var x, lin l) : th(th), x(x), l(l)
+{
+    for (const auto &term : l.vars)
+    {
+        th.t_watches[term.first].insert(this);
+    }
+}
 
-la_theory::t_row::~t_row() {}
+la_theory::row::~row() {}
 
-std::string la_theory::t_row::to_string() const
+std::string la_theory::row::to_string() const
 {
     return "{ \"basic-var\" : \"x" + std::to_string(x) + "\", \"expr\" : \"" + l.to_string() + "\" }";
 }
 
-bool la_theory::t_row::propagate_lb(var v, std::vector<lit> &cnfl)
+bool la_theory::row::propagate_lb(var v, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     // we make room for the first literal..
@@ -801,7 +793,7 @@ bool la_theory::t_row::propagate_lb(var v, std::vector<lit> &cnfl)
     return true;
 }
 
-bool la_theory::t_row::propagate_ub(var v, std::vector<lit> &cnfl)
+bool la_theory::row::propagate_ub(var v, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     // we make room for the first literal..
@@ -1014,7 +1006,7 @@ std::string la_theory::to_string()
         la += it->second->to_string();
     }
     la += "], \"tableau\" : [";
-    for (std::map<var, t_row *>::const_iterator it = tableau.begin(); it != tableau.end(); ++it)
+    for (std::map<var, row *>::const_iterator it = tableau.begin(); it != tableau.end(); ++it)
     {
         if (it != tableau.begin())
         {
