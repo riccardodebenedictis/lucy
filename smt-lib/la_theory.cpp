@@ -424,7 +424,8 @@ void la_theory::pivot(var x_i, var x_j)
     }
     tableau.erase(x_i);
 
-    lin expr = ex_row->l;
+    lin expr = std::move(ex_row->l);
+    delete ex_row;
     double c = expr.vars.at(x_j);
     expr.vars.erase(x_j);
     expr /= -c;
@@ -449,7 +450,6 @@ void la_theory::pivot(var x_i, var x_j)
             t_watches[term.first].insert(r);
         }
     }
-    delete ex_row;
 
     t_row *row = new t_row(*this, x_j, expr);
     // we add a new row into the tableau..
