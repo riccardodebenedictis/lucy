@@ -45,13 +45,11 @@ var la_theory::new_leq(const lin &left, const lin &right)
     interval i = bounds(expr);
     if (i <= c_right)
     {
-        // the constraint is already satisfied..
-        return TRUE;
+        return TRUE; // the constraint is already satisfied..
     }
     else if (i > c_right)
     {
-        // the constraint is unsatisfable..
-        return FALSE;
+        return FALSE; // the constraint is unsatisfable..
     }
     else
     {
@@ -59,8 +57,7 @@ var la_theory::new_leq(const lin &left, const lin &right)
         std::string s_assertion = "x" + std::to_string(slack) + " <= " + std::to_string(c_right);
         if (s_asrts.find(s_assertion) != s_asrts.end())
         {
-            // this assertion already exists..
-            return s_asrts.at(s_assertion);
+            return s_asrts.at(s_assertion); // this assertion already exists..
         }
         else
         {
@@ -98,13 +95,11 @@ var la_theory::new_geq(const lin &left, const lin &right)
     interval i = bounds(expr);
     if (i >= c_right)
     {
-        // the constraint is already satisfied..
-        return TRUE;
+        return TRUE; // the constraint is already satisfied..
     }
     else if (i < c_right)
     {
-        // the constraint is unsatisfable..
-        return FALSE;
+        return FALSE; // the constraint is unsatisfable..
     }
     else
     {
@@ -112,8 +107,7 @@ var la_theory::new_geq(const lin &left, const lin &right)
         std::string s_assertion = "x" + std::to_string(slack) + " >= " + std::to_string(c_right);
         if (s_asrts.find(s_assertion) != s_asrts.end())
         {
-            // this assertion already exists..
-            return s_asrts.at(s_assertion);
+            return s_asrts.at(s_assertion); // this assertion already exists..
         }
         else
         {
