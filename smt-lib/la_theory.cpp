@@ -512,13 +512,9 @@ bool la_theory::assertion::propagate_lb(var x, std::vector<lit> &cnfl)
                 cnfl.push_back(p);
                 cnfl.push_back(lit(b, false));
                 return false;
-            case False:
-                // nothing to propagate..
-                return true;
             case Undefined:
                 // we propagate information to the sat core..
                 th.record({lit(b, false), p});
-                return true;
             }
             break;
         case geq:
@@ -526,9 +522,6 @@ bool la_theory::assertion::propagate_lb(var x, std::vector<lit> &cnfl)
             // the assertion is satisfied..
             switch (th.sat.value(b))
             {
-            case True:
-                // nothing to propagate..
-                return true;
             case False:
                 // we have a propositional inconsistency..
                 cnfl.push_back(p);
@@ -537,7 +530,6 @@ bool la_theory::assertion::propagate_lb(var x, std::vector<lit> &cnfl)
             case Undefined:
                 // we propagate information to the sat core..
                 th.record({lit(b, true), p});
-                return true;
             }
             break;
         }
@@ -559,9 +551,6 @@ bool la_theory::assertion::propagate_ub(var x, std::vector<lit> &cnfl)
             // the assertion is satisfied..
             switch (th.sat.value(b))
             {
-            case True:
-                // nothing to propagate..
-                return true;
             case False:
                 // we have a propositional inconsistency..
                 cnfl.push_back(p);
@@ -570,7 +559,6 @@ bool la_theory::assertion::propagate_ub(var x, std::vector<lit> &cnfl)
             case Undefined:
                 // we propagate information to the sat core..
                 th.record({lit(b, true), p});
-                return true;
             }
             break;
         case geq:
@@ -583,13 +571,9 @@ bool la_theory::assertion::propagate_ub(var x, std::vector<lit> &cnfl)
                 cnfl.push_back(p);
                 cnfl.push_back(lit(b, false));
                 return false;
-            case False:
-                // nothing to propagate..
-                return true;
             case Undefined:
                 // we propagate information to the sat core..
                 th.record({lit(b, false), p});
-                return true;
             }
             break;
         }
@@ -668,15 +652,9 @@ bool la_theory::row::propagate_lb(var v, std::vector<lit> &cnfl)
                         case True:
                             // we have a propositional inconsistency..
                             return false;
-                        case False:
-                            // nothing to propagate..
-                            cnfl.clear();
-                            return true;
                         case Undefined:
                             // we propagate information to the sat core..
                             th.record(cnfl);
-                            cnfl.clear();
-                            return true;
                         }
                         break;
                     case geq:
@@ -684,18 +662,12 @@ bool la_theory::row::propagate_lb(var v, std::vector<lit> &cnfl)
                         // the assertion is satisfied..
                         switch (th.sat.value(c->b))
                         {
-                        case True:
-                            // nothing to propagate..
-                            cnfl.clear();
-                            return true;
                         case False:
                             // we have a propositional inconsistency..
                             return false;
                         case Undefined:
                             // we propagate information to the sat core..
                             th.record(cnfl);
-                            cnfl.clear();
-                            return true;
                         }
                         break;
                     }
@@ -741,11 +713,24 @@ bool la_theory::row::propagate_lb(var v, std::vector<lit> &cnfl)
         {
             for (const auto &c : th.a_watches[x])
             {
-                if (ub > c->v)
+                if (ub < c->v)
                 {
                     switch (c->o)
                     {
                     case leq:
+                        cnfl[0] = lit(c->b, true);
+                        // the assertion is satisfied..
+                        switch (th.sat.value(c->b))
+                        {
+                        case False:
+                            // we have a propositional inconsistency..
+                            return false;
+                        case Undefined:
+                            // we propagate information to the sat core..
+                            th.record(cnfl);
+                        }
+                        break;
+                    case geq:
                         cnfl[0] = lit(c->b, false);
                         // the assertion is unsatisfable..
                         switch (th.sat.value(c->b))
@@ -753,34 +738,9 @@ bool la_theory::row::propagate_lb(var v, std::vector<lit> &cnfl)
                         case True:
                             // we have a propositional inconsistency..
                             return false;
-                        case False:
-                            // nothing to propagate..
-                            cnfl.clear();
-                            return true;
                         case Undefined:
                             // we propagate information to the sat core..
                             th.record(cnfl);
-                            cnfl.clear();
-                            return true;
-                        }
-                        break;
-                    case geq:
-                        cnfl[0] = lit(c->b, true);
-                        // the assertion is satisfied..
-                        switch (th.sat.value(c->b))
-                        {
-                        case True:
-                            // nothing to propagate..
-                            cnfl.clear();
-                            return true;
-                        case False:
-                            // we have a propositional inconsistency..
-                            return false;
-                        case Undefined:
-                            // we propagate information to the sat core..
-                            th.record(cnfl);
-                            cnfl.clear();
-                            return true;
                         }
                         break;
                     }
@@ -836,11 +796,24 @@ bool la_theory::row::propagate_ub(var v, std::vector<lit> &cnfl)
         {
             for (const auto &c : th.a_watches[x])
             {
-                if (ub > c->v)
+                if (ub < c->v)
                 {
                     switch (c->o)
                     {
                     case leq:
+                        cnfl[0] = lit(c->b, true);
+                        // the assertion is satisfied..
+                        switch (th.sat.value(c->b))
+                        {
+                        case False:
+                            // we have a propositional inconsistency..
+                            return false;
+                        case Undefined:
+                            // we propagate information to the sat core..
+                            th.record(cnfl);
+                        }
+                        break;
+                    case geq:
                         cnfl[0] = lit(c->b, false);
                         // the assertion is unsatisfable..
                         switch (th.sat.value(c->b))
@@ -848,37 +821,10 @@ bool la_theory::row::propagate_ub(var v, std::vector<lit> &cnfl)
                         case True:
                             // we have a propositional inconsistency..
                             return false;
-                        case False:
-                            // nothing to propagate..
-                            cnfl.clear();
-                            return true;
                         case Undefined:
                             // we propagate information to the sat core..
                             th.record(cnfl);
-                            cnfl.clear();
-                            return true;
                         }
-                        break;
-                    case geq:
-                        cnfl[0] = lit(c->b, true);
-                        // the assertion is satisfied..
-                        switch (th.sat.value(c->b))
-                        {
-                        case True:
-                            // nothing to propagate..
-                            cnfl.clear();
-                            return true;
-                        case False:
-                            // we have a propositional inconsistency..
-                            return false;
-                        case Undefined:
-                            // we propagate information to the sat core..
-                            th.record(cnfl);
-                            cnfl.clear();
-                            return true;
-                        }
-                        break;
-                    default:
                         break;
                     }
                 }
@@ -935,15 +881,9 @@ bool la_theory::row::propagate_ub(var v, std::vector<lit> &cnfl)
                         case True:
                             // we have a propositional inconsistency..
                             return false;
-                        case False:
-                            // nothing to propagate..
-                            cnfl.clear();
-                            return true;
                         case Undefined:
                             // we propagate information to the sat core..
                             th.record(cnfl);
-                            cnfl.clear();
-                            return true;
                         }
                         break;
                     case geq:
@@ -951,18 +891,12 @@ bool la_theory::row::propagate_ub(var v, std::vector<lit> &cnfl)
                         // the assertion is satisfied..
                         switch (th.sat.value(c->b))
                         {
-                        case True:
-                            // nothing to propagate..
-                            cnfl.clear();
-                            return true;
                         case False:
                             // we have a propositional inconsistency..
                             return false;
                         case Undefined:
                             // we propagate information to the sat core..
                             th.record(cnfl);
-                            cnfl.clear();
-                            return true;
                         }
                         break;
                     }
