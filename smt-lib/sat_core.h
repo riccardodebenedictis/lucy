@@ -121,7 +121,7 @@ class DLL_PUBLIC sat_core
   private:
     // collection of problem constraints..
     std::vector<clause *> constrs;
-    // for each variable v, a list of constraints watching v..
+    // for each literal 'p', a list of constraints watching 'p'..
     std::vector<std::vector<clause *>> watches;
     // propagation queue..
     std::queue<lit> prop_q;
