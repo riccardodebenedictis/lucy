@@ -81,12 +81,8 @@ public:
   std::string to_string();
 
 private:
-  class layer
+  struct layer
   {
-  public:
-    layer() {}
-
-  public:
     // the old lower bounds (for backtracking)..
     std::unordered_map<var, double> lbs;
     // the old upper bounds (for backtracking)..
