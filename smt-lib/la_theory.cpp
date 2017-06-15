@@ -15,7 +15,8 @@ la_theory::~la_theory() {}
 var la_theory::new_var()
 {
     var id = assigns.size();
-    assigns.push_back(interval());
+    assigns.push_back({-std::numeric_limits<double>::infinity(), nullptr});
+    assigns.push_back({std::numeric_limits<double>::infinity(), nullptr});
     vals.push_back(0);
     exprs.insert({"x" + std::to_string(id), id});
     a_watches.push_back(std::vector<assertion *>());
@@ -157,7 +158,7 @@ bool la_theory::check(std::vector<lit> &cnfl)
     assert(cnfl.empty());
     while (true)
     {
-        auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, row *> &v) { return vals[v.first] < assigns[v.first].lb || vals[v.first] > assigns[v.first].ub; });
+        auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, row *> &v) { return value(v.first) < lb(v.first) || value(v.first) > ub(v.first); });
         if (x_i_it == tableau.end())
         {
             return true;
@@ -166,13 +167,13 @@ bool la_theory::check(std::vector<lit> &cnfl)
         var x_i = (*x_i_it).first;
         // the flawed row..
         row *f_row = (*x_i_it).second;
-        if (vals[x_i] < assigns[x_i].lb)
+        if (value(x_i) < lb(x_i))
         {
-            auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars.at(v.first) > 0 && vals[v.first] < assigns[v.first].ub) || (f_row->l.vars.at(v.first) < 0 && vals[v.first] > assigns[v.first].lb); });
+            auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars.at(v.first) > 0 && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first) < 0 && value(v.first) > lb(v.first)); });
             if (x_j_it != f_row->l.vars.end())
             {
                 // var x_j can be used to increase the value of x_i..
-                pivot_and_update(x_i, (*x_j_it).first, assigns[x_i].lb);
+                pivot_and_update(x_i, (*x_j_it).first, lb(x_i));
             }
             else
             {
@@ -181,24 +182,24 @@ bool la_theory::check(std::vector<lit> &cnfl)
                 {
                     if (term.second > 0)
                     {
-                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(assigns[term.first].ub)), false));
+                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(ub(term.first))), false));
                     }
                     else if (term.second < 0)
                     {
-                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(assigns[term.first].lb)), false));
+                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(lb(term.first))), false));
                     }
                 }
-                cnfl.push_back(lit(s_asrts.at("x" + std::to_string(x_i) + " >= " + std::to_string(assigns[x_i].lb)), false));
+                cnfl.push_back(lit(s_asrts.at("x" + std::to_string(x_i) + " >= " + std::to_string(lb(x_i))), false));
                 return false;
             }
         }
-        else if (vals[x_i] > assigns[x_i].ub)
+        else if (value(x_i) > ub(x_i))
         {
-            auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars[v.first] < 0 && vals[v.first] < assigns[v.first].ub) || (f_row->l.vars[v.first] > 0 && vals[v.first] > assigns[v.first].lb); });
+            auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars[v.first] < 0 && value(v.first) < ub(v.first)) || (f_row->l.vars[v.first] > 0 && value(v.first) > lb(v.first)); });
             if (x_j_it != f_row->l.vars.end())
             {
                 // var x_j can be used to decrease the value of x_i..
-                pivot_and_update(x_i, (*x_j_it).first, assigns[x_i].ub);
+                pivot_and_update(x_i, (*x_j_it).first, ub(x_i));
             }
             else
             {
@@ -207,14 +208,14 @@ bool la_theory::check(std::vector<lit> &cnfl)
                 {
                     if (term.second > 0)
                     {
-                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(assigns[term.first].lb)), false));
+                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(lb(term.first))), false));
                     }
                     else if (term.second < 0)
                     {
-                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(assigns[term.first].ub)), false));
+                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(ub(term.first))), false));
                     }
                 }
-                cnfl.push_back(lit(s_asrts.at("x" + std::to_string(x_i) + " <= " + std::to_string(assigns[x_i].ub)), false));
+                cnfl.push_back(lit(s_asrts.at("x" + std::to_string(x_i) + " <= " + std::to_string(ub(x_i))), false));
                 return false;
             }
         }
@@ -223,19 +224,16 @@ bool la_theory::check(std::vector<lit> &cnfl)
 
 void la_theory::push()
 {
-    layers.push_back(layer());
+    layers.push_back(std::unordered_map<size_t, bound>());
 }
 
 void la_theory::pop()
 {
-    // we restore the variables' bounds..
-    for (const auto &lb : layers.back().lbs)
+    // we restore the variables' bounds and their reason..
+    for (const auto &b : layers.back())
     {
-        assigns[lb.first].lb = lb.second;
-    }
-    for (const auto &ub : layers.back().ubs)
-    {
-        assigns[ub.first].ub = ub.second;
+        delete assigns[b.first].reason;
+        assigns[b.first] = b.second;
     }
     layers.pop_back();
 }
@@ -243,25 +241,25 @@ void la_theory::pop()
 bool la_theory::assert_lower(var x_i, double val, const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    if (val <= assigns[x_i].lb)
+    if (val <= lb(x_i))
     {
         return true;
     }
-    else if (val > assigns[x_i].ub)
+    else if (val > ub(x_i))
     {
         // either the literal 'p' is false ..
         cnfl.push_back(!p);
         // .. or what asserted the upper bound is false..
-        cnfl.push_back(lit(s_asrts["x" + std::to_string(x_i) + " <= " + std::to_string(assigns[x_i].ub)], false));
+        cnfl.push_back(!*assigns[ub_index(x_i)].reason);
         return false;
     }
     else
     {
-        if (!layers.empty() && layers.back().lbs.find(x_i) == layers.back().lbs.end())
+        if (!layers.empty() && layers.back().find(lb_index(x_i)) == layers.back().end())
         {
-            layers.back().lbs.insert({x_i, assigns[x_i].lb});
+            layers.back().insert({lb_index(x_i), {lb(x_i), assigns[lb_index(x_i)].reason}});
         }
-        assigns[x_i].lb = val;
+        assigns[lb_index(x_i)] = {val, new lit(p.v, p.sign)};
         if (vals[x_i] < val && tableau.find(x_i) == tableau.end())
         {
             update(x_i, val);
@@ -291,25 +289,25 @@ bool la_theory::assert_lower(var x_i, double val, const lit &p, std::vector<lit>
 bool la_theory::assert_upper(var x_i, double val, const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    if (val >= assigns[x_i].ub)
+    if (val >= ub(x_i))
     {
         return true;
     }
-    else if (val < assigns[x_i].lb)
+    else if (val < lb(x_i))
     {
         // either the literal 'p' is false ..
         cnfl.push_back(!p);
         // .. or what asserted the lower bound is false..
-        cnfl.push_back(lit(s_asrts["x" + std::to_string(x_i) + " >= " + std::to_string(assigns[x_i].lb)], false));
+        cnfl.push_back(!*assigns[lb_index(x_i)].reason);
         return false;
     }
     else
     {
-        if (!layers.empty() && layers.back().ubs.find(x_i) == layers.back().ubs.end())
+        if (!layers.empty() && layers.back().find(ub_index(x_i)) == layers.back().end())
         {
-            layers.back().ubs.insert({x_i, assigns[x_i].ub});
+            layers.back().insert({ub_index(x_i), {ub(x_i), assigns[ub_index(x_i)].reason}});
         }
-        assigns[x_i].ub = val;
+        assigns[ub_index(x_i)] = {val, new lit(p.v, p.sign)};
         if (vals[x_i] > val && tableau.find(x_i) == tableau.end())
         {
             update(x_i, val);
@@ -472,13 +470,13 @@ std::string la_theory::to_string()
             la += ", ";
         }
         la += "{ \"name\" : \"x" + std::to_string(i) + "\", \"value\" : " + std::to_string(value(i));
-        if (assigns[i].lb > -std::numeric_limits<double>::infinity())
+        if (lb(i) > -std::numeric_limits<double>::infinity())
         {
-            la += ", \"lb\" : " + std::to_string(assigns[i].lb);
+            la += ", \"lb\" : " + std::to_string(lb(i));
         }
-        if (assigns[i].ub < std::numeric_limits<double>::infinity())
+        if (ub(i) < std::numeric_limits<double>::infinity())
         {
-            la += ", \"ub\" : " + std::to_string(assigns[i].ub);
+            la += ", \"ub\" : " + std::to_string(ub(i));
         }
         la += "}";
     }

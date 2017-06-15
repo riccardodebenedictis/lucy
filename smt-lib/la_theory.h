@@ -30,10 +30,7 @@ public:
   var new_leq(const lin &left, const lin &right);
   var new_geq(const lin &left, const lin &right);
 
-  interval bounds(var v) const
-  {
-    return assigns[v];
-  }
+  interval bounds(var v) const { return interval(assigns[lb_index(v)].value, assigns[ub_index(v)].value); }
 
   interval bounds(const lin &l) const
   {
@@ -45,10 +42,9 @@ public:
     return b;
   }
 
-  double value(var v) const
-  {
-    return vals[v];
-  }
+  double lb(const var &v) const { return assigns[lb_index(v)].value; } // the current lower bound of variable 'v'..
+  double ub(const var &v) const { return assigns[ub_index(v)].value; } // the current upper bound of variable 'v'..
+  double value(const var &v) const { return vals[v]; }                 // the current value of variable 'v'..
 
   double value(const lin &l) const
   {
@@ -77,36 +73,37 @@ private:
   void listen(var v, la_value_listener *const l);
   void forget(var v, la_value_listener *const l);
 
+  static size_t lb_index(const var &v) { return v << 1; }
+  static size_t ub_index(const var &v) { return (v << 1) ^ 1; }
+
 public:
   std::string to_string();
 
 private:
-  struct layer
+  struct bound
   {
-    // the old lower bounds (for backtracking)..
-    std::unordered_map<var, double> lbs;
-    // the old upper bounds (for backtracking)..
-    std::unordered_map<var, double> ubs;
+    double value; // the value of the bound..
+    lit *reason;  // the reason for the value..
   };
 
   // the current assignments..
-  std::vector<interval> assigns;
+  std::vector<bound> assigns;
   // the current values..
   std::vector<double> vals;
   // the sparse matrix..
   std::map<var, row *> tableau;
   // the expressions (string to numeric variable) for which already exist slack variables..
   std::unordered_map<std::string, var> exprs;
-  // the assertions (string to boolean variable) used both for reducing the number of boolean variables and for generating explanations..
+  // the assertions (string to boolean variable) used for reducing the number of boolean variables..
   std::unordered_map<std::string, var> s_asrts;
   // the assertions (boolean variable to assertion) used for enforcing (negating) assertions..
   std::unordered_map<var, assertion *> v_asrts;
-  // for each variable v, a list of assertions watching v..
+  // for each variable 'v', a list of assertions watching 'v'..
   std::vector<std::vector<assertion *>> a_watches;
-  // for each variable v, a list of tableau rows watching v..
+  // for each variable 'v', a list of tableau rows watching 'v'..
   std::vector<std::set<row *>> t_watches;
   // we store the updated bounds..
-  std::vector<layer> layers;
+  std::vector<std::unordered_map<size_t, bound>> layers;
   std::unordered_map<var, std::list<la_value_listener *>> listening;
 };
 }

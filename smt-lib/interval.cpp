@@ -12,90 +12,27 @@ interval::interval(double value) : lb(value), ub(value) {}
 
 interval::interval(double lb, double ub) : lb(lb), ub(ub) {}
 
-bool interval::consistent() const
-{
-    return lb <= ub;
-}
+bool interval::consistent() const { return lb <= ub; }
+bool interval::constant() const { return lb == ub; }
+bool interval::intersecting(const interval &i) const { return ub >= i.lb && lb <= i.ub; }
+bool interval::contains(const interval &i) const { return lb <= i.lb && ub >= i.ub; }
 
-bool interval::constant() const
-{
-    return lb == ub;
-}
+bool interval::operator!=(const interval &right) const { return ub < right.lb || lb > right.ub; }
+bool interval::operator<(const interval &right) const { return ub < right.lb; }
+bool interval::operator<=(const interval &right) const { return ub <= right.lb; }
+bool interval::operator==(const interval &right) const { return constant() && right.constant() && lb == right.lb; }
+bool interval::operator>=(const interval &right) const { return lb >= right.ub; }
+bool interval::operator>(const interval &right) const { return lb > right.ub; }
 
-bool interval::intersecting(const interval &i) const
-{
-    return ub >= i.lb && lb <= i.ub;
-}
+interval interval::operator&&(const interval &rhs) { return interval(std::max(lb, rhs.lb), std::min(ub, rhs.ub)); }
 
-bool interval::contains(const interval &i) const
-{
-    return lb <= i.lb && ub >= i.ub;
-}
+interval interval::operator+(const interval &rhs) { return interval(lb + rhs.lb, ub + rhs.ub); }
+interval interval::operator+(const double &rhs) { return interval(lb + rhs, ub + rhs); }
+interval operator+(const double &lhs, const interval &rhs) { return interval(lhs + rhs.lb, lhs + rhs.ub); }
 
-bool interval::operator!=(const interval &right) const
-{
-    return ub < right.lb || lb > right.ub;
-}
-
-bool interval::operator<(const interval &right) const
-{
-    return ub < right.lb;
-}
-
-bool interval::operator<=(const interval &right) const
-{
-    return ub <= right.lb;
-}
-
-bool interval::operator==(const interval &right) const
-{
-    return constant() && right.constant() && lb == right.lb;
-}
-
-bool interval::operator>=(const interval &right) const
-{
-    return lb >= right.ub;
-}
-
-bool interval::operator>(const interval &right) const
-{
-    return lb > right.ub;
-}
-
-interval interval::operator&&(const interval &rhs)
-{
-    return interval(std::max(lb, rhs.lb), std::min(ub, rhs.ub));
-}
-
-interval interval::operator+(const interval &rhs)
-{
-    return interval(lb + rhs.lb, ub + rhs.ub);
-}
-
-interval interval::operator+(const double &rhs)
-{
-    return interval(lb + rhs, ub + rhs);
-}
-
-interval operator+(const double &lhs, const interval &rhs)
-{
-    return interval(lhs + rhs.lb, lhs + rhs.ub);
-}
-
-interval interval::operator-(const interval &rhs)
-{
-    return interval(lb - rhs.ub, ub - rhs.lb);
-}
-
-interval interval::operator-(const double &rhs)
-{
-    return interval(lb - rhs, ub - rhs);
-}
-
-interval operator-(const double &lhs, const interval &rhs)
-{
-    return interval(lhs - rhs.ub, lhs - rhs.lb);
-}
+interval interval::operator-(const interval &rhs) { return interval(lb - rhs.ub, ub - rhs.lb); }
+interval interval::operator-(const double &rhs) { return interval(lb - rhs, ub - rhs); }
+interval operator-(const double &lhs, const interval &rhs) { return interval(lhs - rhs.ub, lhs - rhs.lb); }
 
 interval interval::operator*(const interval &rhs)
 {
@@ -289,13 +226,7 @@ interval interval::operator/=(const double &right)
     return *this;
 }
 
-interval interval::operator-() const
-{
-    return std::move(interval(-ub, -lb));
-}
+interval interval::operator-() const { return std::move(interval(-ub, -lb)); }
 
-std::string interval::to_string() const
-{
-    return "[" + std::to_string(lb) + ", " + std::to_string(ub) + "]";
-}
+std::string interval::to_string() const { return "[" + std::to_string(lb) + ", " + std::to_string(ub) + "]"; }
 }

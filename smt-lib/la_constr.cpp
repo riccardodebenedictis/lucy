@@ -43,9 +43,8 @@ std::string assertion::to_string() const
 bool assertion::propagate_lb(var x, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    if (th.assigns[x].lb > v)
+    if (th.lb(x) > v)
     {
-        lit p = lit(th.s_asrts["x" + std::to_string(x) + " >= " + std::to_string(th.assigns[x].lb)], false);
         switch (o)
         {
         case leq:
@@ -55,12 +54,12 @@ bool assertion::propagate_lb(var x, std::vector<lit> &cnfl)
             {
             case True:
                 // we have a propositional inconsistency..
-                cnfl.push_back(p);
                 cnfl.push_back(lit(b, false));
+                cnfl.push_back(!*th.assigns[la_theory::lb_index(x)].reason);
                 return false;
             case Undefined:
                 // we propagate information to the sat core..
-                th.record({lit(b, false), p});
+                th.record({lit(b, false), !*th.assigns[la_theory::lb_index(x)].reason});
             }
             break;
         case geq:
@@ -70,12 +69,12 @@ bool assertion::propagate_lb(var x, std::vector<lit> &cnfl)
             {
             case False:
                 // we have a propositional inconsistency..
-                cnfl.push_back(p);
                 cnfl.push_back(lit(b, true));
+                cnfl.push_back(!*th.assigns[la_theory::lb_index(x)].reason);
                 return false;
             case Undefined:
                 // we propagate information to the sat core..
-                th.record({lit(b, true), p});
+                th.record({lit(b, true), !*th.assigns[la_theory::lb_index(x)].reason});
             }
             break;
         }
@@ -87,9 +86,8 @@ bool assertion::propagate_lb(var x, std::vector<lit> &cnfl)
 bool assertion::propagate_ub(var x, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    if (th.assigns[x].ub < v)
+    if (th.ub(x) < v)
     {
-        lit p = lit(th.s_asrts["x" + std::to_string(x) + " <= " + std::to_string(th.assigns[x].ub)], false);
         switch (o)
         {
         case leq:
@@ -99,12 +97,12 @@ bool assertion::propagate_ub(var x, std::vector<lit> &cnfl)
             {
             case False:
                 // we have a propositional inconsistency..
-                cnfl.push_back(p);
                 cnfl.push_back(lit(b, true));
+                cnfl.push_back(!*th.assigns[la_theory::ub_index(x)].reason);
                 return false;
             case Undefined:
                 // we propagate information to the sat core..
-                th.record({lit(b, true), p});
+                th.record({lit(b, true), !*th.assigns[la_theory::ub_index(x)].reason});
             }
             break;
         case geq:
@@ -114,12 +112,12 @@ bool assertion::propagate_ub(var x, std::vector<lit> &cnfl)
             {
             case True:
                 // we have a propositional inconsistency..
-                cnfl.push_back(p);
                 cnfl.push_back(lit(b, false));
+                cnfl.push_back(!*th.assigns[la_theory::ub_index(x)].reason);
                 return false;
             case Undefined:
                 // we propagate information to the sat core..
-                th.record({lit(b, false), p});
+                th.record({lit(b, false), !*th.assigns[la_theory::ub_index(x)].reason});
             }
             break;
         }
@@ -155,7 +153,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
         {
             if (term.second > 0)
             {
-                if (th.bounds(term.first).lb == -std::numeric_limits<double>::infinity())
+                if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -163,13 +161,13 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
                 }
                 else
                 {
-                    lb += term.second * th.bounds(term.first).lb;
-                    cnfl.push_back(lit(th.s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(th.assigns[term.first].lb)), false));
+                    lb += term.second * th.lb(term.first);
+                    cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
             }
             else if (term.second < 0)
             {
-                if (th.bounds(term.first).ub == std::numeric_limits<double>::infinity())
+                if (th.ub(term.first) == std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -177,12 +175,12 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
                 }
                 else
                 {
-                    lb += term.second * th.bounds(term.first).ub;
-                    cnfl.push_back(lit(th.s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(th.assigns[term.first].ub)), false));
+                    lb += term.second * th.ub(term.first);
+                    cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
             }
         }
-        if (lb > th.bounds(x).lb)
+        if (lb > th.lb(x))
         {
             for (const auto &c : th.a_watches[x])
             {
@@ -228,7 +226,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
         {
             if (term.second > 0)
             {
-                if (th.bounds(term.first).ub == std::numeric_limits<double>::infinity())
+                if (th.ub(term.first) == std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -236,13 +234,13 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
                 }
                 else
                 {
-                    ub += term.second * th.bounds(term.first).ub;
-                    cnfl.push_back(lit(th.s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(th.assigns[term.first].ub)), false));
+                    ub += term.second * th.ub(term.first);
+                    cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
             }
             else if (term.second < 0)
             {
-                if (th.bounds(term.first).lb == -std::numeric_limits<double>::infinity())
+                if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -250,12 +248,12 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
                 }
                 else
                 {
-                    ub += term.second * th.bounds(term.first).lb;
-                    cnfl.push_back(lit(th.s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(th.assigns[term.first].lb)), false));
+                    ub += term.second * th.lb(term.first);
+                    cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
             }
         }
-        if (ub < th.bounds(x).ub)
+        if (ub < th.ub(x))
         {
             for (const auto &c : th.a_watches[x])
             {
@@ -311,7 +309,7 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
         {
             if (term.second > 0)
             {
-                if (th.bounds(term.first).ub == std::numeric_limits<double>::infinity())
+                if (th.ub(term.first) == std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -319,13 +317,13 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
                 }
                 else
                 {
-                    ub += term.second * th.bounds(term.first).ub;
-                    cnfl.push_back(lit(th.s_asrts["x" + std::to_string(term.first) + " <= " + std::to_string(th.assigns[term.first].ub)], false));
+                    ub += term.second * th.ub(term.first);
+                    cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
             }
             else if (term.second < 0)
             {
-                if (th.bounds(term.first).lb == -std::numeric_limits<double>::infinity())
+                if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -333,12 +331,12 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
                 }
                 else
                 {
-                    ub += term.second * th.bounds(term.first).lb;
-                    cnfl.push_back(lit(th.s_asrts["x" + std::to_string(term.first) + " >= " + std::to_string(th.assigns[term.first].lb)], false));
+                    ub += term.second * th.lb(term.first);
+                    cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
             }
         }
-        if (ub < th.bounds(x).ub)
+        if (ub < th.ub(x))
         {
             for (const auto &c : th.a_watches[x])
             {
@@ -384,7 +382,7 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
         {
             if (term.second > 0)
             {
-                if (th.bounds(term.first).lb == -std::numeric_limits<double>::infinity())
+                if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -392,13 +390,13 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
                 }
                 else
                 {
-                    lb += term.second * th.bounds(term.first).lb;
-                    cnfl.push_back(lit(th.s_asrts["x" + std::to_string(term.first) + " >= " + std::to_string(th.assigns[term.first].lb)], false));
+                    lb += term.second * th.lb(term.first);
+                    cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
             }
             else if (term.second < 0)
             {
-                if (th.bounds(term.first).ub == std::numeric_limits<double>::infinity())
+                if (th.ub(term.first) == std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -406,12 +404,12 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
                 }
                 else
                 {
-                    lb += term.second * th.bounds(term.first).ub;
-                    cnfl.push_back(lit(th.s_asrts["x" + std::to_string(term.first) + " <= " + std::to_string(th.assigns[term.first].ub)], false));
+                    lb += term.second * th.ub(term.first);
+                    cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
             }
         }
-        if (lb > th.bounds(x).lb)
+        if (lb > th.lb(x))
         {
             for (const auto &c : th.a_watches[x])
             {
