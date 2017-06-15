@@ -14,7 +14,7 @@ la_theory::~la_theory() {}
 
 var la_theory::new_var()
 {
-    var id = assigns.size();
+    var id = vals.size();
     assigns.push_back({-std::numeric_limits<double>::infinity(), nullptr});
     assigns.push_back({std::numeric_limits<double>::infinity(), nullptr});
     vals.push_back(0);
