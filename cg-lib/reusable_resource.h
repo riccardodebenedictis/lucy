@@ -31,18 +31,12 @@ private:
   class rr_constructor : public constructor
   {
   public:
-    rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}) {}
+    rr_constructor(reusable_resource &rr);
     rr_constructor(rr_constructor &&) = delete;
-
-    virtual ~rr_constructor() {}
+    virtual ~rr_constructor();
 
   private:
-    bool invoke(item &i, const std::vector<expr> &exprs) override
-    {
-      assert(exprs.size() == 1);
-      set(i, REUSABLE_RESOURCE_CAPACITY, exprs[0]);
-      return true;
-    }
+    bool invoke(item &i, const std::vector<expr> &exprs) override;
   };
 
   class use_predicate : public predicate
@@ -50,7 +44,6 @@ private:
   public:
     use_predicate(reusable_resource &rr);
     use_predicate(use_predicate &&) = delete;
-
     virtual ~use_predicate();
 
   private:

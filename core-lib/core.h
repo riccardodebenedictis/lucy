@@ -5,8 +5,6 @@
 #include "sat_core.h"
 #include "la_theory.h"
 #include "set_theory.h"
-#include "parser/ratioLexer.h"
-#include "parser/ratioParser.h"
 
 #define BOOL_KEYWORD "bool"
 #define INT_KEYWORD "int"
@@ -145,25 +143,6 @@ protected:
   std::unordered_map<std::string, std::vector<method *>> methods;
   std::unordered_map<std::string, type *> types;
   std::unordered_map<std::string, predicate *> predicates;
-
-private:
-  std::vector<ratioParser *> parsers;
-  std::map<antlr4::tree::ParseTree *, scope *> scopes;
-  ratioParser *p;
-
-  class snippet
-  {
-    friend class core;
-
-  private:
-    snippet(const std::string &file, ratioParser &p, ratioParser::Compilation_unitContext *const cu) : file(file), p(p), cu(cu) {}
-    snippet(const snippet &that) = delete;
-
-  private:
-    const std::string file;
-    ratioParser &p;
-    ratioParser::Compilation_unitContext *const cu;
-  };
 };
 
 class DLL_PUBLIC atom_state : public set_item

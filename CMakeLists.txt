@@ -8,16 +8,6 @@ add_subdirectory( smt-lib )
 add_subdirectory( core-lib )
 add_subdirectory( cg-lib )
 
-if( WIN32 )
-  include_directories( "C:/Program Files (x86)/LIBANTLR4/include/antlr4-runtime" )
-  link_directories( "C:/Program Files (x86)/LIBANTLR4/lib" )
-endif()
-
-if( UNIX )
-  include_directories( /usr/local/include/antlr4-runtime )
-  link_directories( /usr/local/lib )
-endif()
-
 include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
 
 add_executable( lucy main.cpp )
@@ -37,7 +27,7 @@ add_test( NAME TestBlocks3 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_3.r
 add_test( NAME TestBlocks4 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_4.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 
 if( WIN32 )
-  set( PATH_STRING "$ENV{PATH};${CMAKE_BINARY_DIR}/smt-lib;${CMAKE_BINARY_DIR}/core-lib;${CMAKE_BINARY_DIR}/cg-lib;C:/Program Files (x86)/LIBANTLR4/lib" )
+  set( PATH_STRING "$ENV{PATH};${CMAKE_BINARY_DIR}/smt-lib;${CMAKE_BINARY_DIR}/core-lib;${CMAKE_BINARY_DIR}/cg-lib" )
   string( REPLACE ";" "\\;" PATH_STRING "${PATH_STRING}" )
   set_tests_properties( TestCG TestCG0 TestCG1 TestSV0 TestSV1 TestSV2 TestRR0 TestRR1 TestBlocks2 TestBlocks3 TestBlocks4 PROPERTIES ENVIRONMENT "PATH=${PATH_STRING}" )
 endif()

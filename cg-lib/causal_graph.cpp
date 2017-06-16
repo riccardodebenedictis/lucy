@@ -8,6 +8,7 @@
 #include "causal_graph_listener.h"
 #include "propositional_state.h"
 #include "propositional_agent.h"
+#include <cassert>
 
 namespace cg
 {

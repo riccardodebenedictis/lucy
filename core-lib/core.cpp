@@ -3,9 +3,6 @@
 #include "atom.h"
 #include "method.h"
 #include "field.h"
-#include "type_declaration_listener.h"
-#include "type_refinement_listener.h"
-#include "statement_visitor.h"
 #include <iostream>
 #include <cassert>
 
@@ -22,12 +19,6 @@ core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(
 
 core::~core()
 {
-    // we delete the parsers..
-    for (const auto &p : parsers)
-    {
-        delete p;
-    }
-
     // we delete the predicates..
     for (const auto &p : predicates)
     {
@@ -57,68 +48,12 @@ core::~core()
 
 bool core::read(const std::string &script)
 {
-    p = new ratioParser(new antlr4::CommonTokenStream(new ratioLexer(new antlr4::ANTLRInputStream(script))));
-    parsers.push_back(p);
-    ratioParser::Compilation_unitContext *cu = p->compilation_unit();
-    type_declaration_listener td(*this);
-    type_refinement_listener tr(*this);
-    antlr4::tree::ParseTreeWalker::DEFAULT.walk(&td, cu);
-    antlr4::tree::ParseTreeWalker::DEFAULT.walk(&tr, cu);
-    context ctx(this);
-    if (!statement_visitor(*this, ctx).visit(cu).as<bool>())
-    {
-        return false;
-    }
-    p = nullptr;
-    if (!sat.check())
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
+    return true;
 }
 
 bool core::read(const std::vector<std::string> &files)
 {
-    std::vector<snippet *> snippets;
-    for (const auto &f : files)
-    {
-        p = new ratioParser(new antlr4::CommonTokenStream(new ratioLexer(new antlr4::ANTLRFileStream(f))));
-        parsers.push_back(p);
-        snippet *s = new snippet(f, *p, p->compilation_unit());
-        snippets.push_back(s);
-    }
-    type_declaration_listener td(*this);
-    for (const auto &s : snippets)
-    {
-        antlr4::tree::ParseTreeWalker::DEFAULT.walk(&td, s->cu);
-    }
-    type_refinement_listener tr(*this);
-    for (const auto &s : snippets)
-    {
-        antlr4::tree::ParseTreeWalker::DEFAULT.walk(&tr, s->cu);
-    }
-    context ctx(this);
-    statement_visitor sv(*this, ctx);
-    for (const auto &s : snippets)
-    {
-        p = &s->p;
-        if (!sv.visit(s->cu).as<bool>())
-        {
-            return false;
-        }
-    }
-    p = nullptr;
-    if (!sat.check())
-    {
-        return false;
-    }
-    else
-    {
-        return true;
-    }
+    return true;
 }
 
 bool_expr core::new_bool()

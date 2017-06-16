@@ -37,7 +37,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "%PATH%;${workspaceRoot}/build/smt-lib;${workspaceRoot}/build/core-lib;${workspaceRoot}/build/cg-lib;C:/Program Files (x86)/LIBANTLR4/lib"
+                    "value": "%PATH%;${workspaceRoot}/build/smt-lib;${workspaceRoot}/build/core-lib;${workspaceRoot}/build/cg-lib"
                 }
             ],
             "externalConsole": true,

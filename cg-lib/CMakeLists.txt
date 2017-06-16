@@ -4,16 +4,6 @@ project ( cg-lib )
 
 add_definitions(-DBUILDING_DLL)
 
-if( WIN32 )
-  include_directories( "C:/Program Files (x86)/LIBANTLR4/include/antlr4-runtime" )
-  link_directories( "C:/Program Files (x86)/LIBANTLR4/lib" )
-endif()
-
-if( UNIX )
-  include_directories( /usr/local/include/antlr4-runtime )
-  link_directories( /usr/local/lib )
-endif()
-
 include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib )
 
 file( GLOB SOURCES "*.cpp" )

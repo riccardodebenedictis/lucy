@@ -1,6 +1,7 @@
 #include "causal_graph.h"
 #include "causal_graph_listener.h"
 #include <iostream>
+#include <fstream>
 
 using namespace smt;
 

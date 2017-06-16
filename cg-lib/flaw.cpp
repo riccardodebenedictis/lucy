@@ -1,6 +1,7 @@
 #include "flaw.h"
 #include "resolver.h"
 #include "causal_graph.h"
+#include <cassert>
 
 namespace cg
 {
