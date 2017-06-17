@@ -1,5 +1,4 @@
 #include "lexer.h"
-#include <vector>
 #include <iostream>
 #include <string>
 
@@ -272,6 +271,34 @@ token lexer::next()
                 }
             }
         }
+        case 'b':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'o')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'o')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'l')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            return mk_token(symbol::BOOL);
+        }
         case '\n':
             end_line++;
             end_pos = 0;
@@ -279,6 +306,29 @@ token lexer::next()
         default:
             error("invalid token..");
             return mk_token(symbol::ERROR);
+        }
+    }
+}
+
+token lexer::finish_id(std::vector<char> &str)
+{
+    while (true)
+    {
+        ch = is.get();
+        if (str.empty() && ch >= '0' && ch <= '9')
+        {
+            error("identifiers cannot start with numbers..");
+            return mk_token(symbol::ERROR);
+        }
+        if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || (ch >= '0' && ch <= '9'))
+        {
+            end_pos++;
+            str.push_back(ch);
+        }
+        else
+        {
+            is.unget();
+            return mk_id_token(std::string(str.begin(), str.end()));
         }
     }
 }

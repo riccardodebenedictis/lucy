@@ -1,6 +1,7 @@
 #pragma once
 
 #include <istream>
+#include <vector>
 
 namespace lucy
 {
@@ -143,6 +144,8 @@ private:
     start_pos = end_pos;
     return tk;
   }
+
+  token finish_id(std::vector<char> &str);
 
   void error(const std::string &err);
 
