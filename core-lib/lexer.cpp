@@ -100,11 +100,178 @@ token lexer::next()
                 }
             }
             is.unget();
+            end_pos--;
+            return mk_token(symbol::SLASH);
+        case '=':
+            end_pos++;
+            ch = is.get();
+            if (ch == '=')
+            {
+                end_pos++;
+                return mk_token(symbol::EQEQ);
+            }
+            is.unget();
+            return mk_token(symbol::EQ);
+        case '>':
+            end_pos++;
+            ch = is.get();
+            if (ch == '=')
+            {
+                end_pos++;
+                return mk_token(symbol::GTEQ);
+            }
+            is.unget();
+            return mk_token(symbol::GT);
+        case '<':
+            end_pos++;
+            ch = is.get();
+            if (ch == '=')
+            {
+                end_pos++;
+                return mk_token(symbol::LTEQ);
+            }
+            is.unget();
+            return mk_token(symbol::LT);
+        case '+':
+            end_pos++;
+            return mk_token(symbol::PLUS);
+        case '-':
+            end_pos++;
+            return mk_token(symbol::MINUS);
+        case '|':
+            end_pos++;
+            return mk_token(symbol::BAR);
+        case '&':
+            end_pos++;
+            return mk_token(symbol::AMP);
+        case '^':
+            end_pos++;
+            return mk_token(symbol::CARET);
+        case '!':
+            end_pos++;
+            return mk_token(symbol::BANG);
+        case '.':
+            end_pos++;
+            ch = is.get();
+            end_pos++;
+            if ('0' <= ch && ch <= '9') // in a number literal..
+            {
+                std::vector<char> num;
+                num.push_back('.');
+                num.push_back(ch);
+                while (true)
+                {
+                    ch = is.get();
+                    switch (ch)
+                    {
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        end_pos++;
+                        num.push_back(ch);
+                        break;
+                    case '.':
+                        error("invalid numeric literal..");
+                        return mk_token(symbol::ERROR);
+                    default:
+                        is.unget();
+                        return mk_numeric_token(std::stod(std::string(num.begin(), num.end())));
+                    }
+                }
+            }
+            is.unget();
+            end_pos--;
+            return mk_token(symbol::DOT);
+        case ',':
+            end_pos++;
+            return mk_token(symbol::COMMA);
+        case ';':
+            end_pos++;
+            return mk_token(symbol::SEMICOLON);
+        case ':':
+            end_pos++;
+            return mk_token(symbol::COLON);
+        case '(':
+            end_pos++;
+            return mk_token(symbol::LPAREN);
+        case ')':
+            end_pos++;
+            return mk_token(symbol::RPAREN);
+        case '[':
+            end_pos++;
+            return mk_token(symbol::LBRACKET);
+        case ']':
+            end_pos++;
+            return mk_token(symbol::RBRACKET);
+        case '{':
+            end_pos++;
+            return mk_token(symbol::LBRACE);
+        case '}':
+            end_pos++;
+            return mk_token(symbol::RBRACE);
         case '\r':
             if (is.get() != '\n')
             {
                 is.unget();
             }
+        case '0': // in a number literal..
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        {
+            end_pos++;
+            bool fraction = false;
+            std::vector<char> num;
+            num.push_back(ch);
+            while (true)
+            {
+                ch = is.get();
+                switch (ch)
+                {
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    end_pos++;
+                    num.push_back(ch);
+                    break;
+                case '.':
+                    if (!fraction)
+                    {
+                        end_pos++;
+                        num.push_back(ch);
+                        fraction = true;
+                    }
+                    else
+                    {
+                        error("invalid numeric literal..");
+                        return mk_token(symbol::ERROR);
+                    }
+                default:
+                    is.unget();
+                    return mk_numeric_token(std::stod(std::string(num.begin(), num.end())));
+                }
+            }
+        }
         case '\n':
             end_line++;
             end_pos = 0;

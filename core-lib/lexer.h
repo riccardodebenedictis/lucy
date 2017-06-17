@@ -40,7 +40,7 @@ enum symbol
   SLASH,          // '/'
   AMP,            // '&'
   BAR,            // '|'
-  EQUAL,          // '='
+  EQ,             // '='
   GT,             // '>'
   LT,             // '<'
   BANG,           // '!'
