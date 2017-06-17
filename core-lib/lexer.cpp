@@ -299,6 +299,299 @@ token lexer::next()
             }
             return mk_token(symbol::BOOL);
         }
+        case 'c':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'l')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'a')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 's')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 's')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            return mk_token(symbol::CLASS);
+        }
+        case 'e':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'n')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'u')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'm')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            return mk_token(symbol::ENUM);
+        }
+        case 'f':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'a')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            str.push_back(ch);
+            switch (ch)
+            {
+            case 'c':
+                ch = is.get();
+                end_pos++;
+                if (ch != 't')
+                {
+                    str.push_back(ch);
+                    return finish_id(str);
+                }
+                return mk_token(symbol::FACT);
+            case 'l':
+                ch = is.get();
+                end_pos++;
+                if (ch != 's')
+                {
+                    str.push_back(ch);
+                    return finish_id(str);
+                }
+                ch = is.get();
+                end_pos++;
+                if (ch != 'e')
+                {
+                    str.push_back(ch);
+                    return finish_id(str);
+                }
+                return mk_token(symbol::FALSE);
+            }
+            return finish_id(str);
+        }
+        case 'g':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'o')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'a')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'l')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            return mk_token(symbol::GOAL);
+        }
+        case 'i':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'n')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 't')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            return mk_token(symbol::INT);
+        }
+        case 'o':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'r')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            return mk_token(symbol::OR);
+        }
+        case 'p':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'r')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'e')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'd')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'i')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'c')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'a')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 't')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            if (ch != 'e')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            return mk_token(symbol::PREDICATE);
+        }
+        case 'r':
+        {
+            end_pos++;
+            std::vector<char> str;
+            str.push_back(ch);
+            ch = is.get();
+            end_pos++;
+            if (ch != 'e')
+            {
+                str.push_back(ch);
+                return finish_id(str);
+            }
+            ch = is.get();
+            end_pos++;
+            str.push_back(ch);
+            switch (ch)
+            {
+            case 'a':
+                ch = is.get();
+                end_pos++;
+                if (ch != 't')
+                {
+                    str.push_back(ch);
+                    return finish_id(str);
+                }
+                ch = is.get();
+                end_pos++;
+                if (ch != 'l')
+                {
+                    str.push_back(ch);
+                    return finish_id(str);
+                }
+                return mk_token(symbol::REAL);
+            case 't':
+                ch = is.get();
+                end_pos++;
+                if (ch != 'u')
+                {
+                    str.push_back(ch);
+                    return finish_id(str);
+                }
+                ch = is.get();
+                end_pos++;
+                if (ch != 'r')
+                {
+                    str.push_back(ch);
+                    return finish_id(str);
+                }
+                ch = is.get();
+                end_pos++;
+                if (ch != 'n')
+                {
+                    str.push_back(ch);
+                    return finish_id(str);
+                }
+                return mk_token(symbol::RETURN);
+            }
+            return finish_id(str);
+        }
         case '\n':
             end_line++;
             end_pos = 0;
