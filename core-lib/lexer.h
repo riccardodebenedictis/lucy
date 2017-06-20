@@ -12,7 +12,7 @@ enum symbol
   INT,            // 'int'
   REAL,           // 'real'
   STRING,         // 'string'
-  TYPE_DEF,       // 'type_def'
+  TYPEDEF,        // 'typedef'
   ENUM,           // 'enum'
   CLASS,          // 'class'
   GOAL,           // 'goal'
@@ -65,7 +65,7 @@ public:
   token(const symbol &sym, const int &start_line, const int &start_pos, const int &end_line, const int &end_pos) : sym(sym), start_line(start_line), start_pos(start_pos), end_line(end_line), end_pos(end_pos) {}
   virtual ~token() {}
 
-private:
+public:
   symbol sym;
   int start_line;
   int start_pos;
@@ -76,30 +76,30 @@ private:
 class id_token : public token
 {
 public:
-  id_token(const symbol &sym, const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const std::string &id) : token(sym, start_line, start_pos, end_line, end_pos), id(id) {}
+  id_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const std::string &id) : token(symbol::ID, start_line, start_pos, end_line, end_pos), id(id) {}
   virtual ~id_token() {}
 
-private:
+public:
   std::string id;
 };
 
 class numeric_token : public token
 {
 public:
-  numeric_token(const symbol &sym, const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const double &val) : token(sym, start_line, start_pos, end_line, end_pos), val(val) {}
+  numeric_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const double &val) : token(symbol::NumericLiteral, start_line, start_pos, end_line, end_pos), val(val) {}
   virtual ~numeric_token() {}
 
-private:
+public:
   double val;
 };
 
 class string_token : public token
 {
 public:
-  string_token(const symbol &sym, const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const std::string &str) : token(sym, start_line, start_pos, end_line, end_pos), str(str) {}
+  string_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const std::string &str) : token(symbol::StringLiteral, start_line, start_pos, end_line, end_pos), str(str) {}
   virtual ~string_token() {}
 
-private:
+public:
   std::string str;
 };
 
@@ -110,42 +110,43 @@ public:
   lexer(const lexer &orig) = delete;
   virtual ~lexer();
 
-  token next();
+  token *next();
 
 private:
-  token mk_token(const symbol &sym)
+  token *mk_token(const symbol &sym)
   {
-    token tk(sym, start_line, start_pos, end_line, end_pos);
+    token *tk = new token(sym, start_line, start_pos, end_line, end_pos);
     start_line = end_line;
     start_pos = end_pos;
     return tk;
   }
 
-  id_token mk_id_token(const std::string &id)
+  id_token *mk_id_token(const std::string &id)
   {
-    id_token tk(symbol::ID, start_line, start_pos, end_line, end_pos, id);
+    id_token *tk = new id_token(start_line, start_pos, end_line, end_pos, id);
     start_line = end_line;
     start_pos = end_pos;
     return tk;
   }
 
-  numeric_token mk_numeric_token(const double &val)
+  numeric_token *mk_numeric_token(const double &val)
   {
-    numeric_token tk(symbol::NumericLiteral, start_line, start_pos, end_line, end_pos, val);
+    numeric_token *tk = new numeric_token(start_line, start_pos, end_line, end_pos, val);
     start_line = end_line;
     start_pos = end_pos;
     return tk;
   }
 
-  string_token mk_string_token(const std::string &str)
+  string_token *mk_string_token(const std::string &str)
   {
-    string_token tk(symbol::StringLiteral, start_line, start_pos, end_line, end_pos, str);
+    string_token *tk = new string_token(start_line, start_pos, end_line, end_pos, str);
     start_line = end_line;
     start_pos = end_pos;
     return tk;
   }
 
-  token finish_id(std::vector<char> &str);
+  token *finish_id(std::vector<char> &str);
+  token *finish_whitespaces();
 
   void error(const std::string &err);
 

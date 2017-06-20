@@ -5,11 +5,13 @@
 namespace lucy
 {
 
+bool is_id_part(const char &ch) { return ch == '_' || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9'); }
+
 lexer::lexer(std::istream &is) : is(is) {}
 
 lexer::~lexer() {}
 
-token lexer::next()
+token *lexer::next()
 {
     ch = is.get();
     switch (ch)
@@ -258,6 +260,7 @@ token lexer::next()
                     error("invalid numeric literal..");
                     return mk_token(symbol::ERROR);
                 }
+                break;
             default:
                 is.unget();
                 return mk_numeric_token(std::stod(std::string(num.begin(), num.end())));
@@ -292,7 +295,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::BOOL);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::BOOL);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 'c':
     {
@@ -330,7 +344,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::CLASS);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::CLASS);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 'e':
     {
@@ -360,7 +385,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::ENUM);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::ENUM);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 'f':
     {
@@ -388,7 +424,18 @@ token lexer::next()
                 return finish_id(str);
             }
             end_pos++;
-            return mk_token(symbol::FACT);
+            str.push_back(ch);
+            ch = is.get();
+            if (!is_id_part(ch))
+            {
+                is.unget();
+                return mk_token(symbol::FACT);
+            }
+            else
+            {
+                is.unget();
+                return finish_id(str);
+            }
         case 'l':
             end_pos++;
             str.push_back(ch);
@@ -407,7 +454,18 @@ token lexer::next()
                 return finish_id(str);
             }
             end_pos++;
-            return mk_token(symbol::FALSE);
+            str.push_back(ch);
+            ch = is.get();
+            if (!is_id_part(ch))
+            {
+                is.unget();
+                return mk_token(symbol::FALSE);
+            }
+            else
+            {
+                is.unget();
+                return finish_id(str);
+            }
         }
         is.unget();
         return finish_id(str);
@@ -440,7 +498,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::GOAL);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::GOAL);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 'i':
     {
@@ -462,7 +531,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::INT);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::INT);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 'o':
     {
@@ -476,7 +556,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::OR);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::OR);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 'p':
     {
@@ -546,7 +637,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::PREDICATE);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::PREDICATE);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 'r':
     {
@@ -574,7 +676,18 @@ token lexer::next()
                 return finish_id(str);
             }
             end_pos++;
-            return mk_token(symbol::REAL);
+            str.push_back(ch);
+            ch = is.get();
+            if (!is_id_part(ch))
+            {
+                is.unget();
+                return mk_token(symbol::REAL);
+            }
+            else
+            {
+                is.unget();
+                return finish_id(str);
+            }
         case 't':
             end_pos++;
             str.push_back(ch);
@@ -601,7 +714,18 @@ token lexer::next()
                 return finish_id(str);
             }
             end_pos++;
-            return mk_token(symbol::RETURN);
+            str.push_back(ch);
+            ch = is.get();
+            if (!is_id_part(ch))
+            {
+                is.unget();
+                return mk_token(symbol::RETURN);
+            }
+            else
+            {
+                is.unget();
+                return finish_id(str);
+            }
         }
         is.unget();
         return finish_id(str);
@@ -650,7 +774,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::STRING);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::STRING);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 't':
     {
@@ -678,12 +813,23 @@ token lexer::next()
                 return finish_id(str);
             }
             end_pos++;
-            return mk_token(symbol::TRUE);
+            str.push_back(ch);
+            ch = is.get();
+            if (!is_id_part(ch))
+            {
+                is.unget();
+                return mk_token(symbol::TRUE);
+            }
+            else
+            {
+                is.unget();
+                return finish_id(str);
+            }
         case 'y':
             end_pos++;
             str.push_back(ch);
             ch = is.get();
-            if (ch != 'pu')
+            if (ch != 'p')
             {
                 is.unget();
                 return finish_id(str);
@@ -698,12 +844,6 @@ token lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
-            if (ch != '_')
-            {
-                is.unget();
-                return finish_id(str);
-            }
             ch = is.get();
             if (ch != 'd')
             {
@@ -727,7 +867,18 @@ token lexer::next()
                 return finish_id(str);
             }
             end_pos++;
-            return mk_token(symbol::TYPE_DEF);
+            str.push_back(ch);
+            ch = is.get();
+            if (!is_id_part(ch))
+            {
+                is.unget();
+                return mk_token(symbol::TYPEDEF);
+            }
+            else
+            {
+                is.unget();
+                return finish_id(str);
+            }
         }
         is.unget();
         return finish_id(str);
@@ -760,7 +911,18 @@ token lexer::next()
             return finish_id(str);
         }
         end_pos++;
-        return mk_token(symbol::VOID);
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::VOID);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
     }
     case 'a':
     case 'd':
@@ -834,7 +996,7 @@ token lexer::next()
     }
 }
 
-token lexer::finish_id(std::vector<char> &str)
+token *lexer::finish_id(std::vector<char> &str)
 {
     while (true)
     {
@@ -857,7 +1019,7 @@ token lexer::finish_id(std::vector<char> &str)
     }
 }
 
-token lexer::finish_whitespaces()
+token *lexer::finish_whitespaces()
 {
     while (true)
     {
@@ -890,5 +1052,5 @@ token lexer::finish_whitespaces()
     }
 }
 
-void lexer::error(const std::string &err) { std::cerr << "[" << std::to_string(start_line) << ", " << std::to_string(start_pos) << err << std::endl; }
+void lexer::error(const std::string &err) { std::cerr << "[" << std::to_string(start_line) << ", " << std::to_string(start_pos) << "] " << err << std::endl; }
 }
