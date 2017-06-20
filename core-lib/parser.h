@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lexer.h"
+
 namespace lucy
 {
 
