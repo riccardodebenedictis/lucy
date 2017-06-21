@@ -293,6 +293,186 @@ class_declaration *parser::_class_declaration()
     return new class_declaration(n, bcs, fs, cs, ms, ps, ts);
 }
 
+field_declaration *parser::_field_declaration()
+{
+    type_ref *tp = _type_ref();
+    std::string n;
+    std::vector<variable_declaration *> ds;
+
+    if (!match(symbol::ID))
+    {
+        error("expected identifier..");
+        return nullptr;
+    }
+    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+
+    if (match(symbol::EQ))
+    {
+        ds.push_back(new variable_declaration(n, _expr()));
+    }
+    else
+    {
+        ds.push_back(new variable_declaration(n));
+    }
+
+    while (match(symbol::COMMA))
+    {
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+            return nullptr;
+        }
+        n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+
+        if (match(symbol::EQ))
+        {
+            ds.push_back(new variable_declaration(n, _expr()));
+        }
+        else
+        {
+            ds.push_back(new variable_declaration(n));
+        }
+    }
+
+    if (!match(symbol::RBRACE))
+    {
+        error("expected '}'..");
+        return nullptr;
+    }
+
+    return new field_declaration(tp, ds);
+}
+
+method_declaration *parser::_method_declaration()
+{
+    type_ref *rt;
+    std::string n;
+    std::vector<std::pair<type_ref *, std::string>> pars;
+    std::vector<statement *> stmnts;
+
+    if (match(symbol::VOID))
+    {
+        rt = _type_ref();
+    }
+    else
+    {
+        rt = nullptr;
+    }
+
+    if (!match(symbol::ID))
+    {
+        error("expected identifier..");
+        return nullptr;
+    }
+    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+
+    if (!match(symbol::LPAREN))
+    {
+        error("expected '('..");
+        return nullptr;
+    }
+
+    while (match(symbol::ID))
+    {
+        type_ref *t = _type_ref();
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+            return nullptr;
+        }
+        std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+        pars.push_back({t, pn});
+    }
+
+    if (!match(symbol::RPAREN))
+    {
+        error("expected ')'..");
+        return nullptr;
+    }
+
+    if (!match(symbol::LBRACE))
+    {
+        error("expected '{'..");
+        return nullptr;
+    }
+
+    if (!match(symbol::RBRACE))
+    {
+        error("expected '}'..");
+        return nullptr;
+    }
+
+    return new method_declaration(rt, n, pars, stmnts);
+}
+
+constructor_declaration *parser::_constructor_declaration()
+{
+    std::vector<std::pair<type_ref *, std::string>> pars;
+    std::vector<std::pair<std::string, std::vector<expr *>>> il;
+    std::vector<statement *> stmnts;
+
+    if (!match(symbol::ID))
+    {
+        error("expected identifier..");
+        return nullptr;
+    }
+
+    if (!match(symbol::LPAREN))
+    {
+        error("expected '('..");
+        return nullptr;
+    }
+
+    while (match(symbol::ID))
+    {
+        type_ref *t = _type_ref();
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+            return nullptr;
+        }
+        std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+        pars.push_back({t, pn});
+    }
+
+    if (!match(symbol::RPAREN))
+    {
+        error("expected ')'..");
+        return nullptr;
+    }
+
+    if (match(symbol::COLON))
+    {
+        std::string pn;
+        std::vector<expr *> xprs;
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+            return nullptr;
+        }
+        pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+
+        if (!match(symbol::LPAREN))
+        {
+            error("expected '('..");
+            return nullptr;
+        }
+
+        if (!match(symbol::RPAREN))
+        {
+            error("expected ')'..");
+            return nullptr;
+        }
+    }
+
+    return new constructor_declaration(pars, il, stmnts);
+}
+
+statement *parser::_statement()
+{
+    return nullptr;
+}
+
 expr *parser::_expr(const size_t &pr)
 {
     return nullptr;
