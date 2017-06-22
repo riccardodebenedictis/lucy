@@ -631,6 +631,59 @@ predicate_declaration *parser::_predicate_declaration()
 
 statement *parser::_statement()
 {
+    switch (tk->sym)
+    {
+    case symbol::ID: // either an assignment or a local field..
+    {
+        std::vector<std::string> ids;
+        ids.push_back(dynamic_cast<id_token *>(tk)->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+                return nullptr;
+            }
+            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+
+        switch (tk->sym)
+        {
+        case symbol::ID: // a local field..
+        {
+            std::string n = dynamic_cast<id_token *>(tk)->id;
+            tk = next();
+            if (tk->sym == symbol::EQ)
+            {
+                return new local_field_statement(new type_ref(ids), n, _expr());
+            }
+            else
+            {
+                return new local_field_statement(new type_ref(ids), n);
+            }
+        }
+        case symbol::EQ: // an assignment..
+        {
+            tk = next();
+            expr *xpr = _expr();
+            if (!match(symbol::SEMICOLON))
+            {
+                error("expected ';'..");
+                return nullptr;
+            }
+            return new assignment_statement(ids, xpr);
+        }
+        }
+        break;
+    }
+    case symbol::FACT:
+        return nullptr;
+    case symbol::GOAL:
+        return nullptr;
+    case symbol::RETURN:
+        return nullptr;
+    }
     return nullptr;
 }
 

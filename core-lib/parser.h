@@ -188,6 +188,19 @@ public:
   std::vector<std::string> qualified_id;
   expr *const xpr;
 };
+
+class local_field_statement : public statement
+{
+public:
+  local_field_statement(type_ref *const rt, const std::string &n, expr *const e = nullptr) : field_type(rt), name(n), xpr(e) {}
+  local_field_statement(const local_field_statement &orig) = delete;
+  virtual ~local_field_statement() {}
+
+public:
+  type_ref *const field_type;
+  std::string name;
+  expr *const xpr;
+};
 }
 
 class parser
