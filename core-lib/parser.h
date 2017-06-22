@@ -139,9 +139,15 @@ public:
 class predicate_declaration
 {
 public:
-  predicate_declaration() {}
+  predicate_declaration(const std::string &n, const std::vector<std::pair<type_ref *, std::string>> &pars, const std::vector<type_ref *> &pl, const std::vector<statement *> &stmnts) : name(n), parameters(pars), predicate_list(pl), statements(stmnts) {}
   predicate_declaration(const predicate_declaration &orig) = delete;
   virtual ~predicate_declaration() {}
+
+public:
+  std::string name;
+  std::vector<std::pair<type_ref *, std::string>> parameters;
+  std::vector<type_ref *> predicate_list;
+  std::vector<statement *> statements;
 };
 
 class type_ref
@@ -170,6 +176,18 @@ public:
   statement(const statement &orig) = delete;
   virtual ~statement() {}
 };
+
+class assignment_statement : public statement
+{
+public:
+  assignment_statement(const std::vector<std::string> &q_id, expr *const e) : qualified_id(q_id), xpr(e) {}
+  assignment_statement(const assignment_statement &orig) = delete;
+  virtual ~assignment_statement() {}
+
+public:
+  std::vector<std::string> qualified_id;
+  expr *const xpr;
+};
 }
 
 class parser
@@ -179,7 +197,7 @@ public:
   parser(const parser &orig) = delete;
   virtual ~parser();
 
-  ast::compilation_unit *parse(std::istream &is);
+  ast::compilation_unit *parse(std::istream &is); // generates an abstract syntax tree (ast) for the input stream..
 
 private:
   token *next();
@@ -192,6 +210,7 @@ private:
   ast::field_declaration *_field_declaration();
   ast::method_declaration *_method_declaration();
   ast::constructor_declaration *_constructor_declaration();
+  ast::predicate_declaration *_predicate_declaration();
   ast::statement *_statement();
   ast::expr *_expr(const size_t &pr = 0);
   ast::type_ref *_type_ref();
@@ -199,10 +218,10 @@ private:
   void error(const std::string &err);
 
 private:
-  lexer *lex = nullptr;
-  token *tk = nullptr;
-  std::vector<token *> tks;
-  size_t pos = 0;
-  std::vector<ast::compilation_unit *> cus;
+  lexer *lex = nullptr;                     // the current lexer..
+  token *tk = nullptr;                      // the current lookahead token..
+  std::vector<token *> tks;                 // all the tokens parsed so far..
+  size_t pos = 0;                           // the current position within 0tks'..
+  std::vector<ast::compilation_unit *> cus; // all the compilation units..
 };
 }

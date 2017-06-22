@@ -28,19 +28,56 @@ compilation_unit *parser::parse(std::istream &is)
     std::vector<predicate_declaration *> ps;
     std::vector<statement *> ss;
 
-    switch (tk->sym)
+    while (tk->sym != symbol::EOF_Symbol)
     {
-    case symbol::TYPEDEF:
-        ts.push_back(_typedef_declaration());
-        break;
-    case symbol::ENUM:
-        ts.push_back(_enum_declaration());
-        break;
-    case symbol::CLASS:
-        ts.push_back(_class_declaration());
-        break;
+        switch (tk->sym)
+        {
+        case symbol::TYPEDEF:
+            ts.push_back(_typedef_declaration());
+            break;
+        case symbol::ENUM:
+            ts.push_back(_enum_declaration());
+            break;
+        case symbol::CLASS:
+            ts.push_back(_class_declaration());
+            break;
+        case symbol::PREDICATE:
+            ps.push_back(_predicate_declaration());
+            break;
+        case symbol::VOID:
+            ms.push_back(_method_declaration());
+            break;
+        case symbol::ID:
+        {
+            size_t c_pos = pos;
+            tk = next();
+            while (match(symbol::DOT))
+            {
+                if (!match(symbol::ID))
+                {
+                    error("expected identifier..");
+                    return nullptr;
+                }
+            }
+            if (match(symbol::ID) && match(symbol::LPAREN))
+            {
+                backtrack(c_pos);
+                ms.push_back(_method_declaration());
+            }
+            else
+            {
+                backtrack(c_pos);
+                ss.push_back(_statement());
+            }
+            break;
+        }
+        default:
+            error("expected either 'typedef' or 'enum' or 'class' or 'predicate' or 'void' or identifier..");
+            return nullptr;
+        }
     }
 
+    // cleanings..
     delete lex;
 
     compilation_unit *cu = new compilation_unit(ts, ms, ps, ss);
@@ -110,11 +147,6 @@ typedef_declaration *parser::_typedef_declaration()
     tk = next();
 
     xpr = _expr();
-    if (!xpr)
-    {
-        error("expected expression..");
-        return nullptr;
-    }
 
     if (!match(symbol::ID))
     {
@@ -282,6 +314,59 @@ class_declaration *parser::_class_declaration()
     case symbol::CLASS:
         ts.push_back(_class_declaration());
         break;
+    case symbol::PREDICATE:
+        ps.push_back(_predicate_declaration());
+        break;
+    case symbol::VOID:
+        ms.push_back(_method_declaration());
+        break;
+    case symbol::ID:
+    {
+        size_t c_pos = pos;
+        tk = next();
+        switch (tk->sym)
+        {
+        case symbol::LPAREN:
+            backtrack(c_pos);
+            cs.push_back(_constructor_declaration());
+            break;
+        case symbol::DOT:
+            while (match(symbol::DOT))
+            {
+                if (!match(symbol::ID))
+                {
+                    error("expected identifier..");
+                    return nullptr;
+                }
+            }
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+                return nullptr;
+            }
+            switch (tk->sym)
+            {
+            case symbol::LPAREN:
+                backtrack(c_pos);
+                ms.push_back(_method_declaration());
+                break;
+            case symbol::EQ:
+            case symbol::SEMICOLON:
+                backtrack(c_pos);
+                fs.push_back(_field_declaration());
+                break;
+            default:
+                error("expected either '(' or '=' or ';'..");
+                return nullptr;
+            }
+        default:
+            error("expected either '(' or '.'..");
+            return nullptr;
+        }
+    }
+    default:
+        error("expected either 'typedef' or 'enum' or 'class' or 'predicate' or 'void' or identifier..");
+        return nullptr;
     }
 
     if (!match(symbol::RBRACE))
@@ -334,9 +419,9 @@ field_declaration *parser::_field_declaration()
         }
     }
 
-    if (!match(symbol::RBRACE))
+    if (!match(symbol::SEMICOLON))
     {
-        error("expected '}'..");
+        error("expected ';'..");
         return nullptr;
     }
 
@@ -396,10 +481,9 @@ method_declaration *parser::_method_declaration()
         return nullptr;
     }
 
-    if (!match(symbol::RBRACE))
+    while (!match(symbol::RBRACE))
     {
-        error("expected '}'..");
-        return nullptr;
+        stmnts.push_back(_statement());
     }
 
     return new method_declaration(rt, n, pars, stmnts);
@@ -465,7 +549,84 @@ constructor_declaration *parser::_constructor_declaration()
         }
     }
 
+    if (!match(symbol::LBRACE))
+    {
+        error("expected '{'..");
+        return nullptr;
+    }
+
+    while (!match(symbol::RBRACE))
+    {
+        stmnts.push_back(_statement());
+    }
+
     return new constructor_declaration(pars, il, stmnts);
+}
+
+predicate_declaration *parser::_predicate_declaration()
+{
+    std::string n;
+    std::vector<std::pair<type_ref *, std::string>> pars;
+    std::vector<type_ref *> pl;
+    std::vector<statement *> stmnts;
+
+    if (!match(symbol::PREDICATE))
+    {
+        error("expected 'predicate'..");
+        return nullptr;
+    }
+
+    if (!match(symbol::ID))
+    {
+        error("expected identifier..");
+        return nullptr;
+    }
+    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+
+    if (!match(symbol::LPAREN))
+    {
+        error("expected '('..");
+        return nullptr;
+    }
+
+    while (match(symbol::ID))
+    {
+        type_ref *t = _type_ref();
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+            return nullptr;
+        }
+        std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+        pars.push_back({t, pn});
+    }
+
+    if (!match(symbol::RPAREN))
+    {
+        error("expected ')'..");
+        return nullptr;
+    }
+    if (match(symbol::COLON))
+    {
+        pl.push_back(_type_ref());
+        while (match(symbol::COMMA))
+        {
+            pl.push_back(_type_ref());
+        }
+    }
+
+    if (!match(symbol::LBRACE))
+    {
+        error("expected '{'..");
+        return nullptr;
+    }
+
+    while (!match(symbol::RBRACE))
+    {
+        stmnts.push_back(_statement());
+    }
+
+    return new predicate_declaration(n, pars, pl, stmnts);
 }
 
 statement *parser::_statement()
