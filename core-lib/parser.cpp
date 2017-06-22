@@ -542,11 +542,11 @@ constructor_declaration *parser::_constructor_declaration()
             return nullptr;
         }
 
-        if (!match(symbol::RPAREN))
+        while (!match(symbol::RPAREN))
         {
-            error("expected ')'..");
-            return nullptr;
+            xprs.push_back(_expr());
         }
+        il.push_back({pn, xprs});
     }
 
     if (!match(symbol::LBRACE))
