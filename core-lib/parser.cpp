@@ -606,6 +606,7 @@ predicate_declaration *parser::_predicate_declaration()
         error("expected ')'..");
         return nullptr;
     }
+
     if (match(symbol::COLON))
     {
         pl.push_back(_type_ref());
@@ -677,14 +678,130 @@ statement *parser::_statement()
         }
         break;
     }
+    case symbol::LBRACE: // either a block or a disjunction..
+    {
+        tk = next();
+        std::vector<statement *> stmnts;
+        while (!match(symbol::RBRACE))
+        {
+            stmnts.push_back(_statement());
+        }
+        if (tk->sym == symbol::OR)
+        {
+            std::vector<block_statement *> disjs;
+            disjs.push_back(new block_statement(stmnts));
+            while (match(symbol::OR))
+            {
+                stmnts.clear();
+                while (!match(symbol::RBRACE))
+                {
+                    stmnts.push_back(_statement());
+                }
+                disjs.push_back(new block_statement(stmnts));
+            }
+            if (!match(symbol::SEMICOLON))
+            {
+                error("expected ';'..");
+                return nullptr;
+            }
+            return new disjunction_statement(disjs);
+        }
+        else
+        {
+            if (!match(symbol::SEMICOLON))
+            {
+                error("expected ';'..");
+                return nullptr;
+            }
+            return new block_statement(stmnts);
+        }
+    }
+        return nullptr;
     case symbol::FACT:
-        return nullptr;
     case symbol::GOAL:
-        return nullptr;
+    {
+        tk = next();
+        bool isf = tk->sym == symbol::FACT;
+        std::string fn;
+        std::vector<std::string> scp;
+        std::string pn;
+        std::vector<std::pair<std::string, expr *>> assgns;
+
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+            return nullptr;
+        }
+        fn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+
+        if (!match(symbol::EQ))
+        {
+            error("expected '='..");
+            return nullptr;
+        }
+
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+            return nullptr;
+        }
+        scp.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+                return nullptr;
+            }
+            scp.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+        pn = scp.back();
+        scp.pop_back();
+
+        if (!match(symbol::LPAREN))
+        {
+            error("expected '('..");
+            return nullptr;
+        }
+
+        while (match(symbol::ID))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+                return nullptr;
+            }
+            assgns.push_back({dynamic_cast<id_token *>(tks[pos - 2])->id, _expr()});
+        }
+
+        if (!match(symbol::RPAREN))
+        {
+            error("expected ')'..");
+            return nullptr;
+        }
+
+        if (!match(symbol::SEMICOLON))
+        {
+            error("expected ';'..");
+            return nullptr;
+        }
+        return new formula_statement(isf, fn, scp, pn, assgns);
+    }
     case symbol::RETURN:
+    {
+        expr *xpr = _expr();
+        if (!match(symbol::SEMICOLON))
+        {
+            error("expected ';'..");
+            return nullptr;
+        }
+        return new return_statement(xpr);
+    }
+    default:
+        error("expected either 'fact' or 'goal' or '{' or 'return' or identifier..");
         return nullptr;
     }
-    return nullptr;
 }
 
 expr *parser::_expr(const size_t &pr)

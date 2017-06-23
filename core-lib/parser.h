@@ -201,6 +201,54 @@ public:
   std::string name;
   expr *const xpr;
 };
+
+class block_statement : public statement
+{
+public:
+  block_statement(const std::vector<statement *> &stmnts) : statements(stmnts) {}
+  block_statement(const block_statement &orig) = delete;
+  virtual ~block_statement() {}
+
+public:
+  std::vector<statement *> statements;
+};
+
+class disjunction_statement : public statement
+{
+public:
+  disjunction_statement(const std::vector<block_statement *> &disjs) : disjunctions(disjs) {}
+  disjunction_statement(const disjunction_statement &orig) = delete;
+  virtual ~disjunction_statement() {}
+
+public:
+  std::vector<block_statement *> disjunctions;
+};
+
+class formula_statement : public statement
+{
+public:
+  formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, expr *>> &assns) : is_fact(isf), formula_name(fn), formula_scope(scp), predicate_name(pn), assignments(assns) {}
+  formula_statement(const formula_statement &orig) = delete;
+  virtual ~formula_statement() {}
+
+public:
+  bool is_fact;
+  std::string formula_name;
+  std::vector<std::string> formula_scope;
+  std::string predicate_name;
+  std::vector<std::pair<std::string, expr *>> assignments;
+};
+
+class return_statement : public statement
+{
+public:
+  return_statement(expr *const e) : xpr(e) {}
+  return_statement(const return_statement &orig) = delete;
+  virtual ~return_statement() {}
+
+public:
+  expr *const xpr;
+};
 }
 
 class parser
