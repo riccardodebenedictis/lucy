@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "declaration.h"
 #include "statement.h"
 #include "expression.h"
 #include <cassert>
@@ -13,7 +14,6 @@ namespace lucy
 using namespace ast;
 
 parser::parser(core &cr) : cr(cr) {}
-
 parser::~parser() {}
 
 void parser::parse(std::istream &is)
