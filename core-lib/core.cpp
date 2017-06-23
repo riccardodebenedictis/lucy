@@ -429,13 +429,13 @@ std::string core::to_string(std::unordered_map<std::string, expr> items)
             iss += "{ \"lit\" : \"" + sign_s + std::to_string(bi->l.v) + "\", \"val\" : ";
             switch (sat.value(bi->l))
             {
-            case smt::True:
+            case True:
                 iss += "\"True\"";
                 break;
-            case smt::False:
+            case False:
                 iss += "\"False\"";
                 break;
-            case smt::Undefined:
+            case Undefined:
                 iss += "\"Undefined\"";
                 break;
             }
@@ -443,7 +443,7 @@ std::string core::to_string(std::unordered_map<std::string, expr> items)
         }
         else if (arith_item *ai = dynamic_cast<arith_item *>(&*is_it->second))
         {
-            smt::interval bnds = la_th.bounds(ai->l);
+            interval bnds = la_th.bounds(ai->l);
             iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : " + std::to_string(la_th.value(ai->l));
             if (bnds.lb > -std::numeric_limits<double>::infinity())
             {
@@ -458,8 +458,8 @@ std::string core::to_string(std::unordered_map<std::string, expr> items)
         else if (enum_item *ei = dynamic_cast<enum_item *>(&*is_it->second))
         {
             iss += "{ \"var\" : \"e" + std::to_string(ei->ev) + "\", \"vals\" : [ ";
-            std::unordered_set<smt::set_item *> vals = set_th.value(ei->ev);
-            for (std::unordered_set<smt::set_item *>::iterator vals_it = vals.begin(); vals_it != vals.end(); ++vals_it)
+            std::unordered_set<set_item *> vals = set_th.value(ei->ev);
+            for (std::unordered_set<set_item *>::iterator vals_it = vals.begin(); vals_it != vals.end(); ++vals_it)
             {
                 if (vals_it != vals.begin())
                 {
@@ -495,8 +495,8 @@ std::string core::to_string(atom *a)
 {
     std::string as;
     as += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(a)) + "\", \"predicate\" : \"" + a->tp.name + "\", \"state\" : [";
-    std::unordered_set<smt::set_item *> state_vals = set_th.value(a->state);
-    for (std::unordered_set<smt::set_item *>::iterator vals_it = state_vals.begin(); vals_it != state_vals.end(); ++vals_it)
+    std::unordered_set<set_item *> state_vals = set_th.value(a->state);
+    for (std::unordered_set<set_item *>::iterator vals_it = state_vals.begin(); vals_it != state_vals.end(); ++vals_it)
     {
         if (vals_it != state_vals.begin())
         {

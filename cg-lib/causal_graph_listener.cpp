@@ -59,13 +59,13 @@ std::string causal_graph_listener::to_string()
             g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(fs_it->first)) + "\", \"label\" : \"" + fs_it->first->get_label() + "\", \"in_plan_var\" : \"b" + std::to_string(fs_it->first->get_in_plan()) + "\", \"in_plan_val\" : ";
             switch (graph.core::sat.value(fs_it->first->get_in_plan()))
             {
-            case smt::True:
+            case True:
                 g += "\"True\"";
                 break;
-            case smt::False:
+            case False:
                 g += "\"False\"";
                 break;
-            case smt::Undefined:
+            case Undefined:
                 g += "\"Undefined\"";
                 break;
             }
@@ -93,13 +93,13 @@ std::string causal_graph_listener::to_string()
             g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(rs_it->first)) + "\", \"label\" : \"" + rs_it->first->get_label() + "\", \"chosen_var\" : \"b" + std::to_string(rs_it->first->get_chosen()) + "\", \"chosen_val\" : ";
             switch (graph.core::sat.value(rs_it->first->get_chosen()))
             {
-            case smt::True:
+            case True:
                 g += "\"True\"";
                 break;
-            case smt::False:
+            case False:
                 g += "\"False\"";
                 break;
-            case smt::Undefined:
+            case Undefined:
                 g += "\"Undefined\"";
                 break;
             }

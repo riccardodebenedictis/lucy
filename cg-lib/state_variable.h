@@ -84,7 +84,7 @@ private:
     bool apply() override;
 
   private:
-    const smt::lit to_do;
+    const lit to_do;
   };
 
   class order_resolver : public sv_resolver

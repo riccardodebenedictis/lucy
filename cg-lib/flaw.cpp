@@ -86,10 +86,10 @@ bool flaw::expand()
         return graph.core::sat.new_clause({lit(in_plan, false), lit(resolvers.front()->chosen, true)});
     default:
         // we need to take a decision for solving this flaw..
-        std::vector<smt::lit> r_chs;
+        std::vector<lit> r_chs;
         for (const auto &r : resolvers)
         {
-            r_chs.push_back(smt::lit(r->chosen, true));
+            r_chs.push_back(lit(r->chosen, true));
         }
         return graph.core::sat.new_clause({lit(in_plan, false), lit(exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs), true)});
     }

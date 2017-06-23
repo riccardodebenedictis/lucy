@@ -85,7 +85,7 @@ main_loop:
     // we create a new graph var..
     graph_var = core::sat.new_var();
     // we use the current graph var to allow search within the current graph..
-    bool a_gv = core::sat.assume(smt::lit(graph_var, true));
+    bool a_gv = core::sat.assume(lit(graph_var, true));
     assert(a_gv);
 
     // this is the next flaw to be solved..
@@ -116,7 +116,7 @@ main_loop:
         }
 
         // we apply the resolver..
-        if (!core::sat.assume(smt::lit(r_next.chosen, true)) || !core::sat.check())
+        if (!core::sat.assume(lit(r_next.chosen, true)) || !core::sat.check())
         {
             return false;
         }
@@ -124,16 +124,16 @@ main_loop:
         while (!has_solution())
         {
             // we search within the graph..
-            std::vector<smt::lit> look_elsewhere;
+            std::vector<lit> look_elsewhere;
             for (std::vector<layer>::reverse_iterator trail_it = trail.rbegin(); trail_it != trail.rend(); ++trail_it)
             {
                 if (trail_it->r)
                 {
-                    look_elsewhere.push_back(smt::lit(trail_it->r->chosen, false));
+                    look_elsewhere.push_back(lit(trail_it->r->chosen, false));
                 }
             }
-            look_elsewhere.push_back(smt::lit(graph_var, false));
-            while (core::sat.value(look_elsewhere[0].v) != smt::Undefined)
+            look_elsewhere.push_back(lit(graph_var, false));
+            while (core::sat.value(look_elsewhere[0].v) != Undefined)
             {
                 // we backtrack..
                 core::sat.pop();
@@ -149,7 +149,7 @@ main_loop:
                 // we create a new graph var..
                 graph_var = core::sat.new_var();
                 // we use the current graph var to allow search within the current graph..
-                a_gv = core::sat.assume(smt::lit(graph_var, true));
+                a_gv = core::sat.assume(lit(graph_var, true));
                 assert(a_gv);
             }
             else
@@ -185,7 +185,7 @@ void causal_graph::new_flaw(flaw &f)
 {
     f.init();
     flaw_q.push(&f);
-    if (core::sat.value(f.in_plan) == smt::True)
+    if (core::sat.value(f.in_plan) == True)
     {
         // we have a top-level (landmark) flaw..
         flaws.insert(&f);
@@ -217,7 +217,7 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 {
     r.preconditions.push_back(&f);
     f.supports.push_back(&r);
-    bool new_clause = core::sat.new_clause({smt::lit(r.chosen, false), smt::lit(f.in_plan, true)});
+    bool new_clause = core::sat.new_clause({lit(r.chosen, false), lit(f.in_plan, true)});
     assert(new_clause);
 
     // we notify the listeners that a new causal link has been created..
@@ -273,7 +273,7 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
                 if (trail_it->r)
                 {
                     // this resolver is null if we are calling the check from the sat core! Not bad: shorter conflict..
-                    cnfl.push_back(smt::lit(trail_it->r->chosen, false));
+                    cnfl.push_back(lit(trail_it->r->chosen, false));
                 }
             }
             return false;
@@ -453,7 +453,7 @@ bool causal_graph::is_deferrable(flaw &f)
             // we cannot defer this flaw..
             return false;
         }
-        else if (core::sat.value(q.front()->in_plan) == smt::False)
+        else if (core::sat.value(q.front()->in_plan) == False)
         {
             // it is not possible to solve this flaw with current assignments.. thus we defer..
             return true;
@@ -574,11 +574,11 @@ flaw *causal_graph::select_flaw()
     for (auto it = flaws.begin(); it != flaws.end();)
     {
         assert((*it)->expanded);
-        assert(core::sat.value((*it)->in_plan) == smt::True);
-        if (std::count_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != smt::False; }) == 1)
+        assert(core::sat.value((*it)->in_plan) == True);
+        if (std::count_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != False; }) == 1)
         {
             // we have a trivial flaw..
-            assert(core::sat.value((*std::find_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != smt::False; }))->chosen) == smt::True);
+            assert(core::sat.value((*std::find_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != False; }))->chosen) == True);
             // we remove the trivial flaw from the current flaws..
             if (!trail.empty())
             {
