@@ -2,6 +2,7 @@
 #include <cassert>
 #include <iostream>
 #include <string>
+#include <unordered_set>
 
 namespace lucy
 {
@@ -654,15 +655,19 @@ statement *parser::_statement()
         case symbol::ID: // a local field..
         {
             std::string n = dynamic_cast<id_token *>(tk)->id;
+            expr *e = nullptr;
             tk = next();
             if (tk->sym == symbol::EQ)
             {
-                return new local_field_statement(new type_ref(ids), n, _expr());
+                tk = next();
+                e = _expr();
             }
-            else
+            if (!match(symbol::SEMICOLON))
             {
-                return new local_field_statement(new type_ref(ids), n);
+                error("expected ';'..");
+                return nullptr;
             }
+            return new local_field_statement(new type_ref(ids), n, _expr());
         }
         case symbol::EQ: // an assignment..
         {
@@ -675,8 +680,10 @@ statement *parser::_statement()
             }
             return new assignment_statement(ids, xpr);
         }
+        default:
+            error("expected either '=' or an identifier..");
+            return nullptr;
         }
-        break;
     }
     case symbol::LBRACE: // either a block or a disjunction..
     {
@@ -799,13 +806,408 @@ statement *parser::_statement()
         return new return_statement(xpr);
     }
     default:
-        error("expected either 'fact' or 'goal' or '{' or 'return' or identifier..");
-        return nullptr;
+        return new expression_statement(dynamic_cast<bool_expr *>(_expr()));
     }
 }
 
 expr *parser::_expr(const size_t &pr)
 {
+    expr *e = nullptr;
+    switch (tk->sym)
+    {
+    case symbol::TRUE:
+    case symbol::FALSE:
+        tk = next();
+        e = new bool_literal_expr(tks[pos - 2]->sym == symbol::TRUE);
+    case symbol::NumericLiteral:
+        tk = next();
+        e = new arith_literal_expr(dynamic_cast<numeric_token *>(tks[pos - 2])->val);
+    case symbol::StringLiteral:
+        tk = next();
+        e = new string_literal_expr(dynamic_cast<string_token *>(tks[pos - 2])->str);
+    case symbol::LPAREN: // either a parenthesys expression or a cast..
+    {
+        tk = next();
+        switch (tk->sym)
+        {
+        case symbol::ID:
+        {
+            size_t c_pos = pos;
+            tk = next();
+            while (match(symbol::DOT))
+            {
+                if (!match(symbol::ID))
+                {
+                    error("expected identifier..");
+                    return nullptr;
+                }
+            }
+            if (match(symbol::RPAREN)) // a cast..
+            {
+                backtrack(c_pos);
+                type_ref *ct = _type_ref();
+                if (!match(symbol::RPAREN))
+                {
+                    error("expected ')'..");
+                    return nullptr;
+                }
+                expr *xpr = _expr();
+                e = new cast_expr(ct, xpr);
+            }
+            else // a parenthesis..
+            {
+                backtrack(c_pos);
+                expr *xpr = _expr();
+                if (!match(symbol::RPAREN))
+                {
+                    error("expected ')'..");
+                    return nullptr;
+                }
+                e = xpr;
+            }
+        }
+        }
+    }
+    case symbol::PLUS:
+        tk = next();
+        if (arith_expr *ae = dynamic_cast<arith_expr *>(_expr()))
+        {
+            e = new plus_expr(ae);
+        }
+        else
+        {
+            error("expected arithmetic expression..");
+            return nullptr;
+        }
+    case symbol::MINUS:
+        tk = next();
+        if (arith_expr *ae = dynamic_cast<arith_expr *>(_expr()))
+        {
+            e = new minus_expr(ae);
+        }
+        else
+        {
+            error("expected arithmetic expression..");
+            return nullptr;
+        }
+    case symbol::BANG:
+        tk = next();
+        if (bool_expr *be = dynamic_cast<bool_expr *>(_expr()))
+        {
+            e = new not_expr(be);
+        }
+        else
+        {
+            error("expected boolean expression..");
+            return nullptr;
+        }
+    case symbol::LBRACKET:
+    {
+        tk = next();
+        arith_expr *min_e;
+        arith_expr *max_e;
+        if (arith_expr *e = dynamic_cast<arith_expr *>(_expr()))
+        {
+            min_e = e;
+        }
+        else
+        {
+            error("expected arithmetic expression..");
+            return nullptr;
+        }
+        if (!match(symbol::COMMA))
+        {
+            error("expected ','..");
+            return nullptr;
+        }
+        if (arith_expr *e = dynamic_cast<arith_expr *>(_expr()))
+        {
+            max_e = e;
+        }
+        else
+        {
+            error("expected arithmetic expression..");
+            return nullptr;
+        }
+        if (!match(symbol::RBRACKET))
+        {
+            error("expected ']'..");
+            return nullptr;
+        }
+        e = new range_expr(min_e, max_e);
+    }
+    case symbol::NEW:
+    {
+        tk = next();
+        type_ref *it = _type_ref();
+        std::vector<expr *> es;
+
+        if (!match(symbol::LPAREN))
+        {
+            error("expected '('..");
+            return nullptr;
+        }
+        while (!match(symbol::RPAREN))
+        {
+            es.push_back(_expr());
+        }
+        e = new constructor_expr(it, es);
+    }
+    case symbol::ID:
+    {
+        std::vector<std::string> is;
+        is.push_back(dynamic_cast<id_token *>(tk)->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+                return nullptr;
+            }
+            is.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+        e = new id_expr(is);
+    }
+    }
+
+    std::unordered_set<symbol> la_set({symbol::PLUS, symbol::MINUS, symbol::STAR, symbol::SLASH, symbol::LT, symbol::LTEQ, symbol::EQEQ, symbol::GTEQ, symbol::GT, symbol::BANGEQ, symbol::IMPLICATION, symbol::BAR, symbol::AMP, symbol::CARET});
+    while (la_set.find(tk->sym) != la_set.end())
+    {
+        if (0 >= pr)
+        {
+            switch (tk->sym)
+            {
+            case symbol::EQEQ:
+                tk = next();
+                return new eq_expr(e, _expr(1));
+            case symbol::BANGEQ:
+                tk = next();
+                return new neq_expr(e, _expr(1));
+            }
+        }
+        if (1 >= pr)
+        {
+            switch (tk->sym)
+            {
+            case symbol::LT:
+            {
+                tk = next();
+                arith_expr *l = nullptr;
+                arith_expr *r = nullptr;
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                {
+                    l = c_e;
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
+                {
+                    r = c_e;
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                return new lt_expr(l, r);
+            }
+            case symbol::LTEQ:
+            {
+                tk = next();
+                arith_expr *l = nullptr;
+                arith_expr *r = nullptr;
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                {
+                    l = c_e;
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
+                {
+                    r = c_e;
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                return new leq_expr(l, r);
+            }
+            case symbol::GTEQ:
+            {
+                tk = next();
+                arith_expr *l = nullptr;
+                arith_expr *r = nullptr;
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                {
+                    l = c_e;
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
+                {
+                    r = c_e;
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                return new geq_expr(l, r);
+            }
+            case symbol::GT:
+            {
+                tk = next();
+                arith_expr *l = nullptr;
+                arith_expr *r = nullptr;
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                {
+                    l = c_e;
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
+                {
+                    r = c_e;
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                return new gt_expr(l, r);
+            }
+            case symbol::IMPLICATION:
+            {
+                tk = next();
+                bool_expr *l = nullptr;
+                bool_expr *r = nullptr;
+                if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
+                {
+                    l = c_e;
+                }
+                else
+                {
+                    error("expected boolean expression..");
+                    return nullptr;
+                }
+                if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
+                {
+                    r = c_e;
+                }
+                else
+                {
+                    error("expected boolean expression..");
+                    return nullptr;
+                }
+                return new implication_expr(l, r);
+            }
+            case symbol::BAR:
+            {
+                std::vector<bool_expr *> xprs;
+                if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
+                {
+                    xprs.push_back(c_e);
+                }
+                else
+                {
+                    error("expected boolean expression..");
+                    return nullptr;
+                }
+                while (match(symbol::BAR))
+                {
+                    if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
+                    {
+                        xprs.push_back(c_e);
+                    }
+                    else
+                    {
+                        error("expected boolean expression..");
+                        return nullptr;
+                    }
+                }
+                return new disjunction_expr(xprs);
+            }
+            case symbol::AMP:
+            {
+                std::vector<bool_expr *> xprs;
+                if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
+                {
+                    xprs.push_back(c_e);
+                }
+                else
+                {
+                    error("expected boolean expression..");
+                    return nullptr;
+                }
+                while (match(symbol::AMP))
+                {
+                    if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
+                    {
+                        xprs.push_back(c_e);
+                    }
+                    else
+                    {
+                        error("expected boolean expression..");
+                        return nullptr;
+                    }
+                }
+                return new conjunction_expr(xprs);
+            }
+            case symbol::CARET:
+            {
+                std::vector<bool_expr *> xprs;
+                if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
+                {
+                    xprs.push_back(c_e);
+                }
+                else
+                {
+                    error("expected boolean expression..");
+                    return nullptr;
+                }
+                while (match(symbol::AMP))
+                {
+                    if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
+                    {
+                        xprs.push_back(c_e);
+                    }
+                    else
+                    {
+                        error("expected boolean expression..");
+                        return nullptr;
+                    }
+                }
+                return new exct_one_expr(xprs);
+            }
+            }
+        }
+        if (3 >= pr)
+        {
+            switch (tk->sym)
+            {
+            case symbol::EQEQ:
+                tk = next();
+                return new eq_expr(e, _expr(1));
+            case symbol::BANGEQ:
+                tk = next();
+                return new neq_expr(e, _expr(1));
+            }
+        }
+    }
     return nullptr;
 }
 
