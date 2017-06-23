@@ -1117,6 +1117,7 @@ expr *parser::_expr(const size_t &pr)
             }
             case symbol::BAR:
             {
+                tk = next();
                 std::vector<bool_expr *> xprs;
                 if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
                 {
@@ -1143,6 +1144,7 @@ expr *parser::_expr(const size_t &pr)
             }
             case symbol::AMP:
             {
+                tk = next();
                 std::vector<bool_expr *> xprs;
                 if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
                 {
@@ -1169,6 +1171,7 @@ expr *parser::_expr(const size_t &pr)
             }
             case symbol::CARET:
             {
+                tk = next();
                 std::vector<bool_expr *> xprs;
                 if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
                 {
@@ -1199,16 +1202,125 @@ expr *parser::_expr(const size_t &pr)
         {
             switch (tk->sym)
             {
-            case symbol::EQEQ:
+            case symbol::PLUS:
+            {
                 tk = next();
-                return new eq_expr(e, _expr(1));
-            case symbol::BANGEQ:
+                std::vector<arith_expr *> xprs;
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                {
+                    xprs.push_back(c_e);
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                while (match(symbol::PLUS))
+                {
+                    if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(4)))
+                    {
+                        xprs.push_back(c_e);
+                    }
+                    else
+                    {
+                        error("expected arithmetic expression..");
+                        return nullptr;
+                    }
+                }
+                return new addition_expr(xprs);
+            }
+            case symbol::MINUS:
+            {
                 tk = next();
-                return new neq_expr(e, _expr(1));
+                std::vector<arith_expr *> xprs;
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                {
+                    xprs.push_back(c_e);
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                while (match(symbol::MINUS))
+                {
+                    if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(4)))
+                    {
+                        xprs.push_back(c_e);
+                    }
+                    else
+                    {
+                        error("expected arithmetic expression..");
+                        return nullptr;
+                    }
+                }
+                return new subtraction_expr(xprs);
+            }
+            }
+        }
+        if (5 >= pr)
+        {
+            switch (tk->sym)
+            {
+            case symbol::STAR:
+            {
+                tk = next();
+                std::vector<arith_expr *> xprs;
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                {
+                    xprs.push_back(c_e);
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                while (match(symbol::STAR))
+                {
+                    if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(4)))
+                    {
+                        xprs.push_back(c_e);
+                    }
+                    else
+                    {
+                        error("expected arithmetic expression..");
+                        return nullptr;
+                    }
+                }
+                return new multiplication_expr(xprs);
+            }
+            case symbol::SLASH:
+            {
+                tk = next();
+                std::vector<arith_expr *> xprs;
+                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                {
+                    xprs.push_back(c_e);
+                }
+                else
+                {
+                    error("expected arithmetic expression..");
+                    return nullptr;
+                }
+                while (match(symbol::SLASH))
+                {
+                    if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(4)))
+                    {
+                        xprs.push_back(c_e);
+                    }
+                    else
+                    {
+                        error("expected arithmetic expression..");
+                        return nullptr;
+                    }
+                }
+                return new division_expr(xprs);
+            }
             }
         }
     }
-    return nullptr;
+
+    return e;
 }
 
 ast::type_ref *parser::_type_ref()
