@@ -9,318 +9,318 @@ namespace lucy
 namespace ast
 {
 
-class bool_expr;
-class arith_expr;
+class bool_expression;
+class arith_expression;
 
-class expr
+class expression
 {
 public:
-  expr();
-  expr(const expr &orig) = delete;
-  virtual ~expr();
+  expression();
+  expression(const expression &orig) = delete;
+  virtual ~expression();
 };
 
-class cast_expr : public expr
+class cast_expression : public expression
 {
 public:
-  cast_expr(const std::vector<std::string> &tp, expr *const e);
-  cast_expr(const cast_expr &orig) = delete;
-  virtual ~cast_expr();
+  cast_expression(const std::vector<std::string> &tp, expression *const e);
+  cast_expression(const cast_expression &orig) = delete;
+  virtual ~cast_expression();
 
 private:
   std::vector<std::string> cast_to_type;
-  expr *xpr;
+  expression *xpr;
 };
 
-class constructor_expr : public expr
+class constructor_expression : public expression
 {
 public:
-  constructor_expr(const std::vector<std::string> &it, const std::vector<expr *> &es);
-  constructor_expr(const constructor_expr &orig) = delete;
-  virtual ~constructor_expr();
+  constructor_expression(const std::vector<std::string> &it, const std::vector<expression *> &es);
+  constructor_expression(const constructor_expression &orig) = delete;
+  virtual ~constructor_expression();
 
 private:
   std::vector<std::string> instance_type;
-  std::vector<expr *> exprs;
+  std::vector<expression *> expressions;
 };
 
-class id_expr : public expr
+class id_expression : public expression
 {
 public:
-  id_expr(const std::vector<std::string> &is);
-  id_expr(const id_expr &orig) = delete;
-  virtual ~id_expr();
+  id_expression(const std::vector<std::string> &is);
+  id_expression(const id_expression &orig) = delete;
+  virtual ~id_expression();
 
 private:
   std::vector<std::string> ids;
 };
 
-class function_expr : public expr
+class function_expression : public expression
 {
 public:
-  function_expr(const std::vector<std::string> &is, const std::string &fn, const std::vector<expr *> &es);
-  function_expr(const function_expr &orig) = delete;
-  virtual ~function_expr();
+  function_expression(const std::vector<std::string> &is, const std::string &fn, const std::vector<expression *> &es);
+  function_expression(const function_expression &orig) = delete;
+  virtual ~function_expression();
 
 private:
   std::vector<std::string> ids;
   std::string function_name;
-  std::vector<expr *> exprs;
+  std::vector<expression *> expressions;
 };
 
-class string_literal_expr : public expr
+class string_literal_expression : public expression
 {
 public:
-  string_literal_expr(const std::string &l);
-  string_literal_expr(const string_literal_expr &orig) = delete;
-  virtual ~string_literal_expr();
+  string_literal_expression(const std::string &l);
+  string_literal_expression(const string_literal_expression &orig) = delete;
+  virtual ~string_literal_expression();
 
 private:
   std::string literal;
 };
 
-class bool_expr : public expr
+class bool_expression : public expression
 {
 public:
-  bool_expr();
-  bool_expr(const bool_expr &orig) = delete;
-  virtual ~bool_expr();
+  bool_expression();
+  bool_expression(const bool_expression &orig) = delete;
+  virtual ~bool_expression();
 };
 
-class bool_literal_expr : public bool_expr
+class bool_literal_expression : public bool_expression
 {
 public:
-  bool_literal_expr(const bool &l);
-  bool_literal_expr(const bool_literal_expr &orig) = delete;
-  virtual ~bool_literal_expr();
+  bool_literal_expression(const bool &l);
+  bool_literal_expression(const bool_literal_expression &orig) = delete;
+  virtual ~bool_literal_expression();
 
 private:
   bool literal;
 };
 
-class eq_expr : public bool_expr
+class eq_expression : public bool_expression
 {
 public:
-  eq_expr(expr *const l, expr *const r);
-  eq_expr(const eq_expr &orig) = delete;
-  virtual ~eq_expr();
+  eq_expression(expression *const l, expression *const r);
+  eq_expression(const eq_expression &orig) = delete;
+  virtual ~eq_expression();
 
 private:
-  expr *left;
-  expr *right;
+  expression *left;
+  expression *right;
 };
 
-class neq_expr : public bool_expr
+class neq_expression : public bool_expression
 {
 public:
-  neq_expr(expr *const l, expr *const r);
-  neq_expr(const neq_expr &orig) = delete;
-  virtual ~neq_expr();
+  neq_expression(expression *const l, expression *const r);
+  neq_expression(const neq_expression &orig) = delete;
+  virtual ~neq_expression();
 
 private:
-  expr *left;
-  expr *right;
+  expression *left;
+  expression *right;
 };
 
-class lt_expr : public bool_expr
+class lt_expression : public bool_expression
 {
 public:
-  lt_expr(arith_expr *const l, arith_expr *const r);
-  lt_expr(const lt_expr &orig) = delete;
-  virtual ~lt_expr();
+  lt_expression(arith_expression *const l, arith_expression *const r);
+  lt_expression(const lt_expression &orig) = delete;
+  virtual ~lt_expression();
 
 private:
-  arith_expr *left;
-  arith_expr *right;
+  arith_expression *left;
+  arith_expression *right;
 };
 
-class leq_expr : public bool_expr
+class leq_expression : public bool_expression
 {
 public:
-  leq_expr(arith_expr *const l, arith_expr *const r);
-  leq_expr(const leq_expr &orig) = delete;
-  virtual ~leq_expr();
+  leq_expression(arith_expression *const l, arith_expression *const r);
+  leq_expression(const leq_expression &orig) = delete;
+  virtual ~leq_expression();
 
 private:
-  arith_expr *left;
-  arith_expr *right;
+  arith_expression *left;
+  arith_expression *right;
 };
 
-class geq_expr : public bool_expr
+class geq_expression : public bool_expression
 {
 public:
-  geq_expr(arith_expr *const l, arith_expr *const r);
-  geq_expr(const geq_expr &orig) = delete;
-  virtual ~geq_expr();
+  geq_expression(arith_expression *const l, arith_expression *const r);
+  geq_expression(const geq_expression &orig) = delete;
+  virtual ~geq_expression();
 
 private:
-  arith_expr *left;
-  arith_expr *right;
+  arith_expression *left;
+  arith_expression *right;
 };
 
-class gt_expr : public bool_expr
+class gt_expression : public bool_expression
 {
 public:
-  gt_expr(arith_expr *const l, arith_expr *const r);
-  gt_expr(const gt_expr &orig) = delete;
-  virtual ~gt_expr();
+  gt_expression(arith_expression *const l, arith_expression *const r);
+  gt_expression(const gt_expression &orig) = delete;
+  virtual ~gt_expression();
 
 private:
-  arith_expr *left;
-  arith_expr *right;
+  arith_expression *left;
+  arith_expression *right;
 };
 
-class implication_expr : public bool_expr
+class implication_expression : public bool_expression
 {
 public:
-  implication_expr(bool_expr *const l, bool_expr *const r);
-  implication_expr(const implication_expr &orig) = delete;
-  virtual ~implication_expr();
+  implication_expression(bool_expression *const l, bool_expression *const r);
+  implication_expression(const implication_expression &orig) = delete;
+  virtual ~implication_expression();
 
 private:
-  bool_expr *left;
-  bool_expr *right;
+  bool_expression *left;
+  bool_expression *right;
 };
 
-class disjunction_expr : public bool_expr
+class disjunction_expression : public bool_expression
 {
 public:
-  disjunction_expr(std::vector<bool_expr *> es);
-  disjunction_expr(const disjunction_expr &orig) = delete;
-  virtual ~disjunction_expr();
+  disjunction_expression(std::vector<bool_expression *> es);
+  disjunction_expression(const disjunction_expression &orig) = delete;
+  virtual ~disjunction_expression();
 
 private:
-  std::vector<bool_expr *> exprs;
+  std::vector<bool_expression *> expressions;
 };
 
-class conjunction_expr : public bool_expr
+class conjunction_expression : public bool_expression
 {
 public:
-  conjunction_expr(std::vector<bool_expr *> es);
-  conjunction_expr(const conjunction_expr &orig) = delete;
-  virtual ~conjunction_expr();
+  conjunction_expression(std::vector<bool_expression *> es);
+  conjunction_expression(const conjunction_expression &orig) = delete;
+  virtual ~conjunction_expression();
 
 private:
-  std::vector<bool_expr *> exprs;
+  std::vector<bool_expression *> expressions;
 };
 
-class exct_one_expr : public bool_expr
+class exct_one_expression : public bool_expression
 {
 public:
-  exct_one_expr(std::vector<bool_expr *> es);
-  exct_one_expr(const exct_one_expr &orig) = delete;
-  virtual ~exct_one_expr();
+  exct_one_expression(std::vector<bool_expression *> es);
+  exct_one_expression(const exct_one_expression &orig) = delete;
+  virtual ~exct_one_expression();
 
 private:
-  std::vector<bool_expr *> exprs;
+  std::vector<bool_expression *> expressions;
 };
 
-class not_expr : public bool_expr
+class not_expression : public bool_expression
 {
 public:
-  not_expr(bool_expr *const e);
-  not_expr(const not_expr &orig) = delete;
-  virtual ~not_expr();
+  not_expression(bool_expression *const e);
+  not_expression(const not_expression &orig) = delete;
+  virtual ~not_expression();
 
 private:
-  bool_expr *xpr;
+  bool_expression *xpr;
 };
 
-class arith_expr : public expr
+class arith_expression : public expression
 {
 public:
-  arith_expr();
-  arith_expr(const arith_expr &orig) = delete;
-  virtual ~arith_expr();
+  arith_expression();
+  arith_expression(const arith_expression &orig) = delete;
+  virtual ~arith_expression();
 };
 
-class arith_literal_expr : public arith_expr
+class arith_literal_expression : public arith_expression
 {
 public:
-  arith_literal_expr(const double &l);
-  arith_literal_expr(const arith_literal_expr &orig) = delete;
-  virtual ~arith_literal_expr();
+  arith_literal_expression(const double &l);
+  arith_literal_expression(const arith_literal_expression &orig) = delete;
+  virtual ~arith_literal_expression();
 
 private:
   double literal;
 };
 
-class plus_expr : public arith_expr
+class plus_expression : public arith_expression
 {
 public:
-  plus_expr(arith_expr *const e);
-  plus_expr(const plus_expr &orig) = delete;
-  virtual ~plus_expr();
+  plus_expression(arith_expression *const e);
+  plus_expression(const plus_expression &orig) = delete;
+  virtual ~plus_expression();
 
 private:
-  arith_expr *xpr;
+  arith_expression *xpr;
 };
 
-class minus_expr : public arith_expr
+class minus_expression : public arith_expression
 {
 public:
-  minus_expr(arith_expr *const e);
-  minus_expr(const minus_expr &orig) = delete;
-  virtual ~minus_expr();
+  minus_expression(arith_expression *const e);
+  minus_expression(const minus_expression &orig) = delete;
+  virtual ~minus_expression();
 
 private:
-  arith_expr *xpr;
+  arith_expression *xpr;
 };
 
-class range_expr : public arith_expr
+class range_expression : public arith_expression
 {
 public:
-  range_expr(arith_expr *const min_e, arith_expr *const max_e);
-  range_expr(const range_expr &orig) = delete;
-  virtual ~range_expr();
+  range_expression(arith_expression *const min_e, arith_expression *const max_e);
+  range_expression(const range_expression &orig) = delete;
+  virtual ~range_expression();
 
 private:
-  arith_expr *min_xpr;
-  arith_expr *max_xpr;
+  arith_expression *min_xpr;
+  arith_expression *max_xpr;
 };
 
-class addition_expr : public arith_expr
+class addition_expression : public arith_expression
 {
 public:
-  addition_expr(std::vector<arith_expr *> es);
-  addition_expr(const addition_expr &orig) = delete;
-  virtual ~addition_expr();
+  addition_expression(std::vector<arith_expression *> es);
+  addition_expression(const addition_expression &orig) = delete;
+  virtual ~addition_expression();
 
 private:
-  std::vector<arith_expr *> exprs;
+  std::vector<arith_expression *> expressions;
 };
 
-class subtraction_expr : public arith_expr
+class subtraction_expression : public arith_expression
 {
 public:
-  subtraction_expr(std::vector<arith_expr *> es);
-  subtraction_expr(const subtraction_expr &orig) = delete;
-  virtual ~subtraction_expr();
+  subtraction_expression(std::vector<arith_expression *> es);
+  subtraction_expression(const subtraction_expression &orig) = delete;
+  virtual ~subtraction_expression();
 
 private:
-  std::vector<arith_expr *> exprs;
+  std::vector<arith_expression *> expressions;
 };
 
-class multiplication_expr : public arith_expr
+class multiplication_expression : public arith_expression
 {
 public:
-  multiplication_expr(std::vector<arith_expr *> es);
-  multiplication_expr(const multiplication_expr &orig) = delete;
-  virtual ~multiplication_expr();
+  multiplication_expression(std::vector<arith_expression *> es);
+  multiplication_expression(const multiplication_expression &orig) = delete;
+  virtual ~multiplication_expression();
 
 private:
-  std::vector<arith_expr *> exprs;
+  std::vector<arith_expression *> expressions;
 };
 
-class division_expr : public arith_expr
+class division_expression : public arith_expression
 {
 public:
-  division_expr(std::vector<arith_expr *> es);
-  division_expr(const division_expr &orig) = delete;
-  virtual ~division_expr();
+  division_expression(std::vector<arith_expression *> es);
+  division_expression(const division_expression &orig) = delete;
+  virtual ~division_expression();
 
 private:
-  std::vector<arith_expr *> exprs;
+  std::vector<arith_expression *> expressions;
 };
 }
 }

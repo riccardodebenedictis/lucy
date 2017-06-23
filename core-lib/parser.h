@@ -19,7 +19,7 @@ class constructor_declaration;
 class method_declaration;
 class predicate_declaration;
 class statement;
-class expr;
+class expression;
 
 class type_declaration
 {
@@ -35,13 +35,13 @@ public:
 class typedef_declaration : public type_declaration
 {
 public:
-  typedef_declaration(const std::string &n, const std::string &pt, expr *const e) : type_declaration(n), primitive_type(pt), xpr(e) {}
+  typedef_declaration(const std::string &n, const std::string &pt, expression *const e) : type_declaration(n), primitive_type(pt), xpr(e) {}
   typedef_declaration(const typedef_declaration &orig) = delete;
   virtual ~typedef_declaration() {}
 
 public:
   std::string primitive_type;
-  expr *const xpr;
+  expression *const xpr;
 };
 
 class enum_declaration : public type_declaration
@@ -75,13 +75,13 @@ public:
 class variable_declaration
 {
 public:
-  variable_declaration(const std::string &n, expr *const e = nullptr) : name(n), xpr(e) {}
+  variable_declaration(const std::string &n, expression *const e = nullptr) : name(n), xpr(e) {}
   variable_declaration(const class_declaration &orig) = delete;
   virtual ~variable_declaration() {}
 
 public:
   std::string name;
-  expr *const xpr;
+  expression *const xpr;
 };
 
 class field_declaration
@@ -99,13 +99,13 @@ public:
 class constructor_declaration
 {
 public:
-  constructor_declaration(const std::vector<std::pair<std::vector<std::string>, std::string>> &pars, const std::vector<std::pair<std::string, std::vector<expr *>>> &il, const std::vector<statement *> &stmnts) : parameters(pars), init_list(il), statements(stmnts) {}
+  constructor_declaration(const std::vector<std::pair<std::vector<std::string>, std::string>> &pars, const std::vector<std::pair<std::string, std::vector<expression *>>> &il, const std::vector<statement *> &stmnts) : parameters(pars), init_list(il), statements(stmnts) {}
   constructor_declaration(const constructor_declaration &orig) = delete;
   virtual ~constructor_declaration() {}
 
 public:
   std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
-  std::vector<std::pair<std::string, std::vector<expr *>>> init_list;
+  std::vector<std::pair<std::string, std::vector<expression *>>> init_list;
   std::vector<statement *> statements;
 };
 
@@ -160,7 +160,7 @@ private:
   ast::constructor_declaration *_constructor_declaration();
   ast::predicate_declaration *_predicate_declaration();
   ast::statement *_statement();
-  ast::expr *_expr(const size_t &pr = 0);
+  ast::expression *_expression(const size_t &pr = 0);
 
   void error(const std::string &err);
 

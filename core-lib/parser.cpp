@@ -122,7 +122,7 @@ typedef_declaration *parser::_typedef_declaration()
 {
     std::string n;
     std::string pt;
-    expr *xpr;
+    expression *xpr;
 
     if (!match(symbol::TYPEDEF))
     {
@@ -148,7 +148,7 @@ typedef_declaration *parser::_typedef_declaration()
     }
     tk = next();
 
-    xpr = _expr();
+    xpr = _expression();
 
     if (!match(symbol::ID))
     {
@@ -445,7 +445,7 @@ field_declaration *parser::_field_declaration()
 
     if (match(symbol::EQ))
     {
-        ds.push_back(new variable_declaration(n, _expr()));
+        ds.push_back(new variable_declaration(n, _expression()));
     }
     else
     {
@@ -462,7 +462,7 @@ field_declaration *parser::_field_declaration()
 
         if (match(symbol::EQ))
         {
-            ds.push_back(new variable_declaration(n, _expr()));
+            ds.push_back(new variable_declaration(n, _expression()));
         }
         else
         {
@@ -560,7 +560,7 @@ method_declaration *parser::_method_declaration()
 constructor_declaration *parser::_constructor_declaration()
 {
     std::vector<std::pair<std::vector<std::string>, std::string>> pars;
-    std::vector<std::pair<std::string, std::vector<expr *>>> il;
+    std::vector<std::pair<std::string, std::vector<expression *>>> il;
     std::vector<statement *> stmnts;
 
     if (!match(symbol::ID))
@@ -606,7 +606,7 @@ constructor_declaration *parser::_constructor_declaration()
     if (match(symbol::COLON))
     {
         std::string pn;
-        std::vector<expr *> xprs;
+        std::vector<expression *> xprs;
         if (!match(symbol::ID))
         {
             error("expected identifier..");
@@ -620,14 +620,14 @@ constructor_declaration *parser::_constructor_declaration()
 
         if (!match(symbol::RPAREN))
         {
-            xprs.push_back(_expr());
+            xprs.push_back(_expression());
             while (!match(symbol::RPAREN))
             {
                 if (!match(symbol::COMMA))
                 {
                     error("expected ','..");
                 }
-                xprs.push_back(_expr());
+                xprs.push_back(_expression());
             }
         }
         il.push_back({pn, xprs});
@@ -774,23 +774,23 @@ statement *parser::_statement()
         case symbol::ID: // a local field..
         {
             std::string n = dynamic_cast<id_token *>(tk)->id;
-            expr *e = nullptr;
+            expression *e = nullptr;
             tk = next();
             if (tk->sym == symbol::EQ)
             {
                 tk = next();
-                e = _expr();
+                e = _expression();
             }
             if (!match(symbol::SEMICOLON))
             {
                 error("expected ';'..");
             }
-            return new local_field_statement(ids, n, _expr());
+            return new local_field_statement(ids, n, _expression());
         }
         case symbol::EQ: // an assignment..
         {
             tk = next();
-            expr *xpr = _expr();
+            expression *xpr = _expression();
             if (!match(symbol::SEMICOLON))
             {
                 error("expected ';'..");
@@ -845,7 +845,7 @@ statement *parser::_statement()
         std::string fn;
         std::vector<std::string> scp;
         std::string pn;
-        std::vector<std::pair<std::string, expr *>> assgns;
+        std::vector<std::pair<std::string, expression *>> assgns;
 
         if (!match(symbol::ID))
         {
@@ -886,7 +886,7 @@ statement *parser::_statement()
             {
                 error("expected identifier..");
             }
-            assgns.push_back({dynamic_cast<id_token *>(tks[pos - 2])->id, _expr()});
+            assgns.push_back({dynamic_cast<id_token *>(tks[pos - 2])->id, _expression()});
         }
 
         if (!match(symbol::RPAREN))
@@ -902,7 +902,7 @@ statement *parser::_statement()
     }
     case symbol::RETURN:
     {
-        expr *xpr = _expr();
+        expression *xpr = _expression();
         if (!match(symbol::SEMICOLON))
         {
             error("expected ';'..");
@@ -910,25 +910,25 @@ statement *parser::_statement()
         return new return_statement(xpr);
     }
     default:
-        return new expression_statement(dynamic_cast<bool_expr *>(_expr()));
+        return new expression_statement(dynamic_cast<bool_expression *>(_expression()));
     }
 }
 
-expr *parser::_expr(const size_t &pr)
+expression *parser::_expression(const size_t &pr)
 {
-    expr *e = nullptr;
+    expression *e = nullptr;
     switch (tk->sym)
     {
     case symbol::TRUE:
     case symbol::FALSE:
         tk = next();
-        e = new bool_literal_expr(tks[pos - 2]->sym == symbol::TRUE);
+        e = new bool_literal_expression(tks[pos - 2]->sym == symbol::TRUE);
     case symbol::NumericLiteral:
         tk = next();
-        e = new arith_literal_expr(dynamic_cast<numeric_token *>(tks[pos - 2])->val);
+        e = new arith_literal_expression(dynamic_cast<numeric_token *>(tks[pos - 2])->val);
     case symbol::StringLiteral:
         tk = next();
-        e = new string_literal_expr(dynamic_cast<string_token *>(tks[pos - 2])->str);
+        e = new string_literal_expression(dynamic_cast<string_token *>(tks[pos - 2])->str);
     case symbol::LPAREN: // either a parenthesys expression or a cast..
     {
         tk = next();
@@ -963,13 +963,13 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected ')'..");
                 }
-                expr *xpr = _expr();
-                e = new cast_expr(ids, xpr);
+                expression *xpr = _expression();
+                e = new cast_expression(ids, xpr);
             }
             else // a parenthesis..
             {
                 backtrack(c_pos);
-                expr *xpr = _expr();
+                expression *xpr = _expression();
                 if (!match(symbol::RPAREN))
                 {
                     error("expected ')'..");
@@ -981,9 +981,9 @@ expr *parser::_expr(const size_t &pr)
     }
     case symbol::PLUS:
         tk = next();
-        if (arith_expr *ae = dynamic_cast<arith_expr *>(_expr()))
+        if (arith_expression *ae = dynamic_cast<arith_expression *>(_expression()))
         {
-            e = new plus_expr(ae);
+            e = new plus_expression(ae);
         }
         else
         {
@@ -991,9 +991,9 @@ expr *parser::_expr(const size_t &pr)
         }
     case symbol::MINUS:
         tk = next();
-        if (arith_expr *ae = dynamic_cast<arith_expr *>(_expr()))
+        if (arith_expression *ae = dynamic_cast<arith_expression *>(_expression()))
         {
-            e = new minus_expr(ae);
+            e = new minus_expression(ae);
         }
         else
         {
@@ -1001,9 +1001,9 @@ expr *parser::_expr(const size_t &pr)
         }
     case symbol::BANG:
         tk = next();
-        if (bool_expr *be = dynamic_cast<bool_expr *>(_expr()))
+        if (bool_expression *be = dynamic_cast<bool_expression *>(_expression()))
         {
-            e = new not_expr(be);
+            e = new not_expression(be);
         }
         else
         {
@@ -1012,9 +1012,9 @@ expr *parser::_expr(const size_t &pr)
     case symbol::LBRACKET:
     {
         tk = next();
-        arith_expr *min_e;
-        arith_expr *max_e;
-        if (arith_expr *e = dynamic_cast<arith_expr *>(_expr()))
+        arith_expression *min_e;
+        arith_expression *max_e;
+        if (arith_expression *e = dynamic_cast<arith_expression *>(_expression()))
         {
             min_e = e;
         }
@@ -1026,7 +1026,7 @@ expr *parser::_expr(const size_t &pr)
         {
             error("expected ','..");
         }
-        if (arith_expr *e = dynamic_cast<arith_expr *>(_expr()))
+        if (arith_expression *e = dynamic_cast<arith_expression *>(_expression()))
         {
             max_e = e;
         }
@@ -1038,7 +1038,7 @@ expr *parser::_expr(const size_t &pr)
         {
             error("expected ']'..");
         }
-        e = new range_expr(min_e, max_e);
+        e = new range_expression(min_e, max_e);
     }
     case symbol::NEW:
     {
@@ -1055,24 +1055,24 @@ expr *parser::_expr(const size_t &pr)
             ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
         }
 
-        std::vector<expr *> xprs;
+        std::vector<expression *> xprs;
         if (!match(symbol::LPAREN))
         {
             error("expected '('..");
         }
         if (!match(symbol::RPAREN))
         {
-            xprs.push_back(_expr());
+            xprs.push_back(_expression());
             while (!match(symbol::RPAREN))
             {
                 if (!match(symbol::COMMA))
                 {
                     error("expected ','..");
                 }
-                xprs.push_back(_expr());
+                xprs.push_back(_expression());
             }
         }
-        e = new constructor_expr(ids, xprs);
+        e = new constructor_expression(ids, xprs);
     }
     case symbol::ID:
     {
@@ -1092,24 +1092,24 @@ expr *parser::_expr(const size_t &pr)
             tk = next();
             std::string fn = is.back();
             is.pop_back();
-            std::vector<expr *> xprs;
+            std::vector<expression *> xprs;
             if (!match(symbol::RPAREN))
             {
-                xprs.push_back(_expr());
+                xprs.push_back(_expression());
                 while (!match(symbol::RPAREN))
                 {
                     if (!match(symbol::COMMA))
                     {
                         error("expected ','..");
                     }
-                    xprs.push_back(_expr());
+                    xprs.push_back(_expression());
                 }
             }
-            e = new function_expr(is, fn, xprs);
+            e = new function_expression(is, fn, xprs);
         }
         else
         {
-            e = new id_expr(is);
+            e = new id_expression(is);
         }
     }
     }
@@ -1123,10 +1123,10 @@ expr *parser::_expr(const size_t &pr)
             {
             case symbol::EQEQ:
                 tk = next();
-                return new eq_expr(e, _expr(1));
+                return new eq_expression(e, _expression(1));
             case symbol::BANGEQ:
                 tk = next();
-                return new neq_expr(e, _expr(1));
+                return new neq_expression(e, _expression(1));
             }
         }
         if (1 >= pr)
@@ -1136,9 +1136,9 @@ expr *parser::_expr(const size_t &pr)
             case symbol::LT:
             {
                 tk = next();
-                arith_expr *l = nullptr;
-                arith_expr *r = nullptr;
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                arith_expression *l = nullptr;
+                arith_expression *r = nullptr;
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
                 {
                     l = c_e;
                 }
@@ -1146,7 +1146,7 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(2)))
                 {
                     r = c_e;
                 }
@@ -1154,14 +1154,14 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                return new lt_expr(l, r);
+                return new lt_expression(l, r);
             }
             case symbol::LTEQ:
             {
                 tk = next();
-                arith_expr *l = nullptr;
-                arith_expr *r = nullptr;
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                arith_expression *l = nullptr;
+                arith_expression *r = nullptr;
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
                 {
                     l = c_e;
                 }
@@ -1169,7 +1169,7 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(2)))
                 {
                     r = c_e;
                 }
@@ -1177,14 +1177,14 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                return new leq_expr(l, r);
+                return new leq_expression(l, r);
             }
             case symbol::GTEQ:
             {
                 tk = next();
-                arith_expr *l = nullptr;
-                arith_expr *r = nullptr;
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                arith_expression *l = nullptr;
+                arith_expression *r = nullptr;
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
                 {
                     l = c_e;
                 }
@@ -1192,7 +1192,7 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(2)))
                 {
                     r = c_e;
                 }
@@ -1200,14 +1200,14 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                return new geq_expr(l, r);
+                return new geq_expression(l, r);
             }
             case symbol::GT:
             {
                 tk = next();
-                arith_expr *l = nullptr;
-                arith_expr *r = nullptr;
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                arith_expression *l = nullptr;
+                arith_expression *r = nullptr;
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
                 {
                     l = c_e;
                 }
@@ -1215,7 +1215,7 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(2)))
                 {
                     r = c_e;
                 }
@@ -1223,14 +1223,14 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                return new gt_expr(l, r);
+                return new gt_expression(l, r);
             }
             case symbol::IMPLICATION:
             {
                 tk = next();
-                bool_expr *l = nullptr;
-                bool_expr *r = nullptr;
-                if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
+                bool_expression *l = nullptr;
+                bool_expression *r = nullptr;
+                if (bool_expression *c_e = dynamic_cast<bool_expression *>(e))
                 {
                     l = c_e;
                 }
@@ -1238,7 +1238,7 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected boolean expression..");
                 }
-                if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
+                if (bool_expression *c_e = dynamic_cast<bool_expression *>(_expression(2)))
                 {
                     r = c_e;
                 }
@@ -1246,13 +1246,13 @@ expr *parser::_expr(const size_t &pr)
                 {
                     error("expected boolean expression..");
                 }
-                return new implication_expr(l, r);
+                return new implication_expression(l, r);
             }
             case symbol::BAR:
             {
                 tk = next();
-                std::vector<bool_expr *> xprs;
-                if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
+                std::vector<bool_expression *> xprs;
+                if (bool_expression *c_e = dynamic_cast<bool_expression *>(e))
                 {
                     xprs.push_back(c_e);
                 }
@@ -1262,7 +1262,7 @@ expr *parser::_expr(const size_t &pr)
                 }
                 while (match(symbol::BAR))
                 {
-                    if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
+                    if (bool_expression *c_e = dynamic_cast<bool_expression *>(_expression(2)))
                     {
                         xprs.push_back(c_e);
                     }
@@ -1271,13 +1271,13 @@ expr *parser::_expr(const size_t &pr)
                         error("expected boolean expression..");
                     }
                 }
-                return new disjunction_expr(xprs);
+                return new disjunction_expression(xprs);
             }
             case symbol::AMP:
             {
                 tk = next();
-                std::vector<bool_expr *> xprs;
-                if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
+                std::vector<bool_expression *> xprs;
+                if (bool_expression *c_e = dynamic_cast<bool_expression *>(e))
                 {
                     xprs.push_back(c_e);
                 }
@@ -1287,7 +1287,7 @@ expr *parser::_expr(const size_t &pr)
                 }
                 while (match(symbol::AMP))
                 {
-                    if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
+                    if (bool_expression *c_e = dynamic_cast<bool_expression *>(_expression(2)))
                     {
                         xprs.push_back(c_e);
                     }
@@ -1296,13 +1296,13 @@ expr *parser::_expr(const size_t &pr)
                         error("expected boolean expression..");
                     }
                 }
-                return new conjunction_expr(xprs);
+                return new conjunction_expression(xprs);
             }
             case symbol::CARET:
             {
                 tk = next();
-                std::vector<bool_expr *> xprs;
-                if (bool_expr *c_e = dynamic_cast<bool_expr *>(e))
+                std::vector<bool_expression *> xprs;
+                if (bool_expression *c_e = dynamic_cast<bool_expression *>(e))
                 {
                     xprs.push_back(c_e);
                 }
@@ -1312,7 +1312,7 @@ expr *parser::_expr(const size_t &pr)
                 }
                 while (match(symbol::AMP))
                 {
-                    if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
+                    if (bool_expression *c_e = dynamic_cast<bool_expression *>(_expression(2)))
                     {
                         xprs.push_back(c_e);
                     }
@@ -1321,7 +1321,7 @@ expr *parser::_expr(const size_t &pr)
                         error("expected boolean expression..");
                     }
                 }
-                return new exct_one_expr(xprs);
+                return new exct_one_expression(xprs);
             }
             }
         }
@@ -1332,8 +1332,8 @@ expr *parser::_expr(const size_t &pr)
             case symbol::PLUS:
             {
                 tk = next();
-                std::vector<arith_expr *> xprs;
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                std::vector<arith_expression *> xprs;
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
                 {
                     xprs.push_back(c_e);
                 }
@@ -1343,7 +1343,7 @@ expr *parser::_expr(const size_t &pr)
                 }
                 while (match(symbol::PLUS))
                 {
-                    if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(4)))
+                    if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(4)))
                     {
                         xprs.push_back(c_e);
                     }
@@ -1352,13 +1352,13 @@ expr *parser::_expr(const size_t &pr)
                         error("expected arithmetic expression..");
                     }
                 }
-                return new addition_expr(xprs);
+                return new addition_expression(xprs);
             }
             case symbol::MINUS:
             {
                 tk = next();
-                std::vector<arith_expr *> xprs;
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                std::vector<arith_expression *> xprs;
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
                 {
                     xprs.push_back(c_e);
                 }
@@ -1368,7 +1368,7 @@ expr *parser::_expr(const size_t &pr)
                 }
                 while (match(symbol::MINUS))
                 {
-                    if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(4)))
+                    if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(4)))
                     {
                         xprs.push_back(c_e);
                     }
@@ -1377,7 +1377,7 @@ expr *parser::_expr(const size_t &pr)
                         error("expected arithmetic expression..");
                     }
                 }
-                return new subtraction_expr(xprs);
+                return new subtraction_expression(xprs);
             }
             }
         }
@@ -1388,8 +1388,8 @@ expr *parser::_expr(const size_t &pr)
             case symbol::STAR:
             {
                 tk = next();
-                std::vector<arith_expr *> xprs;
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                std::vector<arith_expression *> xprs;
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
                 {
                     xprs.push_back(c_e);
                 }
@@ -1399,7 +1399,7 @@ expr *parser::_expr(const size_t &pr)
                 }
                 while (match(symbol::STAR))
                 {
-                    if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(4)))
+                    if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(4)))
                     {
                         xprs.push_back(c_e);
                     }
@@ -1408,13 +1408,13 @@ expr *parser::_expr(const size_t &pr)
                         error("expected arithmetic expression..");
                     }
                 }
-                return new multiplication_expr(xprs);
+                return new multiplication_expression(xprs);
             }
             case symbol::SLASH:
             {
                 tk = next();
-                std::vector<arith_expr *> xprs;
-                if (arith_expr *c_e = dynamic_cast<arith_expr *>(e))
+                std::vector<arith_expression *> xprs;
+                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
                 {
                     xprs.push_back(c_e);
                 }
@@ -1424,7 +1424,7 @@ expr *parser::_expr(const size_t &pr)
                 }
                 while (match(symbol::SLASH))
                 {
-                    if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(4)))
+                    if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(4)))
                     {
                         xprs.push_back(c_e);
                     }
@@ -1433,7 +1433,7 @@ expr *parser::_expr(const size_t &pr)
                         error("expected arithmetic expression..");
                     }
                 }
-                return new division_expr(xprs);
+                return new division_expression(xprs);
             }
             }
         }
