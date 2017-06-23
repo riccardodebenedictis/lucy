@@ -1,10 +1,13 @@
 #pragma once
 
+#include "visibility.h"
 #include <vector>
 #include <string>
 
 namespace lucy
 {
+
+class context;
 
 namespace ast
 {
@@ -13,32 +16,39 @@ class expression;
 class bool_expression;
 class arith_expression;
 
-class statement
+class DLL_PUBLIC statement
 {
 public:
   statement();
   statement(const statement &orig) = delete;
   virtual ~statement();
+
+  virtual bool execute(context &ctx) const = 0;
 };
 
-class assignment_statement : public statement
+#pragma warning(disable : 4251)
+class DLL_PUBLIC assignment_statement : public statement
 {
 public:
   assignment_statement(const std::vector<std::string> &q_id, expression *const e);
   assignment_statement(const assignment_statement &orig) = delete;
   virtual ~assignment_statement();
 
+  bool execute(context &ctx) const override;
+
 private:
   std::vector<std::string> qualified_id;
   expression *const xpr;
 };
 
-class local_field_statement : public statement
+class DLL_PUBLIC local_field_statement : public statement
 {
 public:
   local_field_statement(const std::vector<std::string> &ft, const std::string &n, expression *const e = nullptr);
   local_field_statement(const local_field_statement &orig) = delete;
   virtual ~local_field_statement();
+
+  bool execute(context &ctx) const override;
 
 private:
   std::vector<std::string> field_type;
@@ -46,45 +56,53 @@ private:
   expression *const xpr;
 };
 
-class expression_statement : public statement
+class DLL_PUBLIC expression_statement : public statement
 {
 public:
   expression_statement(bool_expression *const e);
   expression_statement(const expression_statement &orig) = delete;
   virtual ~expression_statement();
 
+  bool execute(context &ctx) const override;
+
 private:
   bool_expression *const xpr;
 };
 
-class block_statement : public statement
+class DLL_PUBLIC block_statement : public statement
 {
 public:
   block_statement(const std::vector<statement *> &stmnts);
   block_statement(const block_statement &orig) = delete;
   virtual ~block_statement();
 
+  bool execute(context &ctx) const override;
+
 private:
   std::vector<statement *> statements;
 };
 
-class disjunction_statement : public statement
+class DLL_PUBLIC disjunction_statement : public statement
 {
 public:
   disjunction_statement(const std::vector<block_statement *> &disjs);
   disjunction_statement(const disjunction_statement &orig) = delete;
   virtual ~disjunction_statement();
 
+  bool execute(context &ctx) const override;
+
 private:
   std::vector<block_statement *> disjunctions;
 };
 
-class formula_statement : public statement
+class DLL_PUBLIC formula_statement : public statement
 {
 public:
   formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, expression *>> &assns);
   formula_statement(const formula_statement &orig) = delete;
   virtual ~formula_statement();
+
+  bool execute(context &ctx) const override;
 
 private:
   bool is_fact;
@@ -94,12 +112,14 @@ private:
   std::vector<std::pair<std::string, expression *>> assignments;
 };
 
-class return_statement : public statement
+class DLL_PUBLIC return_statement : public statement
 {
 public:
   return_statement(expression *const e);
   return_statement(const return_statement &orig) = delete;
   virtual ~return_statement();
+
+  bool execute(context &ctx) const override;
 
 private:
   expression *const xpr;

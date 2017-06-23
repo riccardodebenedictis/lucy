@@ -28,7 +28,7 @@ private:
   class ps_constructor : public constructor
   {
   public:
-    ps_constructor(propositional_state &ps) : constructor(ps.graph, ps, {}) {}
+    ps_constructor(propositional_state &ps) : constructor(ps.graph, ps, {}, {}) {}
     ps_constructor(ps_constructor &&) = delete;
 
     virtual ~ps_constructor() {}

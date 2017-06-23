@@ -7,7 +7,7 @@
 namespace lucy
 {
 
-constructor::constructor(core &cr, scope &scp, const std::vector<field *> &args) : scope(cr, scp), args(args)
+constructor::constructor(core &cr, scope &scp, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts) : scope(cr, scp), args(args), statements(stmnts)
 {
     fields.insert({THIS_KEYWORD, new field(static_cast<type &>(scp), THIS_KEYWORD, true)});
     for (const auto &arg : args)

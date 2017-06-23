@@ -5,6 +5,11 @@
 namespace lucy
 {
 
+namespace ast
+{
+class statement;
+}
+
 class context;
 class item;
 
@@ -13,7 +18,7 @@ class DLL_PUBLIC constructor : public scope
   friend class type;
 
 public:
-  constructor(core &cr, scope &scp, const std::vector<field *> &args);
+  constructor(core &cr, scope &scp, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts);
   constructor(const constructor &orig) = delete;
   virtual ~constructor();
 
@@ -22,5 +27,8 @@ public:
 
 protected:
   const std::vector<field *> args;
+
+private:
+  std::vector<ast::statement *> statements;
 };
 }

@@ -1,5 +1,7 @@
 #include "reusable_resource.h"
 #include "combinations.h"
+#include "statement.h"
+#include "expression.h"
 #include <cassert>
 
 namespace cg
@@ -150,7 +152,7 @@ bool reusable_resource::new_goal(atom &atm)
     throw std::logic_error("it is not possible to define goals on a reusable resource..");
 }
 
-reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}) {}
+reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}, {new ast::assignment_statement({THIS_KEYWORD, REUSABLE_RESOURCE_CAPACITY}, new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
 
 bool reusable_resource::rr_constructor::invoke(item &i, const std::vector<expr> &exprs)

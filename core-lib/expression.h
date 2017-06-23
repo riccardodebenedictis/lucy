@@ -1,5 +1,6 @@
 #pragma once
 
+#include "visibility.h"
 #include <vector>
 #include <string>
 
@@ -12,7 +13,7 @@ namespace ast
 class bool_expression;
 class arith_expression;
 
-class expression
+class DLL_PUBLIC expression
 {
 public:
   expression();
@@ -20,7 +21,8 @@ public:
   virtual ~expression();
 };
 
-class cast_expression : public expression
+#pragma warning(disable : 4251)
+class DLL_PUBLIC cast_expression : public expression
 {
 public:
   cast_expression(const std::vector<std::string> &tp, expression *const e);
@@ -32,7 +34,7 @@ private:
   expression *xpr;
 };
 
-class constructor_expression : public expression
+class DLL_PUBLIC constructor_expression : public expression
 {
 public:
   constructor_expression(const std::vector<std::string> &it, const std::vector<expression *> &es);
@@ -44,7 +46,7 @@ private:
   std::vector<expression *> expressions;
 };
 
-class id_expression : public expression
+class DLL_PUBLIC id_expression : public expression
 {
 public:
   id_expression(const std::vector<std::string> &is);
@@ -55,7 +57,7 @@ private:
   std::vector<std::string> ids;
 };
 
-class function_expression : public expression
+class DLL_PUBLIC function_expression : public expression
 {
 public:
   function_expression(const std::vector<std::string> &is, const std::string &fn, const std::vector<expression *> &es);
@@ -68,7 +70,7 @@ private:
   std::vector<expression *> expressions;
 };
 
-class string_literal_expression : public expression
+class DLL_PUBLIC string_literal_expression : public expression
 {
 public:
   string_literal_expression(const std::string &l);
@@ -79,7 +81,7 @@ private:
   std::string literal;
 };
 
-class bool_expression : public expression
+class DLL_PUBLIC bool_expression : public expression
 {
 public:
   bool_expression();
@@ -87,7 +89,7 @@ public:
   virtual ~bool_expression();
 };
 
-class bool_literal_expression : public bool_expression
+class DLL_PUBLIC bool_literal_expression : public bool_expression
 {
 public:
   bool_literal_expression(const bool &l);
@@ -98,7 +100,7 @@ private:
   bool literal;
 };
 
-class eq_expression : public bool_expression
+class DLL_PUBLIC eq_expression : public bool_expression
 {
 public:
   eq_expression(expression *const l, expression *const r);
@@ -110,7 +112,7 @@ private:
   expression *right;
 };
 
-class neq_expression : public bool_expression
+class DLL_PUBLIC neq_expression : public bool_expression
 {
 public:
   neq_expression(expression *const l, expression *const r);
@@ -122,7 +124,7 @@ private:
   expression *right;
 };
 
-class lt_expression : public bool_expression
+class DLL_PUBLIC lt_expression : public bool_expression
 {
 public:
   lt_expression(arith_expression *const l, arith_expression *const r);
@@ -134,7 +136,7 @@ private:
   arith_expression *right;
 };
 
-class leq_expression : public bool_expression
+class DLL_PUBLIC leq_expression : public bool_expression
 {
 public:
   leq_expression(arith_expression *const l, arith_expression *const r);
@@ -146,7 +148,7 @@ private:
   arith_expression *right;
 };
 
-class geq_expression : public bool_expression
+class DLL_PUBLIC geq_expression : public bool_expression
 {
 public:
   geq_expression(arith_expression *const l, arith_expression *const r);
@@ -158,7 +160,7 @@ private:
   arith_expression *right;
 };
 
-class gt_expression : public bool_expression
+class DLL_PUBLIC gt_expression : public bool_expression
 {
 public:
   gt_expression(arith_expression *const l, arith_expression *const r);
@@ -170,7 +172,7 @@ private:
   arith_expression *right;
 };
 
-class implication_expression : public bool_expression
+class DLL_PUBLIC implication_expression : public bool_expression
 {
 public:
   implication_expression(bool_expression *const l, bool_expression *const r);
@@ -182,7 +184,7 @@ private:
   bool_expression *right;
 };
 
-class disjunction_expression : public bool_expression
+class DLL_PUBLIC disjunction_expression : public bool_expression
 {
 public:
   disjunction_expression(std::vector<bool_expression *> es);
@@ -193,7 +195,7 @@ private:
   std::vector<bool_expression *> expressions;
 };
 
-class conjunction_expression : public bool_expression
+class DLL_PUBLIC conjunction_expression : public bool_expression
 {
 public:
   conjunction_expression(std::vector<bool_expression *> es);
@@ -204,7 +206,7 @@ private:
   std::vector<bool_expression *> expressions;
 };
 
-class exct_one_expression : public bool_expression
+class DLL_PUBLIC exct_one_expression : public bool_expression
 {
 public:
   exct_one_expression(std::vector<bool_expression *> es);
@@ -215,7 +217,7 @@ private:
   std::vector<bool_expression *> expressions;
 };
 
-class not_expression : public bool_expression
+class DLL_PUBLIC not_expression : public bool_expression
 {
 public:
   not_expression(bool_expression *const e);
@@ -226,7 +228,7 @@ private:
   bool_expression *xpr;
 };
 
-class arith_expression : public expression
+class DLL_PUBLIC arith_expression : public expression
 {
 public:
   arith_expression();
@@ -234,7 +236,7 @@ public:
   virtual ~arith_expression();
 };
 
-class arith_literal_expression : public arith_expression
+class DLL_PUBLIC arith_literal_expression : public arith_expression
 {
 public:
   arith_literal_expression(const double &l);
@@ -245,7 +247,7 @@ private:
   double literal;
 };
 
-class plus_expression : public arith_expression
+class DLL_PUBLIC plus_expression : public arith_expression
 {
 public:
   plus_expression(arith_expression *const e);
@@ -256,7 +258,7 @@ private:
   arith_expression *xpr;
 };
 
-class minus_expression : public arith_expression
+class DLL_PUBLIC minus_expression : public arith_expression
 {
 public:
   minus_expression(arith_expression *const e);
@@ -267,7 +269,7 @@ private:
   arith_expression *xpr;
 };
 
-class range_expression : public arith_expression
+class DLL_PUBLIC range_expression : public arith_expression
 {
 public:
   range_expression(arith_expression *const min_e, arith_expression *const max_e);
@@ -279,7 +281,7 @@ private:
   arith_expression *max_xpr;
 };
 
-class addition_expression : public arith_expression
+class DLL_PUBLIC addition_expression : public arith_expression
 {
 public:
   addition_expression(std::vector<arith_expression *> es);
@@ -290,7 +292,7 @@ private:
   std::vector<arith_expression *> expressions;
 };
 
-class subtraction_expression : public arith_expression
+class DLL_PUBLIC subtraction_expression : public arith_expression
 {
 public:
   subtraction_expression(std::vector<arith_expression *> es);
@@ -301,7 +303,7 @@ private:
   std::vector<arith_expression *> expressions;
 };
 
-class multiplication_expression : public arith_expression
+class DLL_PUBLIC multiplication_expression : public arith_expression
 {
 public:
   multiplication_expression(std::vector<arith_expression *> es);
@@ -312,7 +314,7 @@ private:
   std::vector<arith_expression *> expressions;
 };
 
-class division_expression : public arith_expression
+class DLL_PUBLIC division_expression : public arith_expression
 {
 public:
   division_expression(std::vector<arith_expression *> es);
