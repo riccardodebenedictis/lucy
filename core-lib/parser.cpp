@@ -543,9 +543,18 @@ constructor_declaration *parser::_constructor_declaration()
             return nullptr;
         }
 
-        while (!match(symbol::RPAREN))
+        if (!match(symbol::RPAREN))
         {
             xprs.push_back(_expr());
+            while (!match(symbol::RPAREN))
+            {
+                if (!match(symbol::COMMA))
+                {
+                    error("expected ','..");
+                    return nullptr;
+                }
+                xprs.push_back(_expr());
+            }
         }
         il.push_back({pn, xprs});
     }
@@ -940,18 +949,27 @@ expr *parser::_expr(const size_t &pr)
     {
         tk = next();
         type_ref *it = _type_ref();
-        std::vector<expr *> es;
+        std::vector<expr *> xprs;
 
         if (!match(symbol::LPAREN))
         {
             error("expected '('..");
             return nullptr;
         }
-        while (!match(symbol::RPAREN))
+        if (!match(symbol::RPAREN))
         {
-            es.push_back(_expr());
+            xprs.push_back(_expr());
+            while (!match(symbol::RPAREN))
+            {
+                if (!match(symbol::COMMA))
+                {
+                    error("expected ','..");
+                    return nullptr;
+                }
+                xprs.push_back(_expr());
+            }
         }
-        e = new constructor_expr(it, es);
+        e = new constructor_expr(it, xprs);
     }
     case symbol::ID:
     {
@@ -967,7 +985,31 @@ expr *parser::_expr(const size_t &pr)
             }
             is.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
         }
-        e = new id_expr(is);
+        if (match(symbol::LPAREN))
+        {
+            tk = next();
+            std::string fn = is.back();
+            is.pop_back();
+            std::vector<expr *> xprs;
+            if (!match(symbol::RPAREN))
+            {
+                xprs.push_back(_expr());
+                while (!match(symbol::RPAREN))
+                {
+                    if (!match(symbol::COMMA))
+                    {
+                        error("expected ','..");
+                        return nullptr;
+                    }
+                    xprs.push_back(_expr());
+                }
+            }
+            e = new function_expr(is, fn, xprs);
+        }
+        else
+        {
+            e = new id_expr(is);
+        }
     }
     }
 

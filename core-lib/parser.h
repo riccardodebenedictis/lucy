@@ -298,6 +298,19 @@ public:
   std::vector<std::string> ids;
 };
 
+class function_expr : public expr
+{
+public:
+  function_expr(const std::vector<std::string> &is, const std::string &fn, const std::vector<expr *> &es) : ids(is), function_name(fn), exprs(es) {}
+  function_expr(const function_expr &orig) = delete;
+  virtual ~function_expr() {}
+
+public:
+  std::vector<std::string> ids;
+  std::string function_name;
+  std::vector<expr *> exprs;
+};
+
 class string_literal_expr : public expr
 {
 public:
