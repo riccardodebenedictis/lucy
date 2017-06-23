@@ -1,4 +1,6 @@
 #include "parser.h"
+#include "statement.h"
+#include "expression.h"
 #include <cassert>
 #include <iostream>
 #include <string>
@@ -676,7 +678,7 @@ statement *parser::_statement()
                 error("expected ';'..");
                 return nullptr;
             }
-            return new local_field_statement(new type_ref(ids), n, _expr());
+            return new local_field_statement(ids, n, _expr());
         }
         case symbol::EQ: // an assignment..
         {
@@ -854,14 +856,25 @@ expr *parser::_expr(const size_t &pr)
             if (match(symbol::RPAREN)) // a cast..
             {
                 backtrack(c_pos);
-                type_ref *ct = _type_ref();
+                std::vector<std::string> ids;
+                ids.push_back(dynamic_cast<id_token *>(tk)->id);
+                tk = next();
+                while (match(symbol::DOT))
+                {
+                    if (!match(symbol::ID))
+                    {
+                        error("expected identifier..");
+                        return nullptr;
+                    }
+                    ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+                }
                 if (!match(symbol::RPAREN))
                 {
                     error("expected ')'..");
                     return nullptr;
                 }
                 expr *xpr = _expr();
-                e = new cast_expr(ct, xpr);
+                e = new cast_expr(ids, xpr);
             }
             else // a parenthesis..
             {
@@ -948,9 +961,20 @@ expr *parser::_expr(const size_t &pr)
     case symbol::NEW:
     {
         tk = next();
-        type_ref *it = _type_ref();
-        std::vector<expr *> xprs;
+        std::vector<std::string> ids;
+        ids.push_back(dynamic_cast<id_token *>(tk)->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+                return nullptr;
+            }
+            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
 
+        std::vector<expr *> xprs;
         if (!match(symbol::LPAREN))
         {
             error("expected '('..");
@@ -969,7 +993,7 @@ expr *parser::_expr(const size_t &pr)
                 xprs.push_back(_expr());
             }
         }
-        e = new constructor_expr(it, xprs);
+        e = new constructor_expr(ids, xprs);
     }
     case symbol::ID:
     {
