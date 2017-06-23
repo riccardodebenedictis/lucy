@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 namespace lucy
 {
@@ -37,10 +38,8 @@ token *lexer::next()
             case '\r':
             case '\n':
                 error("newline in string literal..");
-                return mk_token(symbol::ERROR);
             case EOF:
                 error("invalid string literal..");
-                return mk_token(symbol::ERROR);
             default:
                 str.push_back(ch);
             }
@@ -178,7 +177,6 @@ token *lexer::next()
                     break;
                 case '.':
                     error("invalid numeric literal..");
-                    return mk_token(symbol::ERROR);
                 default:
                     is.unget();
                     return mk_numeric_token(std::stod(std::string(num.begin(), num.end())));
@@ -258,7 +256,6 @@ token *lexer::next()
                 else
                 {
                     error("invalid numeric literal..");
-                    return mk_token(symbol::ERROR);
                 }
                 break;
             default:
@@ -992,7 +989,7 @@ token *lexer::next()
         return mk_token(symbol::EOF_Symbol);
     default:
         error("invalid token..");
-        return mk_token(symbol::ERROR);
+        return nullptr;
     }
 }
 
@@ -1004,7 +1001,6 @@ token *lexer::finish_id(std::vector<char> &str)
         if (str.empty() && ch >= '0' && ch <= '9')
         {
             error("identifiers cannot start with numbers..");
-            return mk_token(symbol::ERROR);
         }
         if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || (ch >= '0' && ch <= '9'))
         {
@@ -1052,5 +1048,5 @@ token *lexer::finish_whitespaces()
     }
 }
 
-void lexer::error(const std::string &err) { std::cerr << "[" << std::to_string(start_line) << ", " << std::to_string(start_pos) << "] " << err << std::endl; }
+void lexer::error(const std::string &err) { throw std::invalid_argument("[" + std::to_string(start_line) + ", " + std::to_string(start_pos) + "] " + err); }
 }

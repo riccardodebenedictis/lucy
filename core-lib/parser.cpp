@@ -5,23 +5,18 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
+#include <stdexcept>
 
 namespace lucy
 {
 
 using namespace ast;
 
-parser::parser() {}
+parser::parser(core &cr) : cr(cr) {}
 
-parser::~parser()
-{
-    for (const auto &cu : cus)
-    {
-        delete cu;
-    }
-}
+parser::~parser() {}
 
-compilation_unit *parser::parse(std::istream &is)
+void parser::parse(std::istream &is)
 {
     lex = new lexer(is);
     tk = next();
@@ -59,7 +54,6 @@ compilation_unit *parser::parse(std::istream &is)
                 if (!match(symbol::ID))
                 {
                     error("expected identifier..");
-                    return nullptr;
                 }
             }
             if (match(symbol::ID) && match(symbol::LPAREN))
@@ -76,16 +70,23 @@ compilation_unit *parser::parse(std::istream &is)
         }
         default:
             error("expected either 'typedef' or 'enum' or 'class' or 'predicate' or 'void' or identifier..");
-            return nullptr;
         }
+    }
+
+    for (const auto &s : ss)
+    {
     }
 
     // cleanings..
     delete lex;
-
-    compilation_unit *cu = new compilation_unit(ts, ms, ps, ss);
-    cus.push_back(cu);
-    return cu;
+    for (const auto &t : ts)
+        delete t;
+    for (const auto &m : ms)
+        delete m;
+    for (const auto &p : ps)
+        delete p;
+    for (const auto &s : ss)
+        delete s;
 }
 
 token *parser::next()
@@ -126,7 +127,6 @@ typedef_declaration *parser::_typedef_declaration()
     if (!match(symbol::TYPEDEF))
     {
         error("expected 'typedef'..");
-        return nullptr;
     }
 
     switch (tk->sym)
@@ -145,7 +145,6 @@ typedef_declaration *parser::_typedef_declaration()
         break;
     default:
         error("expected primitive type..");
-        return nullptr;
     }
     tk = next();
 
@@ -154,14 +153,12 @@ typedef_declaration *parser::_typedef_declaration()
     if (!match(symbol::ID))
     {
         error("expected identifier..");
-        return nullptr;
     }
     n = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
     if (!match(symbol::SEMICOLON))
     {
         error("expected ';'..");
-        return nullptr;
     }
 
     return new typedef_declaration(n, pt, xpr);
@@ -171,18 +168,16 @@ enum_declaration *parser::_enum_declaration()
 {
     std::string n;
     std::vector<std::string> es;
-    std::vector<type_ref *> trs;
+    std::vector<std::vector<std::string>> trs;
 
     if (!match(symbol::ENUM))
     {
         error("expected 'enum'..");
-        return nullptr;
     }
 
     if (!match(symbol::ID))
     {
         error("expected identifier..");
-        return nullptr;
     }
     n = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
@@ -193,7 +188,6 @@ enum_declaration *parser::_enum_declaration()
         if (!match(symbol::StringLiteral))
         {
             error("expected string literal..");
-            return nullptr;
         }
         es.push_back(dynamic_cast<string_token *>(tks[pos - 2])->str);
 
@@ -202,7 +196,6 @@ enum_declaration *parser::_enum_declaration()
             if (!match(symbol::StringLiteral))
             {
                 error("expected string literal..");
-                return nullptr;
             }
             es.push_back(dynamic_cast<string_token *>(tks[pos - 2])->str);
         }
@@ -210,15 +203,27 @@ enum_declaration *parser::_enum_declaration()
         if (!match(symbol::RBRACE))
         {
             error("expected '}'..");
-            return nullptr;
         }
         break;
     case symbol::ID:
-        trs.push_back(_type_ref());
+    {
+        std::vector<std::string> ids;
+        ids.push_back(dynamic_cast<id_token *>(tk)->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+                return nullptr;
+            }
+            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+        trs.push_back(ids);
         break;
+    }
     default:
         error("expected either '{' or identifier..");
-        return nullptr;
     }
 
     while (match(symbol::BAR))
@@ -230,7 +235,6 @@ enum_declaration *parser::_enum_declaration()
             if (!match(symbol::StringLiteral))
             {
                 error("expected string literal..");
-                return nullptr;
             }
             es.push_back(dynamic_cast<string_token *>(tks[pos - 2])->str);
 
@@ -239,7 +243,6 @@ enum_declaration *parser::_enum_declaration()
                 if (!match(symbol::StringLiteral))
                 {
                     error("expected string literal..");
-                    return nullptr;
                 }
                 es.push_back(dynamic_cast<string_token *>(tks[pos - 2])->str);
             }
@@ -247,22 +250,33 @@ enum_declaration *parser::_enum_declaration()
             if (!match(symbol::RBRACE))
             {
                 error("expected '}'..");
-                return nullptr;
             }
             break;
         case symbol::ID:
-            trs.push_back(_type_ref());
+        {
+            std::vector<std::string> ids;
+            ids.push_back(dynamic_cast<id_token *>(tk)->id);
+            tk = next();
+            while (match(symbol::DOT))
+            {
+                if (!match(symbol::ID))
+                {
+                    error("expected identifier..");
+                    return nullptr;
+                }
+                ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+            }
+            trs.push_back(ids);
             break;
+        }
         default:
             error("expected either '{' or identifier..");
-            return nullptr;
         }
     }
 
     if (!match(symbol::SEMICOLON))
     {
         error("expected ';'..");
-        return nullptr;
     }
 
     return new enum_declaration(n, es, trs);
@@ -271,7 +285,7 @@ enum_declaration *parser::_enum_declaration()
 class_declaration *parser::_class_declaration()
 {
     std::string n;
-    std::vector<type_ref *> bcs;
+    std::vector<std::vector<std::string>> bcs;
     std::vector<field_declaration *> fs;
     std::vector<constructor_declaration *> cs;
     std::vector<method_declaration *> ms;
@@ -281,29 +295,56 @@ class_declaration *parser::_class_declaration()
     if (!match(symbol::CLASS))
     {
         error("expected 'class'..");
-        return nullptr;
     }
 
     if (!match(symbol::ID))
     {
         error("expected identifier..");
-        return nullptr;
     }
     n = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
     if (match(symbol::COLON))
     {
-        bcs.push_back(_type_ref());
+        std::vector<std::string> ids;
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+        }
+        ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+            }
+            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+        bcs.push_back(ids);
         while (match(symbol::COMMA))
         {
-            bcs.push_back(_type_ref());
+            ids.clear();
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+            }
+            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+            tk = next();
+            while (match(symbol::DOT))
+            {
+                if (!match(symbol::ID))
+                {
+                    error("expected identifier..");
+                }
+                ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+            }
+            bcs.push_back(ids);
         }
     }
 
     if (!match(symbol::LBRACE))
     {
         error("expected '{'..");
-        return nullptr;
     }
 
     switch (tk->sym)
@@ -339,13 +380,11 @@ class_declaration *parser::_class_declaration()
                 if (!match(symbol::ID))
                 {
                     error("expected identifier..");
-                    return nullptr;
                 }
             }
             if (!match(symbol::ID))
             {
                 error("expected identifier..");
-                return nullptr;
             }
             switch (tk->sym)
             {
@@ -360,22 +399,18 @@ class_declaration *parser::_class_declaration()
                 break;
             default:
                 error("expected either '(' or '=' or ';'..");
-                return nullptr;
             }
         default:
             error("expected either '(' or '.'..");
-            return nullptr;
         }
     }
     default:
         error("expected either 'typedef' or 'enum' or 'class' or 'predicate' or 'void' or identifier..");
-        return nullptr;
     }
 
     if (!match(symbol::RBRACE))
     {
         error("expected '}'..");
-        return nullptr;
     }
 
     return new class_declaration(n, bcs, fs, cs, ms, ps, ts);
@@ -383,14 +418,28 @@ class_declaration *parser::_class_declaration()
 
 field_declaration *parser::_field_declaration()
 {
-    type_ref *tp = _type_ref();
+    std::vector<std::string> ids;
     std::string n;
     std::vector<variable_declaration *> ds;
 
     if (!match(symbol::ID))
     {
         error("expected identifier..");
-        return nullptr;
+    }
+    ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+    tk = next();
+    while (match(symbol::DOT))
+    {
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+        }
+        ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+    }
+
+    if (!match(symbol::ID))
+    {
+        error("expected identifier..");
     }
     n = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
@@ -408,7 +457,6 @@ field_declaration *parser::_field_declaration()
         if (!match(symbol::ID))
         {
             error("expected identifier..");
-            return nullptr;
         }
         n = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
@@ -425,63 +473,80 @@ field_declaration *parser::_field_declaration()
     if (!match(symbol::SEMICOLON))
     {
         error("expected ';'..");
-        return nullptr;
     }
 
-    return new field_declaration(tp, ds);
+    return new field_declaration(ids, ds);
 }
 
 method_declaration *parser::_method_declaration()
 {
-    type_ref *rt;
+    std::vector<std::string> ids;
     std::string n;
-    std::vector<std::pair<type_ref *, std::string>> pars;
+    std::vector<std::pair<std::vector<std::string>, std::string>> pars;
     std::vector<statement *> stmnts;
 
-    if (match(symbol::VOID))
+    if (!match(symbol::VOID))
     {
-        rt = _type_ref();
-    }
-    else
-    {
-        rt = nullptr;
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+        }
+        ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+            }
+            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
     }
 
     if (!match(symbol::ID))
     {
         error("expected identifier..");
-        return nullptr;
     }
     n = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
     if (!match(symbol::LPAREN))
     {
         error("expected '('..");
-        return nullptr;
     }
 
     while (match(symbol::ID))
     {
-        type_ref *t = _type_ref();
+        std::vector<std::string> p_ids;
         if (!match(symbol::ID))
         {
             error("expected identifier..");
-            return nullptr;
+        }
+        p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+            }
+            p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
         }
         std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
-        pars.push_back({t, pn});
+        pars.push_back({p_ids, pn});
     }
 
     if (!match(symbol::RPAREN))
     {
         error("expected ')'..");
-        return nullptr;
     }
 
     if (!match(symbol::LBRACE))
     {
         error("expected '{'..");
-        return nullptr;
     }
 
     while (!match(symbol::RBRACE))
@@ -489,43 +554,53 @@ method_declaration *parser::_method_declaration()
         stmnts.push_back(_statement());
     }
 
-    return new method_declaration(rt, n, pars, stmnts);
+    return new method_declaration(ids, n, pars, stmnts);
 }
 
 constructor_declaration *parser::_constructor_declaration()
 {
-    std::vector<std::pair<type_ref *, std::string>> pars;
+    std::vector<std::pair<std::vector<std::string>, std::string>> pars;
     std::vector<std::pair<std::string, std::vector<expr *>>> il;
     std::vector<statement *> stmnts;
 
     if (!match(symbol::ID))
     {
         error("expected identifier..");
-        return nullptr;
     }
 
     if (!match(symbol::LPAREN))
     {
         error("expected '('..");
-        return nullptr;
     }
 
     while (match(symbol::ID))
     {
-        type_ref *t = _type_ref();
+        std::vector<std::string> p_ids;
         if (!match(symbol::ID))
         {
             error("expected identifier..");
-            return nullptr;
+        }
+        p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+            }
+            p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
         }
         std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
-        pars.push_back({t, pn});
+        pars.push_back({p_ids, pn});
     }
 
     if (!match(symbol::RPAREN))
     {
         error("expected ')'..");
-        return nullptr;
     }
 
     if (match(symbol::COLON))
@@ -535,14 +610,12 @@ constructor_declaration *parser::_constructor_declaration()
         if (!match(symbol::ID))
         {
             error("expected identifier..");
-            return nullptr;
         }
         pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
         if (!match(symbol::LPAREN))
         {
             error("expected '('..");
-            return nullptr;
         }
 
         if (!match(symbol::RPAREN))
@@ -553,7 +626,6 @@ constructor_declaration *parser::_constructor_declaration()
                 if (!match(symbol::COMMA))
                 {
                     error("expected ','..");
-                    return nullptr;
                 }
                 xprs.push_back(_expr());
             }
@@ -564,7 +636,6 @@ constructor_declaration *parser::_constructor_declaration()
     if (!match(symbol::LBRACE))
     {
         error("expected '{'..");
-        return nullptr;
     }
 
     while (!match(symbol::RBRACE))
@@ -578,60 +649,98 @@ constructor_declaration *parser::_constructor_declaration()
 predicate_declaration *parser::_predicate_declaration()
 {
     std::string n;
-    std::vector<std::pair<type_ref *, std::string>> pars;
-    std::vector<type_ref *> pl;
+    std::vector<std::pair<std::vector<std::string>, std::string>> pars;
+    std::vector<std::vector<std::string>> pl;
     std::vector<statement *> stmnts;
 
     if (!match(symbol::PREDICATE))
     {
         error("expected 'predicate'..");
-        return nullptr;
     }
 
     if (!match(symbol::ID))
     {
         error("expected identifier..");
-        return nullptr;
     }
     n = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
     if (!match(symbol::LPAREN))
     {
         error("expected '('..");
-        return nullptr;
     }
 
     while (match(symbol::ID))
     {
-        type_ref *t = _type_ref();
+        std::vector<std::string> p_ids;
         if (!match(symbol::ID))
         {
             error("expected identifier..");
-            return nullptr;
+        }
+        p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+            }
+            p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
         }
         std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
-        pars.push_back({t, pn});
+        pars.push_back({p_ids, pn});
     }
 
     if (!match(symbol::RPAREN))
     {
         error("expected ')'..");
-        return nullptr;
     }
 
     if (match(symbol::COLON))
     {
-        pl.push_back(_type_ref());
+        std::vector<std::string> p_ids;
+        if (!match(symbol::ID))
+        {
+            error("expected identifier..");
+        }
+        p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+            }
+            p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        }
+        pl.push_back(p_ids);
         while (match(symbol::COMMA))
         {
-            pl.push_back(_type_ref());
+            p_ids.clear();
+            if (!match(symbol::ID))
+            {
+                error("expected identifier..");
+            }
+            p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+            tk = next();
+            while (match(symbol::DOT))
+            {
+                if (!match(symbol::ID))
+                {
+                    error("expected identifier..");
+                }
+                p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+            }
+            pl.push_back(p_ids);
         }
     }
 
     if (!match(symbol::LBRACE))
     {
         error("expected '{'..");
-        return nullptr;
     }
 
     while (!match(symbol::RBRACE))
@@ -656,7 +765,6 @@ statement *parser::_statement()
             if (!match(symbol::ID))
             {
                 error("expected identifier..");
-                return nullptr;
             }
             ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
         }
@@ -676,7 +784,6 @@ statement *parser::_statement()
             if (!match(symbol::SEMICOLON))
             {
                 error("expected ';'..");
-                return nullptr;
             }
             return new local_field_statement(ids, n, _expr());
         }
@@ -687,13 +794,11 @@ statement *parser::_statement()
             if (!match(symbol::SEMICOLON))
             {
                 error("expected ';'..");
-                return nullptr;
             }
             return new assignment_statement(ids, xpr);
         }
         default:
             error("expected either '=' or an identifier..");
-            return nullptr;
         }
     }
     case symbol::LBRACE: // either a block or a disjunction..
@@ -720,7 +825,6 @@ statement *parser::_statement()
             if (!match(symbol::SEMICOLON))
             {
                 error("expected ';'..");
-                return nullptr;
             }
             return new disjunction_statement(disjs);
         }
@@ -729,12 +833,10 @@ statement *parser::_statement()
             if (!match(symbol::SEMICOLON))
             {
                 error("expected ';'..");
-                return nullptr;
             }
             return new block_statement(stmnts);
         }
     }
-        return nullptr;
     case symbol::FACT:
     case symbol::GOAL:
     {
@@ -748,20 +850,17 @@ statement *parser::_statement()
         if (!match(symbol::ID))
         {
             error("expected identifier..");
-            return nullptr;
         }
         fn = dynamic_cast<id_token *>(tks[pos - 2])->id;
 
         if (!match(symbol::EQ))
         {
             error("expected '='..");
-            return nullptr;
         }
 
         if (!match(symbol::ID))
         {
             error("expected identifier..");
-            return nullptr;
         }
         scp.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
 
@@ -770,7 +869,6 @@ statement *parser::_statement()
             if (!match(symbol::ID))
             {
                 error("expected identifier..");
-                return nullptr;
             }
             scp.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
         }
@@ -780,7 +878,6 @@ statement *parser::_statement()
         if (!match(symbol::LPAREN))
         {
             error("expected '('..");
-            return nullptr;
         }
 
         while (match(symbol::ID))
@@ -788,7 +885,6 @@ statement *parser::_statement()
             if (!match(symbol::ID))
             {
                 error("expected identifier..");
-                return nullptr;
             }
             assgns.push_back({dynamic_cast<id_token *>(tks[pos - 2])->id, _expr()});
         }
@@ -796,13 +892,11 @@ statement *parser::_statement()
         if (!match(symbol::RPAREN))
         {
             error("expected ')'..");
-            return nullptr;
         }
 
         if (!match(symbol::SEMICOLON))
         {
             error("expected ';'..");
-            return nullptr;
         }
         return new formula_statement(isf, fn, scp, pn, assgns);
     }
@@ -812,7 +906,6 @@ statement *parser::_statement()
         if (!match(symbol::SEMICOLON))
         {
             error("expected ';'..");
-            return nullptr;
         }
         return new return_statement(xpr);
     }
@@ -850,7 +943,6 @@ expr *parser::_expr(const size_t &pr)
                 if (!match(symbol::ID))
                 {
                     error("expected identifier..");
-                    return nullptr;
                 }
             }
             if (match(symbol::RPAREN)) // a cast..
@@ -864,14 +956,12 @@ expr *parser::_expr(const size_t &pr)
                     if (!match(symbol::ID))
                     {
                         error("expected identifier..");
-                        return nullptr;
                     }
                     ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
                 }
                 if (!match(symbol::RPAREN))
                 {
                     error("expected ')'..");
-                    return nullptr;
                 }
                 expr *xpr = _expr();
                 e = new cast_expr(ids, xpr);
@@ -883,7 +973,6 @@ expr *parser::_expr(const size_t &pr)
                 if (!match(symbol::RPAREN))
                 {
                     error("expected ')'..");
-                    return nullptr;
                 }
                 e = xpr;
             }
@@ -899,7 +988,6 @@ expr *parser::_expr(const size_t &pr)
         else
         {
             error("expected arithmetic expression..");
-            return nullptr;
         }
     case symbol::MINUS:
         tk = next();
@@ -910,7 +998,6 @@ expr *parser::_expr(const size_t &pr)
         else
         {
             error("expected arithmetic expression..");
-            return nullptr;
         }
     case symbol::BANG:
         tk = next();
@@ -921,7 +1008,6 @@ expr *parser::_expr(const size_t &pr)
         else
         {
             error("expected boolean expression..");
-            return nullptr;
         }
     case symbol::LBRACKET:
     {
@@ -935,12 +1021,10 @@ expr *parser::_expr(const size_t &pr)
         else
         {
             error("expected arithmetic expression..");
-            return nullptr;
         }
         if (!match(symbol::COMMA))
         {
             error("expected ','..");
-            return nullptr;
         }
         if (arith_expr *e = dynamic_cast<arith_expr *>(_expr()))
         {
@@ -949,12 +1033,10 @@ expr *parser::_expr(const size_t &pr)
         else
         {
             error("expected arithmetic expression..");
-            return nullptr;
         }
         if (!match(symbol::RBRACKET))
         {
             error("expected ']'..");
-            return nullptr;
         }
         e = new range_expr(min_e, max_e);
     }
@@ -969,7 +1051,6 @@ expr *parser::_expr(const size_t &pr)
             if (!match(symbol::ID))
             {
                 error("expected identifier..");
-                return nullptr;
             }
             ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
         }
@@ -978,7 +1059,6 @@ expr *parser::_expr(const size_t &pr)
         if (!match(symbol::LPAREN))
         {
             error("expected '('..");
-            return nullptr;
         }
         if (!match(symbol::RPAREN))
         {
@@ -988,7 +1068,6 @@ expr *parser::_expr(const size_t &pr)
                 if (!match(symbol::COMMA))
                 {
                     error("expected ','..");
-                    return nullptr;
                 }
                 xprs.push_back(_expr());
             }
@@ -1005,7 +1084,6 @@ expr *parser::_expr(const size_t &pr)
             if (!match(symbol::ID))
             {
                 error("expected identifier..");
-                return nullptr;
             }
             is.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
         }
@@ -1023,7 +1101,6 @@ expr *parser::_expr(const size_t &pr)
                     if (!match(symbol::COMMA))
                     {
                         error("expected ','..");
-                        return nullptr;
                     }
                     xprs.push_back(_expr());
                 }
@@ -1068,7 +1145,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
                 {
@@ -1077,7 +1153,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 return new lt_expr(l, r);
             }
@@ -1093,7 +1168,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
                 {
@@ -1102,7 +1176,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 return new leq_expr(l, r);
             }
@@ -1118,7 +1191,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
                 {
@@ -1127,7 +1199,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 return new geq_expr(l, r);
             }
@@ -1143,7 +1214,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 if (arith_expr *c_e = dynamic_cast<arith_expr *>(_expr(2)))
                 {
@@ -1152,7 +1222,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 return new gt_expr(l, r);
             }
@@ -1168,7 +1237,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected boolean expression..");
-                    return nullptr;
                 }
                 if (bool_expr *c_e = dynamic_cast<bool_expr *>(_expr(2)))
                 {
@@ -1177,7 +1245,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected boolean expression..");
-                    return nullptr;
                 }
                 return new implication_expr(l, r);
             }
@@ -1192,7 +1259,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected boolean expression..");
-                    return nullptr;
                 }
                 while (match(symbol::BAR))
                 {
@@ -1203,7 +1269,6 @@ expr *parser::_expr(const size_t &pr)
                     else
                     {
                         error("expected boolean expression..");
-                        return nullptr;
                     }
                 }
                 return new disjunction_expr(xprs);
@@ -1219,7 +1284,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected boolean expression..");
-                    return nullptr;
                 }
                 while (match(symbol::AMP))
                 {
@@ -1230,7 +1294,6 @@ expr *parser::_expr(const size_t &pr)
                     else
                     {
                         error("expected boolean expression..");
-                        return nullptr;
                     }
                 }
                 return new conjunction_expr(xprs);
@@ -1246,7 +1309,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected boolean expression..");
-                    return nullptr;
                 }
                 while (match(symbol::AMP))
                 {
@@ -1257,7 +1319,6 @@ expr *parser::_expr(const size_t &pr)
                     else
                     {
                         error("expected boolean expression..");
-                        return nullptr;
                     }
                 }
                 return new exct_one_expr(xprs);
@@ -1279,7 +1340,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 while (match(symbol::PLUS))
                 {
@@ -1290,7 +1350,6 @@ expr *parser::_expr(const size_t &pr)
                     else
                     {
                         error("expected arithmetic expression..");
-                        return nullptr;
                     }
                 }
                 return new addition_expr(xprs);
@@ -1306,7 +1365,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 while (match(symbol::MINUS))
                 {
@@ -1317,7 +1375,6 @@ expr *parser::_expr(const size_t &pr)
                     else
                     {
                         error("expected arithmetic expression..");
-                        return nullptr;
                     }
                 }
                 return new subtraction_expr(xprs);
@@ -1339,7 +1396,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 while (match(symbol::STAR))
                 {
@@ -1350,7 +1406,6 @@ expr *parser::_expr(const size_t &pr)
                     else
                     {
                         error("expected arithmetic expression..");
-                        return nullptr;
                     }
                 }
                 return new multiplication_expr(xprs);
@@ -1366,7 +1421,6 @@ expr *parser::_expr(const size_t &pr)
                 else
                 {
                     error("expected arithmetic expression..");
-                    return nullptr;
                 }
                 while (match(symbol::SLASH))
                 {
@@ -1377,7 +1431,6 @@ expr *parser::_expr(const size_t &pr)
                     else
                     {
                         error("expected arithmetic expression..");
-                        return nullptr;
                     }
                 }
                 return new division_expr(xprs);
@@ -1389,22 +1442,5 @@ expr *parser::_expr(const size_t &pr)
     return e;
 }
 
-ast::type_ref *parser::_type_ref()
-{
-    std::vector<std::string> ids;
-    ids.push_back(dynamic_cast<id_token *>(tk)->id);
-    tk = next();
-    while (match(symbol::DOT))
-    {
-        if (!match(symbol::ID))
-        {
-            error("expected identifier..");
-            return nullptr;
-        }
-        ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-    }
-    return new type_ref(ids);
-}
-
-void parser::error(const std::string &err) { std::cerr << "[" << std::to_string(tk->start_line) << ", " << std::to_string(tk->start_pos) << "] " << err << std::endl; }
+void parser::error(const std::string &err) { throw std::invalid_argument("[" + std::to_string(tk->start_line) + ", " + std::to_string(tk->start_pos) + "] " + err); }
 }

@@ -55,7 +55,6 @@ enum symbol
   NumericLiteral, // [0-9]+ ('.' [0-9]+)? | '.' [0-9]+
   StringLiteral,  // '" . . ."'
   COMMENT,
-  ERROR,
   EOF_Symbol
 };
 

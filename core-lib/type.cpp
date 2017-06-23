@@ -139,7 +139,7 @@ field &type::get_field(const std::string &name) const
     {
         return scp.get_field(name);
     }
-    catch (const std::out_of_range &ex)
+    catch (std::out_of_range)
     {
         // if not in any enclosing scope, check any superclass
         for (const auto &st : supertypes)
@@ -148,7 +148,7 @@ field &type::get_field(const std::string &name) const
             {
                 return st->get_field(name);
             }
-            catch (const std::out_of_range &ex)
+            catch (std::out_of_range)
             {
             }
         }
@@ -189,7 +189,7 @@ method &type::get_method(const std::string &name, const std::vector<const type *
     {
         return scp.get_method(name, ts);
     }
-    catch (const std::out_of_range &ex)
+    catch (std::out_of_range)
     {
         // if not in any enclosing scope, check any superclass
         for (const auto &st : supertypes)
@@ -198,7 +198,7 @@ method &type::get_method(const std::string &name, const std::vector<const type *
             {
                 return st->get_method(name, ts);
             }
-            catch (const std::out_of_range &ex)
+            catch (std::out_of_range)
             {
             }
         }
@@ -220,7 +220,7 @@ predicate &type::get_predicate(const std::string &name) const
     {
         return scp.get_predicate(name);
     }
-    catch (const std::out_of_range &ex)
+    catch (std::out_of_range)
     {
         // if not in any enclosing scope, check any superclass
         for (const auto &st : supertypes)
@@ -229,7 +229,7 @@ predicate &type::get_predicate(const std::string &name) const
             {
                 return st->get_predicate(name);
             }
-            catch (const std::out_of_range &ex)
+            catch (std::out_of_range)
             {
             }
         }
@@ -251,7 +251,7 @@ type &type::get_type(const std::string &name) const
     {
         return scp.get_type(name);
     }
-    catch (const std::out_of_range &ex)
+    catch (std::out_of_range)
     {
         // if not in any enclosing scope, check any superclass
         for (const auto &st : supertypes)
@@ -260,7 +260,7 @@ type &type::get_type(const std::string &name) const
             {
                 return st->get_type(name);
             }
-            catch (const std::out_of_range &ex)
+            catch (std::out_of_range)
             {
             }
         }
