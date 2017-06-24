@@ -28,19 +28,19 @@ public:
   virtual ~type_declaration();
 
 private:
-  std::string name;
+  const std::string name;
 };
 
 class typedef_declaration : public type_declaration
 {
 public:
-  typedef_declaration(const std::string &n, const std::string &pt, expression *const e);
+  typedef_declaration(const std::string &n, const std::string &pt, const expression *const e);
   typedef_declaration(const typedef_declaration &orig) = delete;
   virtual ~typedef_declaration();
 
 private:
-  std::string primitive_type;
-  expression *const xpr;
+  const std::string primitive_type;
+  const expression *const xpr;
 };
 
 class enum_declaration : public type_declaration
@@ -51,20 +51,20 @@ public:
   virtual ~enum_declaration();
 
 private:
-  std::vector<std::string> enums;
-  std::vector<std::vector<std::string>> type_refs;
+  const std::vector<std::string> enums;
+  const std::vector<std::vector<std::string>> type_refs;
 };
 
 class variable_declaration : public declaration
 {
 public:
-  variable_declaration(const std::string &n, expression *const e = nullptr);
+  variable_declaration(const std::string &n, const expression *const e = nullptr);
   variable_declaration(const variable_declaration &orig) = delete;
   virtual ~variable_declaration();
 
 private:
-  std::string name;
-  expression *const xpr;
+  const std::string name;
+  const expression *const xpr;
 };
 
 class field_declaration : public declaration
@@ -75,8 +75,8 @@ public:
   virtual ~field_declaration();
 
 private:
-  std::vector<std::string> type;
-  std::vector<variable_declaration *> declarations;
+  const std::vector<std::string> type;
+  const std::vector<variable_declaration *> declarations;
 };
 
 class constructor_declaration : public declaration
@@ -87,9 +87,9 @@ public:
   virtual ~constructor_declaration();
 
 private:
-  std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
-  std::vector<std::pair<std::string, std::vector<expression *>>> init_list;
-  std::vector<statement *> statements;
+  const std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
+  const std::vector<std::pair<std::string, std::vector<expression *>>> init_list;
+  const std::vector<statement *> statements;
 };
 
 class method_declaration : public declaration
@@ -100,10 +100,10 @@ public:
   virtual ~method_declaration();
 
 private:
-  std::vector<std::string> return_type;
-  std::string name;
-  std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
-  std::vector<statement *> statements;
+  const std::vector<std::string> return_type;
+  const std::string name;
+  const std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
+  const std::vector<statement *> statements;
 };
 
 class predicate_declaration : public declaration
@@ -114,10 +114,10 @@ public:
   virtual ~predicate_declaration();
 
 private:
-  std::string name;
-  std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
-  std::vector<std::vector<std::string>> predicate_list;
-  std::vector<statement *> statements;
+  const std::string name;
+  const std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
+  const std::vector<std::vector<std::string>> predicate_list;
+  const std::vector<statement *> statements;
 };
 
 class class_declaration : public type_declaration
@@ -128,12 +128,12 @@ public:
   virtual ~class_declaration();
 
 private:
-  std::vector<std::vector<std::string>> base_classes;
-  std::vector<field_declaration *> fields;
-  std::vector<constructor_declaration *> constructors;
-  std::vector<method_declaration *> methods;
-  std::vector<predicate_declaration *> predicates;
-  std::vector<type_declaration *> types;
+  const std::vector<std::vector<std::string>> base_classes;
+  const std::vector<field_declaration *> fields;
+  const std::vector<constructor_declaration *> constructors;
+  const std::vector<method_declaration *> methods;
+  const std::vector<predicate_declaration *> predicates;
+  const std::vector<type_declaration *> types;
 };
 }
 }

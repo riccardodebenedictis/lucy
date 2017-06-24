@@ -23,6 +23,6 @@ protected:
 	const std::vector<field *> args;
 
 private:
-	std::vector<ast::statement *> statements;
+	const std::vector<ast::statement *> statements;
 };
 }

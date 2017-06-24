@@ -28,7 +28,7 @@ protected:
   const std::vector<field *> args;
 
 private:
-  std::vector<std::pair<std::string, std::vector<ast::expression *>>> init_list;
-  std::vector<ast::statement *> statements;
+  const std::vector<std::pair<std::string, std::vector<ast::expression *>>> init_list;
+  const std::vector<ast::statement *> statements;
 };
 }

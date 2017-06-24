@@ -34,43 +34,43 @@ protected:
 class DLL_PUBLIC assignment_statement : public statement
 {
 public:
-  assignment_statement(core &cr, const std::vector<std::string> &q_id, expression *const e);
+  assignment_statement(core &cr, const std::vector<std::string> &q_id, const expression *const e);
   assignment_statement(const assignment_statement &orig) = delete;
   virtual ~assignment_statement();
 
   bool execute(context &ctx) const override;
 
 private:
-  std::vector<std::string> qualified_id;
-  expression *const xpr;
+  const std::vector<std::string> qualified_id;
+  const expression *const xpr;
 };
 
 class DLL_PUBLIC local_field_statement : public statement
 {
 public:
-  local_field_statement(core &cr, const std::vector<std::string> &ft, const std::string &n, expression *const e = nullptr);
+  local_field_statement(core &cr, const std::vector<std::string> &ft, const std::string &n, const expression *const e = nullptr);
   local_field_statement(const local_field_statement &orig) = delete;
   virtual ~local_field_statement();
 
   bool execute(context &ctx) const override;
 
 private:
-  std::vector<std::string> field_type;
-  std::string name;
-  expression *const xpr;
+  const std::vector<std::string> field_type;
+  const std::string name;
+  const expression *const xpr;
 };
 
 class DLL_PUBLIC expression_statement : public statement
 {
 public:
-  expression_statement(core &cr, bool_expression *const e);
+  expression_statement(core &cr, const bool_expression *const e);
   expression_statement(const expression_statement &orig) = delete;
   virtual ~expression_statement();
 
   bool execute(context &ctx) const override;
 
 private:
-  bool_expression *const xpr;
+  const bool_expression *const xpr;
 };
 
 class DLL_PUBLIC block_statement : public statement
@@ -83,7 +83,7 @@ public:
   bool execute(context &ctx) const override;
 
 private:
-  std::vector<statement *> statements;
+  const std::vector<statement *> statements;
 };
 
 class DLL_PUBLIC disjunction_statement : public statement
@@ -96,7 +96,7 @@ public:
   bool execute(context &ctx) const override;
 
 private:
-  std::vector<block_statement *> disjunctions;
+  const std::vector<block_statement *> disjunctions;
 };
 
 class DLL_PUBLIC formula_statement : public statement
@@ -109,24 +109,24 @@ public:
   bool execute(context &ctx) const override;
 
 private:
-  bool is_fact;
-  std::string formula_name;
-  std::vector<std::string> formula_scope;
-  std::string predicate_name;
-  std::vector<std::pair<std::string, expression *>> assignments;
+  const bool is_fact;
+  const std::string formula_name;
+  const std::vector<std::string> formula_scope;
+  const std::string predicate_name;
+  const std::vector<std::pair<std::string, expression *>> assignments;
 };
 
 class DLL_PUBLIC return_statement : public statement
 {
 public:
-  return_statement(core &cr, expression *const e);
+  return_statement(core &cr, const expression *const e);
   return_statement(const return_statement &orig) = delete;
   virtual ~return_statement();
 
   bool execute(context &ctx) const override;
 
 private:
-  expression *const xpr;
+  const expression *const xpr;
 };
 }
 }

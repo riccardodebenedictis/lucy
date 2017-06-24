@@ -12,13 +12,13 @@ declaration::~declaration() {}
 type_declaration::type_declaration(const std::string &n) : name(n) {}
 type_declaration::~type_declaration() {}
 
-typedef_declaration::typedef_declaration(const std::string &n, const std::string &pt, expression *const e) : type_declaration(n), primitive_type(pt), xpr(e) {}
+typedef_declaration::typedef_declaration(const std::string &n, const std::string &pt, const expression *const e) : type_declaration(n), primitive_type(pt), xpr(e) {}
 typedef_declaration::~typedef_declaration() {}
 
 enum_declaration::enum_declaration(const std::string &n, const std::vector<std::string> &es, const std::vector<std::vector<std::string>> &trs) : type_declaration(n), enums(es), type_refs(trs) {}
 enum_declaration::~enum_declaration() {}
 
-variable_declaration::variable_declaration(const std::string &n, expression *const e) : name(n), xpr(e) {}
+variable_declaration::variable_declaration(const std::string &n, const expression *const e) : name(n), xpr(e) {}
 variable_declaration::~variable_declaration() {}
 
 field_declaration::field_declaration(const std::vector<std::string> &tp, const std::vector<variable_declaration *> &ds) : type(tp), declarations(ds) {}

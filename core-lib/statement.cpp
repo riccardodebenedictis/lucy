@@ -10,15 +10,15 @@ namespace ast
 statement::statement(core &cr) : cr(cr) {}
 statement::~statement() {}
 
-assignment_statement::assignment_statement(core &cr, const std::vector<std::string> &q_id, expression *const e) : statement(cr), qualified_id(q_id), xpr(e) {}
+assignment_statement::assignment_statement(core &cr, const std::vector<std::string> &q_id, const expression *const e) : statement(cr), qualified_id(q_id), xpr(e) {}
 assignment_statement::~assignment_statement() {}
 bool assignment_statement::execute(context &ctx) const { return false; }
 
-local_field_statement::local_field_statement(core &cr, const std::vector<std::string> &ft, const std::string &n, expression *const e) : statement(cr), field_type(ft), name(n), xpr(e) {}
+local_field_statement::local_field_statement(core &cr, const std::vector<std::string> &ft, const std::string &n, const expression *const e) : statement(cr), field_type(ft), name(n), xpr(e) {}
 local_field_statement::~local_field_statement() {}
 bool local_field_statement::execute(context &ctx) const { return false; }
 
-expression_statement::expression_statement(core &cr, bool_expression *const e) : statement(cr), xpr(e) {}
+expression_statement::expression_statement(core &cr, const bool_expression *const e) : statement(cr), xpr(e) {}
 expression_statement::~expression_statement() {}
 bool expression_statement::execute(context &ctx) const { return false; }
 
@@ -34,7 +34,7 @@ formula_statement::formula_statement(core &cr, const bool &isf, const std::strin
 formula_statement::~formula_statement() {}
 bool formula_statement::execute(context &ctx) const { return false; }
 
-return_statement::return_statement(core &cr, expression *const e) : statement(cr), xpr(e) {}
+return_statement::return_statement(core &cr, const expression *const e) : statement(cr), xpr(e) {}
 return_statement::~return_statement() {}
 bool return_statement::execute(context &ctx) const { return false; }
 }

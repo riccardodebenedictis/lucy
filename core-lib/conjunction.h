@@ -31,7 +31,7 @@ public:
   bool apply(context &ctx) const;
 
 private:
-  lin cost;
-  std::vector<ast::statement *> statements;
+  const lin cost;
+  const std::vector<ast::statement *> statements;
 };
 }
