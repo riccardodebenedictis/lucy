@@ -27,16 +27,9 @@ private:
   class sv_constructor : public constructor
   {
   public:
-    sv_constructor(state_variable &sv) : constructor(sv.graph, sv, {}, {}) {}
+    sv_constructor(state_variable &sv) : constructor(sv.graph, sv, {}, {}, {}) {}
     sv_constructor(sv_constructor &&) = delete;
-
     virtual ~sv_constructor() {}
-
-  private:
-    bool invoke(item &i, const std::vector<expr> &exprs) override
-    {
-      return true;
-    }
   };
 
   class sv_atom_listener : public atom_listener

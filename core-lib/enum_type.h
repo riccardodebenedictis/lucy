@@ -10,8 +10,6 @@ class item;
 
 class enum_type : public type
 {
-  friend class type_refinement_listener;
-
 public:
   enum_type(core &cr, scope &scp, std::string name);
   enum_type(const enum_type &orig) = delete;

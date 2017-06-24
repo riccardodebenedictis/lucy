@@ -1,5 +1,5 @@
 #include "conjunction.h"
-#include "statement.h"
+#include "env.h"
 
 namespace lucy
 {
@@ -10,9 +10,10 @@ conjunction::~conjunction() {}
 
 bool conjunction::apply(context &ctx) const
 {
+    context c_ctx(new env(cr, ctx));
     for (const auto &s : statements)
     {
-        if (!s->execute(ctx))
+        if (!s->execute(c_ctx))
             return false;
     }
     return true;

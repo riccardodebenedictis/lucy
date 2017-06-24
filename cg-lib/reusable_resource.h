@@ -34,9 +34,6 @@ private:
     rr_constructor(reusable_resource &rr);
     rr_constructor(rr_constructor &&) = delete;
     virtual ~rr_constructor();
-
-  private:
-    bool invoke(item &i, const std::vector<expr> &exprs) override;
   };
 
   class use_predicate : public predicate
@@ -45,9 +42,6 @@ private:
     use_predicate(reusable_resource &rr);
     use_predicate(use_predicate &&) = delete;
     virtual ~use_predicate();
-
-  private:
-    bool apply_rule(atom &a) const override;
   };
 
   class rr_atom_listener : public atom_listener

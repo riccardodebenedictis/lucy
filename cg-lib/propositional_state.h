@@ -28,16 +28,9 @@ private:
   class ps_constructor : public constructor
   {
   public:
-    ps_constructor(propositional_state &ps) : constructor(ps.graph, ps, {}, {}) {}
+    ps_constructor(propositional_state &ps) : constructor(ps.graph, ps, {}, {}, {}) {}
     ps_constructor(ps_constructor &&) = delete;
-
     virtual ~ps_constructor() {}
-
-  private:
-    bool invoke(item &i, const std::vector<expr> &exprs) override
-    {
-      return true;
-    }
   };
 
   class ps_atom_listener : public atom_listener

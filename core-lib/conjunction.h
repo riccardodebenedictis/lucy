@@ -2,6 +2,7 @@
 
 #include "scope.h"
 #include "la_theory.h"
+#include "statement.h"
 
 using namespace smt;
 

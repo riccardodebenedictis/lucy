@@ -27,11 +27,6 @@ class atom_state;
 class DLL_PUBLIC core : public scope, public env
 {
   friend class type;
-  friend class type_declaration_listener;
-  friend class type_refinement_listener;
-  friend class statement_visitor;
-  friend class type_visitor;
-  friend class expression_visitor;
 
 public:
   core();

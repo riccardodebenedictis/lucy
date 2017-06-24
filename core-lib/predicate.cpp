@@ -5,7 +5,7 @@
 namespace lucy
 {
 
-predicate::predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args) : type(cr, scp, name), args(args)
+predicate::predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts) : type(cr, scp, name), args(args), statements(stmnts)
 {
 	if (type *t = dynamic_cast<type *>(&scp))
 	{
@@ -36,5 +36,26 @@ expr predicate::new_instance(context &ctx)
 	}
 
 	return expr(a);
+}
+
+bool predicate::apply_rule(atom &a) const
+{
+	for (const auto &sp : supertypes)
+	{
+		if (!static_cast<predicate *>(sp)->apply_rule(a))
+		{
+			return false;
+		}
+	}
+
+	context ctx(new env(cr, &a));
+	set(*ctx, THIS_KEYWORD, &a);
+
+	for (const auto &s : statements)
+	{
+		if (!s->execute(ctx))
+			return false;
+	}
+	return true;
 }
 }

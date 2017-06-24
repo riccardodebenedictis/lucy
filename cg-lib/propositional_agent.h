@@ -26,13 +26,9 @@ private:
   class agnt_constructor : public constructor
   {
   public:
-    agnt_constructor(propositional_agent &agnt) : constructor(agnt.graph, agnt, {}, {}) {}
+    agnt_constructor(propositional_agent &agnt) : constructor(agnt.graph, agnt, {}, {}, {}) {}
     agnt_constructor(agnt_constructor &&) = delete;
-
     virtual ~agnt_constructor() {}
-
-  private:
-    bool invoke(item &i, const std::vector<expr> &exprs) override { return true; }
   };
 
   class agnt_atom_listener : public atom_listener

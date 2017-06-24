@@ -1,6 +1,7 @@
 #pragma once
 
 #include "type.h"
+#include "statement.h"
 
 namespace lucy
 {
@@ -8,7 +9,7 @@ namespace lucy
 class DLL_PUBLIC predicate : public type
 {
 public:
-	predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args);
+	predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts);
 	predicate(const predicate &orig) = delete;
 	virtual ~predicate();
 
@@ -16,9 +17,12 @@ public:
 
 	expr new_instance(context &ctx) override;
 
-	virtual bool apply_rule(atom &a) const = 0;
+	bool apply_rule(atom &a) const;
 
 protected:
 	const std::vector<field *> args;
+
+private:
+	std::vector<ast::statement *> statements;
 };
 }

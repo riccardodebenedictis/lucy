@@ -16,8 +16,6 @@ class atom;
 #pragma warning(disable : 4251)
 class DLL_PUBLIC type : public scope
 {
-  friend class type_declaration_listener;
-  friend class type_refinement_listener;
   friend class core;
 
 public:

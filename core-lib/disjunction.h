@@ -9,8 +9,6 @@ class conjunction;
 
 class DLL_PUBLIC disjunction : public scope
 {
-  friend class type_refinement_listener;
-
 public:
   disjunction(core &cr, scope &scp);
   disjunction(const disjunction &orig) = delete;

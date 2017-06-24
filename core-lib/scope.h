@@ -21,9 +21,7 @@ class expr;
 #pragma warning(disable : 4251)
 class DLL_PUBLIC scope
 {
-	friend class type_refinement_listener;
-
-public:
+  public:
 	scope(core &cr, scope &scp);
 	scope(const scope &orig) = delete;
 	virtual ~scope();
@@ -43,10 +41,10 @@ public:
 	virtual predicate &get_predicate(const std::string &name) const;
 	virtual std::unordered_map<std::string, predicate *> get_predicates() const noexcept;
 
-protected:
+  protected:
 	static void set(env &nv, const std::string &name, expr xpr);
 
-protected:
+  protected:
 	core &cr;
 	scope &scp;
 	std::unordered_map<std::string, field *> fields;

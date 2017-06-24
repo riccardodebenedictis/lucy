@@ -1,7 +1,5 @@
 #include "reusable_resource.h"
 #include "combinations.h"
-#include "statement.h"
-#include "expression.h"
 #include <cassert>
 
 namespace cg
@@ -152,20 +150,11 @@ bool reusable_resource::new_goal(atom &atm)
     throw std::logic_error("it is not possible to define goals on a reusable resource..");
 }
 
-reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}, {new ast::assignment_statement(rr.graph, {THIS_KEYWORD, REUSABLE_RESOURCE_CAPACITY}, new ast::id_expression(rr.graph, {REUSABLE_RESOURCE_CAPACITY}))}) {}
+reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}, {}, {new ast::assignment_statement(rr.graph, {THIS_KEYWORD, REUSABLE_RESOURCE_CAPACITY}, new ast::id_expression(rr.graph, {REUSABLE_RESOURCE_CAPACITY}))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
 
-bool reusable_resource::rr_constructor::invoke(item &i, const std::vector<expr> &exprs)
-{
-    assert(exprs.size() == 1);
-    set(i, REUSABLE_RESOURCE_CAPACITY, exprs[0]);
-    return true;
-}
-
-reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.graph, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_USE_AMOUNT_NAME)}) { supertypes.push_back(&rr.graph.get_predicate("IntervalPredicate")); }
+reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.graph, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_USE_AMOUNT_NAME)}, {}) { supertypes.push_back(&rr.graph.get_predicate("IntervalPredicate")); }
 reusable_resource::use_predicate::~use_predicate() {}
-
-bool reusable_resource::use_predicate::apply_rule(atom &a) const { return true; }
 
 reusable_resource::rr_atom_listener::rr_atom_listener(reusable_resource &rr, atom &atm) : atom_listener(atm), rr(rr) {}
 reusable_resource::rr_atom_listener::~rr_atom_listener() {}
