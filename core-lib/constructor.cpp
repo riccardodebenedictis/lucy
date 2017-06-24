@@ -32,15 +32,66 @@ expr constructor::new_instance(context &ctx, const std::vector<expr> &exprs)
 
 bool constructor::invoke(item &i, const std::vector<expr> &exprs)
 {
-    context c_ctx(&i);
+    context ctx(new env(cr, &i));
+    set(*ctx, THIS_KEYWORD, expr(&i));
     for (size_t i = 0; i < args.size(); i++)
     {
-        set(*c_ctx, args[i]->name, exprs[i]);
+        set(*ctx, args[i]->name, exprs[i]);
     }
 
+    // we initialize the supertypes..
+    size_t il_idx = 0;
+    for (const auto &st : static_cast<type &>(scp).get_supertypes())
+    {
+        if (il_idx < init_list.size() && init_list[il_idx].first.compare(st->name) == 0) // explicit supertype constructor invocation..
+        {
+            std::vector<expr> exprs;
+            std::vector<const type *> par_types;
+            for (const auto &ex : init_list[il_idx].second)
+            {
+                expr c_expr = ex->evaluate(ctx);
+                exprs.push_back(c_expr);
+                par_types.push_back(&c_expr->tp);
+            }
+
+            // we assume the constructor exists..
+            if (!st->get_constructor(par_types).invoke(i, exprs))
+                return false;
+            il_idx++;
+        }
+        else // implicit supertype (default) constructor invocation..
+        {
+            // we assume the default constructor exists..
+            if (!st->get_constructor({}).invoke(i, {}))
+                return false;
+        }
+    }
+    for (; il_idx < init_list.size(); il_idx++)
+    {
+        std::vector<expr> exprs;
+        std::vector<const type *> par_types;
+        for (const auto &ex : init_list[il_idx].second)
+        {
+            expr c_expr = ex->evaluate(ctx);
+            exprs.push_back(c_expr);
+            par_types.push_back(&c_expr->tp);
+        }
+        set(i, init_list[il_idx].first, static_cast<type &>(scp).get_field(init_list[il_idx].first).tp.get_constructor(par_types).new_instance(ctx, exprs));
+    }
+
+    // we instantiate the uninstantiated fields..
+    for (const auto &f : scp.get_fields())
+    {
+        if (!f.second->synthetic && !i.is_instantiated(f.second->name))
+        {
+            set(i, f.second->name, f.second->new_instance(ctx));
+        }
+    }
+
+    // we execute the constructor body..
     for (const auto &s : statements)
     {
-        if (!s->execute(c_ctx))
+        if (!s->execute(ctx))
             return false;
     }
     return true;
