@@ -789,13 +789,15 @@ statement *parser::_statement()
         }
         case symbol::EQ: // an assignment..
         {
+            std::string id = ids.back();
+            ids.pop_back();
             tk = next();
             expression *xpr = _expression();
             if (!match(symbol::SEMICOLON))
             {
                 error("expected ';'..");
             }
-            return new assignment_statement(cr, ids, xpr);
+            return new assignment_statement(cr, ids, id, xpr);
         }
         default:
             error("expected either '=' or an identifier..");

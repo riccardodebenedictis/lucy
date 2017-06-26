@@ -60,9 +60,4 @@ std::unordered_map<std::string, predicate *> scope::get_predicates() const noexc
 {
 	return scp.get_predicates();
 }
-
-void scope::set(env &nv, const std::string &name, expr xpr)
-{
-	nv.items.insert({name, xpr});
-}
 }

@@ -31,7 +31,7 @@ bool method::invoke(context &ctx, const std::vector<expr> &exprs)
 	context c_ctx(new env(cr, ctx));
 	for (size_t i = 0; i < args.size(); i++)
 	{
-		set(*c_ctx, args[i]->name, exprs[i]);
+		c_ctx->items.insert({args[i]->name, exprs[i]});
 	}
 
 	for (const auto &s : statements)

@@ -12,7 +12,6 @@ class method : public scope
 {
 	friend class type;
 	friend class core;
-	friend class expression_visitor;
 
 public:
 	method(core &cr, scope &scp, const type *const return_type, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts);

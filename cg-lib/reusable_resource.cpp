@@ -150,7 +150,7 @@ bool reusable_resource::new_goal(atom &atm)
     throw std::logic_error("it is not possible to define goals on a reusable resource..");
 }
 
-reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}, {}, {new ast::assignment_statement(rr.graph, {THIS_KEYWORD, REUSABLE_RESOURCE_CAPACITY}, new ast::id_expression(rr.graph, {REUSABLE_RESOURCE_CAPACITY}))}) {}
+reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}, {}, {new ast::assignment_statement(rr.graph, {THIS_KEYWORD}, REUSABLE_RESOURCE_CAPACITY, new ast::id_expression(rr.graph, {REUSABLE_RESOURCE_CAPACITY}))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
 
 reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.graph, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_USE_AMOUNT_NAME)}, {}) { supertypes.push_back(&rr.graph.get_predicate("IntervalPredicate")); }

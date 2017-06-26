@@ -42,9 +42,6 @@ class DLL_PUBLIC scope
 	virtual std::unordered_map<std::string, predicate *> get_predicates() const noexcept;
 
   protected:
-	static void set(env &nv, const std::string &name, expr xpr);
-
-  protected:
 	core &cr;
 	scope &scp;
 	std::unordered_map<std::string, field *> fields;

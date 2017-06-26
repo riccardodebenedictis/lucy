@@ -10,13 +10,20 @@ namespace lucy
 
 class core;
 
+namespace ast
+{
+class assignment_statement;
+}
+
 #pragma warning(disable : 4251)
 class DLL_PUBLIC env
 {
   friend class context;
   friend class scope;
-  friend class statement_visitor;
-  friend class expression_visitor;
+  friend class method;
+  friend class predicate;
+  friend class constructor;
+  friend class ast::assignment_statement;
 
 public:
   env(core &cr, const context ctx);

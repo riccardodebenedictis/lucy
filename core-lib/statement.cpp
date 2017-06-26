@@ -1,5 +1,6 @@
 #include "statement.h"
-#include "context.h"
+#include "item.h"
+#include "expression.h"
 
 namespace lucy
 {
@@ -10,9 +11,19 @@ namespace ast
 statement::statement(core &cr) : cr(cr) {}
 statement::~statement() {}
 
-assignment_statement::assignment_statement(core &cr, const std::vector<std::string> &q_id, const expression *const e) : statement(cr), qualified_id(q_id), xpr(e) {}
+assignment_statement::assignment_statement(core &cr, const std::vector<std::string> &is, const std::string &i, const expression *const e) : statement(cr), ids(is), id(i), xpr(e) {}
 assignment_statement::~assignment_statement() {}
-bool assignment_statement::execute(context &ctx) const { return false; }
+
+bool assignment_statement::execute(context &ctx) const
+{
+    env *c_e = &*ctx;
+    for (const auto &c_id : ids)
+    {
+        c_e = &*c_e->get(c_id);
+    }
+    c_e->items.insert({id, xpr->evaluate(ctx)});
+    return true;
+}
 
 local_field_statement::local_field_statement(core &cr, const std::vector<std::string> &ft, const std::string &n, const expression *const e) : statement(cr), field_type(ft), name(n), xpr(e) {}
 local_field_statement::~local_field_statement() {}

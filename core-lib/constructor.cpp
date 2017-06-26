@@ -33,10 +33,10 @@ expr constructor::new_instance(context &ctx, const std::vector<expr> &exprs)
 bool constructor::invoke(item &i, const std::vector<expr> &exprs)
 {
     context ctx(new env(cr, &i));
-    set(*ctx, THIS_KEYWORD, expr(&i));
+    ctx->items.insert({THIS_KEYWORD, expr(&i)});
     for (size_t i = 0; i < args.size(); i++)
     {
-        set(*ctx, args[i]->name, exprs[i]);
+        ctx->items.insert({args[i]->name, exprs[i]});
     }
 
     // we initialize the supertypes..
@@ -76,7 +76,7 @@ bool constructor::invoke(item &i, const std::vector<expr> &exprs)
             exprs.push_back(c_expr);
             par_types.push_back(&c_expr->tp);
         }
-        set(i, init_list[il_idx].first, static_cast<type &>(scp).get_field(init_list[il_idx].first).tp.get_constructor(par_types).new_instance(ctx, exprs));
+        i.items.insert({init_list[il_idx].first, static_cast<type &>(scp).get_field(init_list[il_idx].first).tp.get_constructor(par_types).new_instance(ctx, exprs)});
     }
 
     // we instantiate the uninstantiated fields..
@@ -84,7 +84,7 @@ bool constructor::invoke(item &i, const std::vector<expr> &exprs)
     {
         if (!f.second->synthetic && !i.is_instantiated(f.second->name))
         {
-            set(i, f.second->name, f.second->new_instance(ctx));
+            i.items.insert({f.second->name, f.second->new_instance(ctx)});
         }
     }
 

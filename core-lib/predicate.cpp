@@ -49,8 +49,7 @@ bool predicate::apply_rule(atom &a) const
 	}
 
 	context ctx(new env(cr, &a));
-	set(*ctx, THIS_KEYWORD, &a);
-
+	ctx->items.insert({THIS_KEYWORD, &a});
 	for (const auto &s : statements)
 	{
 		if (!s->execute(ctx))
