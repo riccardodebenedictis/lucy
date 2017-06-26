@@ -87,14 +87,14 @@ private:
 class DLL_PUBLIC disjunction_statement : public statement
 {
 public:
-  disjunction_statement(const std::vector<block_statement *> &disjs);
+  disjunction_statement(const std::vector<block_statement *> &conjs);
   disjunction_statement(const disjunction_statement &orig) = delete;
   virtual ~disjunction_statement();
 
   void execute(const scope &scp, context &ctx) const override;
 
 private:
-  const std::vector<block_statement *> disjunctions;
+  const std::vector<block_statement *> conjunctions;
 };
 
 class DLL_PUBLIC formula_statement : public statement

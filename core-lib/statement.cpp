@@ -16,8 +16,7 @@ statement::statement() {}
 statement::~statement() {}
 
 assignment_statement::assignment_statement(const std::vector<std::string> &is, const std::string &i, const expression *const e) : ids(is), id(i), xpr(e) {}
-assignment_statement::~assignment_statement() {}
-
+assignment_statement::~assignment_statement() { delete xpr; }
 void assignment_statement::execute(const scope &scp, context &ctx) const
 {
     env *c_e = &*ctx;
@@ -29,8 +28,7 @@ void assignment_statement::execute(const scope &scp, context &ctx) const
 }
 
 local_field_statement::local_field_statement(const std::vector<std::string> &ft, const std::string &n, const expression *const e) : field_type(ft), name(n), xpr(e) {}
-local_field_statement::~local_field_statement() {}
-
+local_field_statement::~local_field_statement() { delete xpr; }
 void local_field_statement::execute(const scope &scp, context &ctx) const
 {
     if (xpr)
@@ -57,8 +55,7 @@ void local_field_statement::execute(const scope &scp, context &ctx) const
 }
 
 expression_statement::expression_statement(const bool_expression *const e) : xpr(e) {}
-expression_statement::~expression_statement() {}
-
+expression_statement::~expression_statement() { delete xpr; }
 void expression_statement::execute(const scope &scp, context &ctx) const
 {
     bool_expr be = xpr->evaluate(scp, ctx);
@@ -66,24 +63,39 @@ void expression_statement::execute(const scope &scp, context &ctx) const
 }
 
 block_statement::block_statement(const std::vector<statement *> &stmnts) : statements(stmnts) {}
-block_statement::~block_statement() {}
-
+block_statement::~block_statement()
+{
+    for (const auto &st : statements)
+    {
+        delete st;
+    }
+}
 void block_statement::execute(const scope &scp, context &ctx) const
 {
-    for (const auto st : statements)
+    for (const auto &st : statements)
     {
         st->execute(scp, ctx);
     }
 }
 
-disjunction_statement::disjunction_statement(const std::vector<block_statement *> &disjs) : disjunctions(disjs) {}
-disjunction_statement::~disjunction_statement() {}
-
+disjunction_statement::disjunction_statement(const std::vector<block_statement *> &conjs) : conjunctions(conjs) {}
+disjunction_statement::~disjunction_statement()
+{
+    for (const auto &d : conjunctions)
+    {
+        delete d;
+    }
+}
 void disjunction_statement::execute(const scope &scp, context &ctx) const { scp.get_core().new_disjunction(ctx, *static_cast<const disjunction *>(&scp)); }
 
 formula_statement::formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, expression *>> &assns) : is_fact(isf), formula_name(fn), formula_scope(scp), predicate_name(pn), assignments(assns) {}
-formula_statement::~formula_statement() {}
-
+formula_statement::~formula_statement()
+{
+    for (const auto &asgnmnt : assignments)
+    {
+        delete asgnmnt.second;
+    }
+}
 void formula_statement::execute(const scope &scp, context &ctx) const
 {
     predicate *p = nullptr;
@@ -171,8 +183,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
 }
 
 return_statement::return_statement(const expression *const e) : xpr(e) {}
-return_statement::~return_statement() {}
-
+return_statement::~return_statement() { delete xpr; }
 void return_statement::execute(const scope &scp, context &ctx) const { ctx->items.insert({RETURN_KEYWORD, xpr->evaluate(scp, ctx)}); }
 }
 }
