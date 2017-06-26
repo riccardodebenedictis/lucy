@@ -68,7 +68,7 @@ public:
   arith_expr add(const std::vector<arith_expr> &exprs);
   arith_expr sub(const std::vector<arith_expr> &exprs);
   arith_expr mult(const std::vector<arith_expr> &exprs);
-  arith_expr div(arith_expr left, arith_expr right);
+  arith_expr div(const std::vector<arith_expr> &exprs);
   arith_expr minus(arith_expr ex);
 
   bool_expr lt(arith_expr left, arith_expr right);

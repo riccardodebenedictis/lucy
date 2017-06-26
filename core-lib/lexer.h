@@ -2,58 +2,60 @@
 
 #include <istream>
 #include <vector>
+#include <string>
 
 namespace lucy
 {
 
 enum symbol
 {
-  BOOL,           // 'bool'
-  INT,            // 'int'
-  REAL,           // 'real'
-  STRING,         // 'string'
-  TYPEDEF,        // 'typedef'
-  ENUM,           // 'enum'
-  CLASS,          // 'class'
-  GOAL,           // 'goal'
-  FACT,           // 'fact'
-  PREDICATE,      // 'predicate'
-  NEW,            // 'new'
-  OR,             // 'or'
-  THIS,           // 'this'
-  VOID,           // 'void'
-  TRUE,           // 'true'
-  FALSE,          // 'false'
-  RETURN,         // 'return'
-  DOT,            // '.'
-  COMMA,          // ','
-  COLON,          // ':'
-  SEMICOLON,      // ';'
-  LPAREN,         // '('
-  RPAREN,         // ')'
-  LBRACKET,       // '['
-  RBRACKET,       // ']'
-  LBRACE,         // '{'
-  RBRACE,         // '}'
-  PLUS,           // '+'
-  MINUS,          // '-'
-  STAR,           // '*'
-  SLASH,          // '/'
-  AMP,            // '&'
-  BAR,            // '|'
-  EQ,             // '='
-  GT,             // '>'
-  LT,             // '<'
-  BANG,           // '!'
-  EQEQ,           // '=='
-  LTEQ,           // '<='
-  GTEQ,           // '>='
-  BANGEQ,         // '!='
-  IMPLICATION,    // '->'
-  CARET,          // '^'
-  ID,             // ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
-  NumericLiteral, // [0-9]+ ('.' [0-9]+)? | '.' [0-9]+
-  StringLiteral,  // '" . . ."'
+  BOOL,          // 'bool'
+  INT,           // 'int'
+  REAL,          // 'real'
+  STRING,        // 'string'
+  TYPEDEF,       // 'typedef'
+  ENUM,          // 'enum'
+  CLASS,         // 'class'
+  GOAL,          // 'goal'
+  FACT,          // 'fact'
+  PREDICATE,     // 'predicate'
+  NEW,           // 'new'
+  OR,            // 'or'
+  THIS,          // 'this'
+  VOID,          // 'void'
+  TRUE,          // 'true'
+  FALSE,         // 'false'
+  RETURN,        // 'return'
+  DOT,           // '.'
+  COMMA,         // ','
+  COLON,         // ':'
+  SEMICOLON,     // ';'
+  LPAREN,        // '('
+  RPAREN,        // ')'
+  LBRACKET,      // '['
+  RBRACKET,      // ']'
+  LBRACE,        // '{'
+  RBRACE,        // '}'
+  PLUS,          // '+'
+  MINUS,         // '-'
+  STAR,          // '*'
+  SLASH,         // '/'
+  AMP,           // '&'
+  BAR,           // '|'
+  EQ,            // '='
+  GT,            // '>'
+  LT,            // '<'
+  BANG,          // '!'
+  EQEQ,          // '=='
+  LTEQ,          // '<='
+  GTEQ,          // '>='
+  BANGEQ,        // '!='
+  IMPLICATION,   // '->'
+  CARET,         // '^'
+  ID,            // ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+  IntLiteral,    // [0-9]+
+  RealLiteral,   // [0-9]+ '.' [0-9]+)? | '.' [0-9]+
+  StringLiteral, // '" . . ."'
   COMMENT,
   EOF_Symbol
 };
@@ -65,11 +67,11 @@ public:
   virtual ~token() {}
 
 public:
-  symbol sym;
-  int start_line;
-  int start_pos;
-  int end_line;
-  int end_pos;
+  const symbol sym;
+  const int start_line;
+  const int start_pos;
+  const int end_line;
+  const int end_pos;
 };
 
 class id_token : public token
@@ -79,17 +81,27 @@ public:
   virtual ~id_token() {}
 
 public:
-  std::string id;
+  const std::string id;
 };
 
-class numeric_token : public token
+class int_token : public token
 {
 public:
-  numeric_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const double &val) : token(symbol::NumericLiteral, start_line, start_pos, end_line, end_pos), val(val) {}
-  virtual ~numeric_token() {}
+  int_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const long &val) : token(symbol::IntLiteral, start_line, start_pos, end_line, end_pos), val(val) {}
+  virtual ~int_token() {}
 
 public:
-  double val;
+  const long val;
+};
+
+class real_token : public token
+{
+public:
+  real_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const double &val) : token(symbol::RealLiteral, start_line, start_pos, end_line, end_pos), val(val) {}
+  virtual ~real_token() {}
+
+public:
+  const double val;
 };
 
 class string_token : public token
@@ -99,7 +111,7 @@ public:
   virtual ~string_token() {}
 
 public:
-  std::string str;
+  const std::string str;
 };
 
 class lexer
@@ -120,7 +132,7 @@ private:
     return tk;
   }
 
-  id_token *mk_id_token(const std::string &id)
+  token *mk_id_token(const std::string &id)
   {
     id_token *tk = new id_token(start_line, start_pos, end_line, end_pos, id);
     start_line = end_line;
@@ -128,15 +140,23 @@ private:
     return tk;
   }
 
-  numeric_token *mk_numeric_token(const double &val)
+  token *mk_numeric_token(const std::string &str)
   {
-    numeric_token *tk = new numeric_token(start_line, start_pos, end_line, end_pos, val);
+    token *tk = nullptr;
+    if (str.find('.') == str.npos)
+    {
+      tk = new int_token(start_line, start_pos, end_line, end_pos, std::stol(str));
+    }
+    else
+    {
+      tk = new real_token(start_line, start_pos, end_line, end_pos, std::stod(str));
+    }
     start_line = end_line;
     start_pos = end_pos;
     return tk;
   }
 
-  string_token *mk_string_token(const std::string &str)
+  token *mk_string_token(const std::string &str)
   {
     string_token *tk = new string_token(start_line, start_pos, end_line, end_pos, str);
     start_line = end_line;

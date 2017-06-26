@@ -1,6 +1,5 @@
 #include "lexer.h"
 #include <iostream>
-#include <string>
 #include <stdexcept>
 
 namespace lucy
@@ -179,7 +178,7 @@ token *lexer::next()
                     error("invalid numeric literal..");
                 default:
                     is.unget();
-                    return mk_numeric_token(std::stod(std::string(num.begin(), num.end())));
+                    return mk_numeric_token(std::string(num.begin(), num.end()));
                 }
             }
         }
@@ -260,7 +259,7 @@ token *lexer::next()
                 break;
             default:
                 is.unget();
-                return mk_numeric_token(std::stod(std::string(num.begin(), num.end())));
+                return mk_numeric_token(std::string(num.begin(), num.end()));
             }
         }
     }

@@ -69,12 +69,13 @@ bool_expr core::new_bool(const bool &val)
 arith_expr core::new_int()
 {
     std::cerr << "[warning] replacing an integer variable with a real variable.." << std::endl;
-    return new arith_item(*this, *types.at(REAL_KEYWORD), lin(la_th.new_var(), 1));
+    return new arith_item(*this, *types.at(INT_KEYWORD), lin(la_th.new_var(), 1));
 }
 
 arith_expr core::new_int(const long &val)
 {
-    return new arith_item(*this, *types.at(REAL_KEYWORD), lin(val));
+    std::cerr << "[warning] replacing an integer constant with a real constant.." << std::endl;
+    return new arith_item(*this, *types.at(INT_KEYWORD), lin(val));
 }
 
 arith_expr core::new_real()
@@ -191,6 +192,7 @@ bool_expr core::exct_one(const std::vector<bool_expr> &exprs)
 
 arith_expr core::add(const std::vector<arith_expr> &exprs)
 {
+    assert(exprs.size() > 2);
     lin l;
     for (const auto &aex : exprs)
     {
@@ -201,6 +203,7 @@ arith_expr core::add(const std::vector<arith_expr> &exprs)
 
 arith_expr core::sub(const std::vector<arith_expr> &exprs)
 {
+    assert(exprs.size() > 2);
     lin l;
     for (std::vector<arith_expr>::const_iterator it = exprs.begin(); it != exprs.end(); ++it)
     {
@@ -218,6 +221,7 @@ arith_expr core::sub(const std::vector<arith_expr> &exprs)
 
 arith_expr core::mult(const std::vector<arith_expr> &exprs)
 {
+    assert(exprs.size() > 2);
     arith_expr ae = *std::find_if(exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); });
     lin l = ae->l;
     for (const auto &aex : exprs)
@@ -231,10 +235,16 @@ arith_expr core::mult(const std::vector<arith_expr> &exprs)
     return new arith_item(*this, *types.at(REAL_KEYWORD), l);
 }
 
-arith_expr core::div(arith_expr left, arith_expr right)
+arith_expr core::div(const std::vector<arith_expr> &exprs)
 {
-    assert(la_th.bounds(right->l).constant() && "non-linear expression..");
-    return new arith_item(*this, *types.at(REAL_KEYWORD), left->l / la_th.value(right->l));
+    assert(exprs.size() > 2);
+    assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); }) && "non-linear expression..");
+    double c = la_th.value(exprs[1]->l);
+    for (size_t i = 2; i < exprs.size(); i++)
+    {
+        c *= la_th.value(exprs[i]->l);
+    }
+    return new arith_item(*this, *types.at(REAL_KEYWORD), exprs[0]->l / c);
 }
 
 arith_expr core::minus(arith_expr ex)

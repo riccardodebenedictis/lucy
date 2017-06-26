@@ -925,9 +925,12 @@ expression *parser::_expression(const size_t &pr)
     case symbol::FALSE:
         tk = next();
         e = new bool_literal_expression(tks[pos - 2]->sym == symbol::TRUE);
-    case symbol::NumericLiteral:
+    case symbol::IntLiteral:
         tk = next();
-        e = new arith_literal_expression(dynamic_cast<numeric_token *>(tks[pos - 2])->val);
+        e = new int_literal_expression(dynamic_cast<int_token *>(tks[pos - 2])->val);
+    case symbol::RealLiteral:
+        tk = next();
+        e = new real_literal_expression(dynamic_cast<real_token *>(tks[pos - 2])->val);
     case symbol::StringLiteral:
         tk = next();
         e = new string_literal_expression(dynamic_cast<string_token *>(tks[pos - 2])->str);

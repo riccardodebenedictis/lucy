@@ -102,12 +102,25 @@ public:
   virtual ~arith_expression();
 };
 
-class DLL_PUBLIC arith_literal_expression : public arith_expression
+class DLL_PUBLIC int_literal_expression : public arith_expression
 {
 public:
-  arith_literal_expression(const double &l);
-  arith_literal_expression(const arith_literal_expression &orig) = delete;
-  virtual ~arith_literal_expression();
+  int_literal_expression(const long &l);
+  int_literal_expression(const int_literal_expression &orig) = delete;
+  virtual ~int_literal_expression();
+
+  expr evaluate(const scope &scp, context &ctx) const override;
+
+private:
+  const long literal;
+};
+
+class DLL_PUBLIC real_literal_expression : public arith_expression
+{
+public:
+  real_literal_expression(const double &l);
+  real_literal_expression(const real_literal_expression &orig) = delete;
+  virtual ~real_literal_expression();
 
   expr evaluate(const scope &scp, context &ctx) const override;
 
