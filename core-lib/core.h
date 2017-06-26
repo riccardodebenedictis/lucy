@@ -2,6 +2,7 @@
 
 #include "scope.h"
 #include "env.h"
+#include "parser.h"
 #include "sat_core.h"
 #include "la_theory.h"
 #include "set_theory.h"
@@ -23,6 +24,7 @@ class enum_expr;
 class atom;
 class disjunction;
 class atom_state;
+class parser;
 
 namespace ast
 {
@@ -133,6 +135,9 @@ private:
   std::string to_string(item *i);
   std::string to_string(atom *i);
   std::string to_string(std::unordered_map<std::string, expr> items);
+
+private:
+  parser prs;
 
 public:
   sat_core sat;      // the sat core..

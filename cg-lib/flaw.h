@@ -31,7 +31,7 @@ public:
 
 private:
   virtual void init();
-  bool expand();
+  void expand();
   virtual void compute_resolvers() = 0;
   bool has_subgoals();
 

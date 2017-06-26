@@ -361,20 +361,19 @@ void causal_graph::build()
         }
         else
         {
-            if (!flaw_q.front()->expand() || !core::sat.check())
-            {
+            flaw_q.front()->expand();
+            if (!core::sat.check())
                 throw unsolvable_exception();
-            }
 
             for (const auto &r : flaw_q.front()->resolvers)
             {
                 resolvers.push_front(r);
                 set_var(r->chosen);
                 r->apply();
+
                 if (!core::sat.check())
-                {
                     throw unsolvable_exception();
-                }
+
                 restore_var();
                 if (r->preconditions.empty())
                 {
@@ -406,20 +405,20 @@ void causal_graph::add_layer()
     {
         assert(f->initialized);
         assert(!f->expanded);
-        if (!f->expand() || !core::sat.check())
-        {
+        f->expand();
+
+        if (!core::sat.check())
             throw unsolvable_exception();
-        }
 
         for (const auto &r : f->resolvers)
         {
             resolvers.push_front(r);
             set_var(r->chosen);
             r->apply();
+
             if (!core::sat.check())
-            {
                 throw unsolvable_exception();
-            }
+
             restore_var();
             if (r->preconditions.empty())
             {

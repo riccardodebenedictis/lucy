@@ -4,12 +4,14 @@
 #include "method.h"
 #include "field.h"
 #include <iostream>
+#include <sstream>
+#include <fstream>
 #include <cassert>
 
 namespace lucy
 {
 
-core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat), active(new atom_state()), inactive(new atom_state()), unified(new atom_state())
+core::core() : scope(*this, *this), env(*this, this), prs(*this), sat(), la_th(sat), set_th(sat), active(new atom_state()), inactive(new atom_state()), unified(new atom_state())
 {
     types.insert({BOOL_KEYWORD, new bool_type(*this)});
     types.insert({INT_KEYWORD, new int_type(*this)});
@@ -48,12 +50,27 @@ core::~core()
 
 bool core::read(const std::string &script)
 {
-    return true;
+    prs.parse(std::stringstream(script));
+    return sat.check();
 }
 
 bool core::read(const std::vector<std::string> &files)
 {
-    return true;
+    for (const auto &f : files)
+    {
+        std::ifstream ifs(f);
+        if (ifs)
+        {
+            prs.parse(ifs);
+            ifs.close();
+        }
+        else
+        {
+            std::cerr << "cannot find file " << f << ".." << std::endl;
+            return false;
+        }
+    }
+    return sat.check();
 }
 
 bool_expr core::new_bool()
