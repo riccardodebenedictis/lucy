@@ -18,25 +18,24 @@ statement::~statement() {}
 assignment_statement::assignment_statement(const std::vector<std::string> &is, const std::string &i, const expression *const e) : ids(is), id(i), xpr(e) {}
 assignment_statement::~assignment_statement() {}
 
-bool assignment_statement::execute(const scope &scp, context &ctx) const
+void assignment_statement::execute(const scope &scp, context &ctx) const
 {
     env *c_e = &*ctx;
     for (const auto &c_id : ids)
     {
         c_e = &*c_e->get(c_id);
     }
-    c_e->items.insert({id, xpr->evaluate(ctx)});
-    return true;
+    c_e->items.insert({id, xpr->evaluate(scp, ctx)});
 }
 
 local_field_statement::local_field_statement(const std::vector<std::string> &ft, const std::string &n, const expression *const e) : field_type(ft), name(n), xpr(e) {}
 local_field_statement::~local_field_statement() {}
 
-bool local_field_statement::execute(const scope &scp, context &ctx) const
+void local_field_statement::execute(const scope &scp, context &ctx) const
 {
     if (xpr)
     {
-        ctx->items.insert({name, xpr->evaluate(ctx)});
+        ctx->items.insert({name, xpr->evaluate(scp, ctx)});
     }
     else
     {
@@ -55,44 +54,37 @@ bool local_field_statement::execute(const scope &scp, context &ctx) const
             ctx->items.insert({name, t->new_existential()});
         }
     }
-    return true;
 }
 
 expression_statement::expression_statement(const bool_expression *const e) : xpr(e) {}
 expression_statement::~expression_statement() {}
 
-bool expression_statement::execute(const scope &scp, context &ctx) const
+void expression_statement::execute(const scope &scp, context &ctx) const
 {
-    bool_expr be = xpr->evaluate(ctx);
-    return scp.get_core().assert_facts({be->l});
+    bool_expr be = xpr->evaluate(scp, ctx);
+    scp.get_core().assert_facts({be->l});
 }
 
 block_statement::block_statement(const std::vector<statement *> &stmnts) : statements(stmnts) {}
 block_statement::~block_statement() {}
 
-bool block_statement::execute(const scope &scp, context &ctx) const
+void block_statement::execute(const scope &scp, context &ctx) const
 {
     for (const auto st : statements)
     {
-        if (!st->execute(scp, ctx))
-            return false;
+        st->execute(scp, ctx);
     }
-    return true;
 }
 
 disjunction_statement::disjunction_statement(const std::vector<block_statement *> &disjs) : disjunctions(disjs) {}
 disjunction_statement::~disjunction_statement() {}
 
-bool disjunction_statement::execute(const scope &scp, context &ctx) const
-{
-    scp.get_core().new_disjunction(ctx, *static_cast<const disjunction *>(&scp));
-    return true;
-}
+void disjunction_statement::execute(const scope &scp, context &ctx) const { scp.get_core().new_disjunction(ctx, *static_cast<const disjunction *>(&scp)); }
 
 formula_statement::formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, expression *>> &assns) : is_fact(isf), formula_name(fn), formula_scope(scp), predicate_name(pn), assignments(assns) {}
 formula_statement::~formula_statement() {}
 
-bool formula_statement::execute(const scope &scp, context &ctx) const
+void formula_statement::execute(const scope &scp, context &ctx) const
 {
     predicate *p = nullptr;
     std::unordered_map<std::string, expr> assgnments;
@@ -127,7 +119,7 @@ bool formula_statement::execute(const scope &scp, context &ctx) const
 
     for (const auto &a : assignments)
     {
-        assgnments.insert({a.first, a.second->evaluate(ctx)});
+        assgnments.insert({a.first, a.second->evaluate(scp, ctx)});
     }
 
     atom *a;
@@ -168,30 +160,19 @@ bool formula_statement::execute(const scope &scp, context &ctx) const
 
     if (is_fact)
     {
-        if (!scp.get_core().new_fact(*a))
-        {
-            return false;
-        }
+        scp.get_core().new_fact(*a);
     }
     else
     {
-        if (!scp.get_core().new_goal(*a))
-        {
-            return false;
-        }
+        scp.get_core().new_goal(*a);
     }
 
     ctx->items.insert({formula_name, expr(a)});
-    return true;
 }
 
 return_statement::return_statement(const expression *const e) : xpr(e) {}
 return_statement::~return_statement() {}
 
-bool return_statement::execute(const scope &scp, context &ctx) const
-{
-    ctx->items.insert({RETURN_KEYWORD, xpr->evaluate(ctx)});
-    return true;
-}
+void return_statement::execute(const scope &scp, context &ctx) const { ctx->items.insert({RETURN_KEYWORD, xpr->evaluate(scp, ctx)}); }
 }
 }

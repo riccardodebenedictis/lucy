@@ -1,7 +1,7 @@
 #include "method.h"
+#include "item.h"
 #include "type.h"
 #include "field.h"
-#include "env.h"
 #include <cassert>
 
 namespace lucy
@@ -25,7 +25,7 @@ method::method(core &cr, scope &scp, const type *const return_type, const std::s
 
 method::~method() {}
 
-bool method::invoke(context &ctx, const std::vector<expr> &exprs)
+item *method::invoke(context &ctx, const std::vector<expr> &exprs)
 {
 	assert(args.size() == exprs.size());
 	context c_ctx(new env(cr, ctx));
@@ -36,9 +36,12 @@ bool method::invoke(context &ctx, const std::vector<expr> &exprs)
 
 	for (const auto &s : statements)
 	{
-		if (!s->execute(*this, c_ctx))
-			return false;
+		s->execute(*this, c_ctx);
 	}
-	return true;
+
+	if (return_type)
+		return &*c_ctx->items.at(RETURN_KEYWORD);
+	else
+		return nullptr;
 }
 }

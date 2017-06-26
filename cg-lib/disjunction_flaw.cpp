@@ -23,5 +23,5 @@ disjunction_flaw::choose_conjunction::choose_conjunction(causal_graph &graph, di
 
 disjunction_flaw::choose_conjunction::~choose_conjunction() {}
 
-bool disjunction_flaw::choose_conjunction::apply() { return conj.apply(ctx); }
+void disjunction_flaw::choose_conjunction::apply() { conj.apply(ctx); }
 }

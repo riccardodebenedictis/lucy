@@ -27,8 +27,8 @@ public:
   expr new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals) override;
 
 private:
-  bool new_fact(atom &atm) override;
-  bool new_goal(atom &atm) override;
+  void new_fact(atom &atm) override;
+  void new_goal(atom &atm) override;
   void new_disjunction(context &ctx, const disjunction &disj) override;
 
 public:
@@ -44,8 +44,8 @@ private:
   void push() override;
   void pop() override;
 
-  bool build();
-  bool add_layer();
+  void build();
+  void add_layer();
   bool has_solution();
   bool is_deferrable(flaw &f);
   void set_cost(flaw &f, double cost);

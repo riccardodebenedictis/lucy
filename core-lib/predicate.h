@@ -17,7 +17,7 @@ public:
 
 	expr new_instance(context &ctx) override;
 
-	bool apply_rule(atom &a) const;
+	void apply_rule(atom &a) const;
 
 protected:
 	const std::vector<field *> args;

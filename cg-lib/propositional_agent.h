@@ -20,8 +20,8 @@ public:
 private:
   std::vector<flaw *> get_flaws() override;
 
-  bool new_fact(atom &atm) override;
-  bool new_goal(atom &atm) override;
+  void new_fact(atom &atm) override;
+  void new_goal(atom &atm) override;
 
   class agnt_constructor : public constructor
   {
@@ -75,7 +75,7 @@ private:
     std::string get_label() const override { return "e" + std::to_string(before.state) + " <= e" + std::to_string(after.state); }
 
   private:
-    bool apply() override;
+    void apply() override;
 
   private:
     const atom &before;

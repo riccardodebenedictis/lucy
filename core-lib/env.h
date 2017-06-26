@@ -43,8 +43,6 @@ public:
   virtual expr get(const std::string &name) const;
   std::unordered_map<std::string, expr> get_items() const noexcept { return items; }
 
-  bool is_instantiated(const std::string &name) const { return items.find(name) != items.end(); }
-
 private:
   unsigned ref_count;
 

@@ -22,7 +22,7 @@ public:
   expr new_instance(context &ctx, const std::vector<expr> &exprs);
 
 private:
-  bool invoke(item &i, const std::vector<expr> &exprs);
+  void invoke(item &i, const std::vector<expr> &exprs);
 
 protected:
   const std::vector<field *> args;

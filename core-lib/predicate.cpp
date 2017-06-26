@@ -38,23 +38,18 @@ expr predicate::new_instance(context &ctx)
 	return expr(a);
 }
 
-bool predicate::apply_rule(atom &a) const
+void predicate::apply_rule(atom &a) const
 {
 	for (const auto &sp : supertypes)
 	{
-		if (!static_cast<predicate *>(sp)->apply_rule(a))
-		{
-			return false;
-		}
+		static_cast<predicate *>(sp)->apply_rule(a);
 	}
 
 	context ctx(new env(cr, &a));
 	ctx->items.insert({THIS_KEYWORD, &a});
 	for (const auto &s : statements)
 	{
-		if (!s->execute(*this, ctx))
-			return false;
+		s->execute(*this, ctx);
 	}
-	return true;
 }
 }

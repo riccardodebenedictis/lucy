@@ -30,10 +30,10 @@ expr constructor::new_instance(context &ctx, const std::vector<expr> &exprs)
     return i;
 }
 
-bool constructor::invoke(item &i, const std::vector<expr> &exprs)
+void constructor::invoke(item &itm, const std::vector<expr> &exprs)
 {
-    context ctx(new env(cr, &i));
-    ctx->items.insert({THIS_KEYWORD, expr(&i)});
+    context ctx(new env(cr, &itm));
+    ctx->items.insert({THIS_KEYWORD, expr(&itm)});
     for (size_t i = 0; i < args.size(); i++)
     {
         ctx->items.insert({args[i]->name, exprs[i]});
@@ -49,21 +49,19 @@ bool constructor::invoke(item &i, const std::vector<expr> &exprs)
             std::vector<const type *> par_types;
             for (const auto &ex : init_list[il_idx].second)
             {
-                expr c_expr = ex->evaluate(ctx);
+                expr c_expr = ex->evaluate(*this, ctx);
                 exprs.push_back(c_expr);
                 par_types.push_back(&c_expr->tp);
             }
 
             // we assume the constructor exists..
-            if (!st->get_constructor(par_types).invoke(i, exprs))
-                return false;
+            st->get_constructor(par_types).invoke(itm, exprs);
             il_idx++;
         }
         else // implicit supertype (default) constructor invocation..
         {
             // we assume the default constructor exists..
-            if (!st->get_constructor({}).invoke(i, {}))
-                return false;
+            st->get_constructor({}).invoke(itm, {});
         }
     }
     for (; il_idx < init_list.size(); il_idx++)
@@ -72,28 +70,26 @@ bool constructor::invoke(item &i, const std::vector<expr> &exprs)
         std::vector<const type *> par_types;
         for (const auto &ex : init_list[il_idx].second)
         {
-            expr c_expr = ex->evaluate(ctx);
+            expr c_expr = ex->evaluate(*this, ctx);
             exprs.push_back(c_expr);
             par_types.push_back(&c_expr->tp);
         }
-        i.items.insert({init_list[il_idx].first, static_cast<type &>(scp).get_field(init_list[il_idx].first).tp.get_constructor(par_types).new_instance(ctx, exprs)});
+        itm.items.insert({init_list[il_idx].first, static_cast<type &>(scp).get_field(init_list[il_idx].first).tp.get_constructor(par_types).new_instance(ctx, exprs)});
     }
 
     // we instantiate the uninstantiated fields..
     for (const auto &f : scp.get_fields())
     {
-        if (!f.second->synthetic && !i.is_instantiated(f.second->name))
+        if (!f.second->synthetic && itm.items.find((f.second->name)) == itm.items.end())
         {
-            i.items.insert({f.second->name, f.second->new_instance(ctx)});
+            itm.items.insert({f.second->name, f.second->new_instance(ctx)});
         }
     }
 
     // we execute the constructor body..
     for (const auto &s : statements)
     {
-        if (!s->execute(*this, ctx))
-            return false;
+        s->execute(*this, ctx);
     }
-    return true;
 }
 }

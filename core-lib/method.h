@@ -7,31 +7,32 @@ namespace lucy
 {
 
 class context;
+class item;
 
 class method : public scope
 {
 	friend class type;
 	friend class core;
 
-public:
+  public:
 	method(core &cr, scope &scp, const type *const return_type, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts);
 	method(const method &orig) = delete;
 	virtual ~method();
 
 	const std::vector<field *> get_args() const { return args; }
 
-	bool invoke(context &ctx, const std::vector<expr> &exprs);
+	item *invoke(context &ctx, const std::vector<expr> &exprs);
 
-public:
+  public:
 	const type *const return_type;
 
-public:
+  public:
 	const std::string name;
 
-protected:
+  protected:
 	const std::vector<field *> args;
 
-private:
+  private:
 	const std::vector<ast::statement *> statements;
 };
 }

@@ -274,16 +274,15 @@ bool_expr core::eq(expr left, expr right)
     return new bool_item(*this, lit(left->eq(*right), true));
 }
 
-bool core::assert_facts(const std::vector<lit> &facts)
+void core::assert_facts(const std::vector<lit> &facts)
 {
     for (const auto &f : facts)
     {
         if (!sat.new_clause({lit(ctr_var, false), f}))
         {
-            return false;
+            throw unsolvable_exception();
         }
     }
-    return true;
 }
 
 field &core::get_field(const std::string &name) const
@@ -367,50 +366,40 @@ double core::arith_value(const arith_expr &var) const noexcept { return la_th.va
 
 std::unordered_set<set_item *> core::enum_value(const enum_expr &var) const noexcept { return set_th.value(var->ev); }
 
-bool core::new_fact(atom &atm)
+void core::new_fact(atom &atm)
 {
-    if (&atm.tp.get_scope() == this)
+    if (&atm.tp.get_scope() != this)
     {
-        return true;
-    }
-    std::queue<type *> q;
-    q.push(static_cast<type *>(&atm.tp.get_scope()));
-    while (!q.empty())
-    {
-        if (!q.front()->new_fact(atm))
+        std::queue<type *> q;
+        q.push(static_cast<type *>(&atm.tp.get_scope()));
+        while (!q.empty())
         {
-            return false;
+            q.front()->new_fact(atm);
+            for (const auto &st : q.front()->get_supertypes())
+            {
+                q.push(st);
+            }
+            q.pop();
         }
-        for (const auto &st : q.front()->get_supertypes())
-        {
-            q.push(st);
-        }
-        q.pop();
     }
-    return true;
 }
 
-bool core::new_goal(atom &atm)
+void core::new_goal(atom &atm)
 {
-    if (&atm.tp.get_scope() == this)
+    if (&atm.tp.get_scope() != this)
     {
-        return true;
-    }
-    std::queue<type *> q;
-    q.push(static_cast<type *>(&atm.tp.get_scope()));
-    while (!q.empty())
-    {
-        if (!q.front()->new_goal(atm))
+        std::queue<type *> q;
+        q.push(static_cast<type *>(&atm.tp.get_scope()));
+        while (!q.empty())
         {
-            return false;
+            q.front()->new_goal(atm);
+            for (const auto &st : q.front()->get_supertypes())
+            {
+                q.push(st);
+            }
+            q.pop();
         }
-        for (const auto &st : q.front()->get_supertypes())
-        {
-            q.push(st);
-        }
-        q.pop();
     }
-    return true;
 }
 
 std::string core::to_string(std::unordered_map<std::string, expr> items)

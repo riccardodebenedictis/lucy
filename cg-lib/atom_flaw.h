@@ -31,7 +31,7 @@ private:
     std::string get_label() const override { return "add fact"; }
 
   private:
-    bool apply() override;
+    void apply() override;
 
   private:
     atom &atm;
@@ -47,7 +47,7 @@ private:
     std::string get_label() const override { return "expand goal"; }
 
   private:
-    bool apply() override;
+    void apply() override;
 
   private:
     atom &atm;
@@ -63,7 +63,7 @@ private:
     std::string get_label() const override { return "unify"; }
 
   private:
-    bool apply() override;
+    void apply() override;
 
   private:
     atom &atm;

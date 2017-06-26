@@ -28,7 +28,7 @@ public:
     return cost;
   }
 
-  bool apply(context &ctx) const;
+  void apply(context &ctx) const;
 
 private:
   const lin cost;

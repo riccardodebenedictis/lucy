@@ -32,7 +32,7 @@ private:
     std::string get_label() const override { return "conj"; }
 
   private:
-    bool apply() override;
+    void apply() override;
 
   private:
     context ctx;

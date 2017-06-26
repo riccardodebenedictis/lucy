@@ -8,14 +8,12 @@ conjunction::conjunction(core &cr, scope &scp, const lin &cst, const std::vector
 
 conjunction::~conjunction() {}
 
-bool conjunction::apply(context &ctx) const
+void conjunction::apply(context &ctx) const
 {
     context c_ctx(new env(cr, ctx));
     for (const auto &s : statements)
     {
-        if (!s->execute(*this, c_ctx))
-            return false;
+        s->execute(*this, c_ctx);
     }
-    return true;
 }
 }

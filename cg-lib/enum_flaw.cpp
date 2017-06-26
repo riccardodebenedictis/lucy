@@ -21,8 +21,5 @@ enum_flaw::choose_value::choose_value(causal_graph &graph, enum_flaw &enm_flaw, 
 
 enum_flaw::choose_value::~choose_value() {}
 
-bool enum_flaw::choose_value::apply()
-{
-    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(v, val), true)});
-}
+void enum_flaw::choose_value::apply() { graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(v, val), true)}); }
 }

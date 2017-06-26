@@ -118,33 +118,27 @@ atom_flaw::add_fact::add_fact(causal_graph &graph, atom_flaw &atm_flaw, atom &at
 
 atom_flaw::add_fact::~add_fact() {}
 
-bool atom_flaw::add_fact::apply()
-{
-    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)});
-}
+void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)}); }
 
 atom_flaw::expand_goal::expand_goal(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(1), atm_flaw), atm(atm) {}
 
 atom_flaw::expand_goal::~expand_goal() {}
 
-bool atom_flaw::expand_goal::apply()
+void atom_flaw::expand_goal::apply()
 {
-    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)}) && static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
+    graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)});
+    static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
 }
 
 atom_flaw::unify_atom::unify_atom(causal_graph &graph, atom_flaw &atm_flaw, atom &atm, atom &with, const std::vector<lit> &unif_lits) : resolver(graph, lin(0), atm_flaw), atm(atm), with(with), unif_lits(unif_lits) {}
 
 atom_flaw::unify_atom::~unify_atom() {}
 
-bool atom_flaw::unify_atom::apply()
+void atom_flaw::unify_atom::apply()
 {
     for (const auto &v : unif_lits)
     {
-        if (!graph.core::sat.new_clause({lit(chosen, false), v}))
-        {
-            return false;
-        }
+        graph.core::sat.new_clause({lit(chosen, false), v});
     }
-    return true;
 }
 }

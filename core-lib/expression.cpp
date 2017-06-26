@@ -1,5 +1,9 @@
 #include "expression.h"
-#include "context.h"
+#include "core.h"
+#include "item.h"
+#include "type.h"
+#include "constructor.h"
+#include "method.h"
 
 namespace lucy
 {
@@ -12,108 +16,168 @@ expression::~expression() {}
 
 cast_expression::cast_expression(const std::vector<std::string> &tp, const expression *const e) : cast_to_type(tp), xpr(e) {}
 cast_expression::~cast_expression() {}
-expr cast_expression::evaluate(context &ctx) const { return expr(nullptr); }
+
+expr cast_expression::evaluate(const scope &scp, context &ctx) const { return xpr->evaluate(scp, ctx); }
 
 constructor_expression::constructor_expression(const std::vector<std::string> &it, const std::vector<expression *> &es) : instance_type(it), expressions(es) {}
 constructor_expression::~constructor_expression() {}
-expr constructor_expression::evaluate(context &ctx) const { return expr(nullptr); }
+
+expr constructor_expression::evaluate(const scope &scp, context &ctx) const
+{
+    scope *s = const_cast<scope *>(&scp);
+    for (const auto &tp : instance_type)
+    {
+        s = &s->get_type(tp);
+    }
+
+    std::vector<expr> exprs;
+    std::vector<const type *> par_types;
+    for (const auto &ex : expressions)
+    {
+        expr i = ex->evaluate(scp, ctx);
+        exprs.push_back(i);
+        par_types.push_back(&i->tp);
+    }
+
+    return static_cast<type *>(s)->get_constructor(par_types).new_instance(ctx, exprs);
+}
 
 id_expression::id_expression(const std::vector<std::string> &is) : ids(is) {}
 id_expression::~id_expression() {}
-expr id_expression::evaluate(context &ctx) const { return expr(nullptr); }
+
+expr id_expression::evaluate(const scope &scp, context &ctx) const
+{
+    env *c_e = &*ctx;
+    for (const auto &id : ids)
+    {
+        c_e = &*c_e->get(id);
+    }
+    return expr(static_cast<item *>(c_e));
+}
 
 function_expression::function_expression(const std::vector<std::string> &is, const std::string &fn, const std::vector<expression *> &es) : ids(is), function_name(fn), expressions(es) {}
 function_expression::~function_expression() {}
-expr function_expression::evaluate(context &ctx) const { return expr(nullptr); }
+
+expr function_expression::evaluate(const scope &scp, context &ctx) const
+{
+    scope *s = const_cast<scope *>(&scp);
+    for (const auto &id : ids)
+    {
+        s = &s->get_type(id);
+    }
+
+    std::vector<expr> exprs;
+    std::vector<const type *> par_types;
+    for (const auto &ex : expressions)
+    {
+        expr i = ex->evaluate(scp, ctx);
+        exprs.push_back(i);
+        par_types.push_back(&i->tp);
+    }
+
+    method &m = s->get_method(function_name, par_types);
+    if (m.return_type == &scp.get_core().get_type(BOOL_KEYWORD))
+    {
+        return bool_expr(static_cast<bool_item *>(m.invoke(ctx, exprs)));
+    }
+    else if (m.return_type == &scp.get_core().get_type(INT_KEYWORD) || m.return_type == &scp.get_core().get_type(REAL_KEYWORD))
+    {
+        return arith_expr(static_cast<arith_item *>(m.invoke(ctx, exprs)));
+    }
+    else
+    {
+        return expr(m.invoke(ctx, exprs));
+    }
+}
 
 string_literal_expression::string_literal_expression(const std::string &l) : literal(l) {}
 string_literal_expression::~string_literal_expression() {}
-expr string_literal_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr string_literal_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 arith_expression::arith_expression() {}
 arith_expression::~arith_expression() {}
 
 arith_literal_expression::arith_literal_expression(const double &l) : literal(l) {}
 arith_literal_expression::~arith_literal_expression() {}
-expr arith_literal_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr arith_literal_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 plus_expression::plus_expression(const arith_expression *const e) : xpr(e) {}
 plus_expression::~plus_expression() {}
-expr plus_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr plus_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 minus_expression::minus_expression(const arith_expression *const e) : xpr(e) {}
 minus_expression::~minus_expression() {}
-expr minus_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr minus_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 range_expression::range_expression(const arith_expression *const min_e, const arith_expression *const max_e) : min_xpr(min_e), max_xpr(max_e) {}
 range_expression::~range_expression() {}
-expr range_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr range_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 addition_expression::addition_expression(const std::vector<arith_expression *> &es) : expressions(es) {}
 addition_expression::~addition_expression() {}
-expr addition_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr addition_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 subtraction_expression::subtraction_expression(const std::vector<arith_expression *> &es) : expressions(es) {}
 subtraction_expression::~subtraction_expression() {}
-expr subtraction_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr subtraction_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 multiplication_expression::multiplication_expression(const std::vector<arith_expression *> &es) : expressions(es) {}
 multiplication_expression::~multiplication_expression() {}
-expr multiplication_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr multiplication_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 division_expression::division_expression(const std::vector<arith_expression *> &es) : expressions(es) {}
 division_expression::~division_expression() {}
-expr division_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr division_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 bool_expression::bool_expression() {}
 bool_expression::~bool_expression() {}
 
 bool_literal_expression::bool_literal_expression(const bool &l) : literal(l) {}
 bool_literal_expression::~bool_literal_expression() {}
-expr bool_literal_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr bool_literal_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 eq_expression::eq_expression(const expression *const l, const expression *const r) : left(l), right(r) {}
 eq_expression::~eq_expression() {}
-expr eq_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr eq_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 neq_expression::neq_expression(const expression *const l, const expression *const r) : left(l), right(r) {}
 neq_expression::~neq_expression() {}
-expr neq_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr neq_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 lt_expression::lt_expression(const arith_expression *const l, const arith_expression *const r) : left(l), right(r) {}
 lt_expression::~lt_expression() {}
-expr lt_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr lt_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 leq_expression::leq_expression(const arith_expression *const l, const arith_expression *const r) : left(l), right(r) {}
 leq_expression::~leq_expression() {}
-expr leq_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr leq_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 geq_expression::geq_expression(const arith_expression *const l, const arith_expression *const r) : left(l), right(r) {}
 geq_expression::~geq_expression() {}
-expr geq_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr geq_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 gt_expression::gt_expression(const arith_expression *const l, const arith_expression *const r) : left(l), right(r) {}
 gt_expression::~gt_expression() {}
-expr gt_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr gt_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 implication_expression::implication_expression(const bool_expression *const l, const bool_expression *const r) : left(l), right(r) {}
 implication_expression::~implication_expression() {}
-expr implication_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr implication_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 disjunction_expression::disjunction_expression(const std::vector<bool_expression *> &es) : expressions(es) {}
 disjunction_expression::~disjunction_expression() {}
-expr disjunction_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr disjunction_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 conjunction_expression::conjunction_expression(const std::vector<bool_expression *> &es) : expressions(es) {}
 conjunction_expression::~conjunction_expression() {}
-expr conjunction_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr conjunction_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 exct_one_expression::exct_one_expression(const std::vector<bool_expression *> &es) : expressions(es) {}
 exct_one_expression::~exct_one_expression() {}
-expr exct_one_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr exct_one_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 
 not_expression::not_expression(const bool_expression *const e) : xpr(e) {}
 not_expression::~not_expression() {}
-expr not_expression::evaluate(context &ctx) const { return expr(nullptr); }
+expr not_expression::evaluate(const scope &scp, context &ctx) const { return expr(nullptr); }
 }
 }

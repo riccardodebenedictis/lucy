@@ -21,8 +21,8 @@ private:
   std::vector<flaw *> get_flaws() override;
 
   void new_predicate(predicate &pred) override;
-  bool new_fact(atom &atm) override;
-  bool new_goal(atom &atm) override;
+  void new_fact(atom &atm) override;
+  void new_goal(atom &atm) override;
 
   class sv_constructor : public constructor
   {
@@ -74,7 +74,7 @@ private:
     virtual ~sv_resolver();
 
   private:
-    bool apply() override;
+    void apply() override;
 
   private:
     const lit to_do;

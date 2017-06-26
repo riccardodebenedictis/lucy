@@ -31,7 +31,7 @@ class enum_flaw : public flaw
         std::string get_label() const override { return "val"; }
 
       private:
-        bool apply() override;
+        void apply() override;
 
       private:
         var v;

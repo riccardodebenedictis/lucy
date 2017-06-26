@@ -30,6 +30,11 @@ class disjunction_statement;
 class formula_statement;
 }
 
+class unsolvable_exception : public std::exception
+{
+  virtual const char *what() const throw() { return "the problem is unsolvable.."; }
+};
+
 class DLL_PUBLIC core : public scope, public env
 {
   friend class type;
@@ -74,7 +79,7 @@ public:
 
   bool_expr eq(expr i0, expr i1);
 
-  bool assert_facts(const std::vector<lit> &facts);
+  void assert_facts(const std::vector<lit> &facts);
 
   field &get_field(const std::string &name) const override;
 
@@ -105,8 +110,8 @@ public:
   virtual bool solve() = 0;
 
 protected:
-  virtual bool new_fact(atom &atm);
-  virtual bool new_goal(atom &atm);
+  virtual void new_fact(atom &atm);
+  virtual void new_goal(atom &atm);
   virtual void new_disjunction(context &ctx, const disjunction &disj) = 0;
 
 protected:

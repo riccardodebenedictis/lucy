@@ -45,22 +45,22 @@ expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &al
     return c_e;
 }
 
-bool causal_graph::new_fact(atom &atm)
+void causal_graph::new_fact(atom &atm)
 {
     // we creaste a new atom flaw..
     atom_flaw *af = new atom_flaw(*this, atm, true);
     reason.insert({&atm, af});
     new_flaw(*af);
-    return core::new_fact(atm);
+    core::new_fact(atm);
 }
 
-bool causal_graph::new_goal(atom &atm)
+void causal_graph::new_goal(atom &atm)
 {
     // we creaste a new atom flaw..
     atom_flaw *af = new atom_flaw(*this, atm, false);
     reason.insert({&atm, af});
     new_flaw(*af);
-    return core::new_goal(atm);
+    core::new_goal(atm);
 }
 
 void causal_graph::new_disjunction(context &ctx, const disjunction &disj)
@@ -75,11 +75,17 @@ bool causal_graph::solve()
 main_loop:
     res = nullptr;
 
-    // we build the planning graph..
-    if (!build())
+    if (!flaw_q.empty())
     {
-        // the problem is unsolvable..
-        return false;
+        // we build the planning graph..
+        try
+        {
+            build();
+        }
+        catch (const unsolvable_exception &)
+        {
+            return false;
+        }
     }
 
     // we create a new graph var..
@@ -141,7 +147,11 @@ main_loop:
             if (core::sat.root_level())
             {
                 // we have exhausted the search within the graph: we extend the graph..
-                if (!add_layer())
+                try
+                {
+                    add_layer();
+                }
+                catch (const unsolvable_exception &)
                 {
                     return false;
                 }
@@ -335,14 +345,10 @@ void causal_graph::pop()
     trail.pop_back();
 }
 
-bool causal_graph::build()
+void causal_graph::build()
 {
     assert(core::sat.root_level());
-    if (flaw_q.empty())
-    {
-        // there is nothing to reason on..
-        return true;
-    }
+    assert(!flaw_q.empty());
 
     while (!has_solution() && !flaw_q.empty())
     {
@@ -357,16 +363,17 @@ bool causal_graph::build()
         {
             if (!flaw_q.front()->expand() || !core::sat.check())
             {
-                return false;
+                throw unsolvable_exception();
             }
 
             for (const auto &r : flaw_q.front()->resolvers)
             {
                 resolvers.push_front(r);
                 set_var(r->chosen);
-                if (!r->apply() || !core::sat.check())
+                r->apply();
+                if (!core::sat.check())
                 {
-                    return false;
+                    throw unsolvable_exception();
                 }
                 restore_var();
                 if (r->preconditions.empty())
@@ -382,11 +389,9 @@ bool causal_graph::build()
         }
         flaw_q.pop();
     }
-
-    return true;
 }
 
-bool causal_graph::add_layer()
+void causal_graph::add_layer()
 {
     assert(core::sat.root_level());
 
@@ -403,16 +408,17 @@ bool causal_graph::add_layer()
         assert(!f->expanded);
         if (!f->expand() || !core::sat.check())
         {
-            return false;
+            throw unsolvable_exception();
         }
 
         for (const auto &r : f->resolvers)
         {
             resolvers.push_front(r);
             set_var(r->chosen);
-            if (!r->apply() || !core::sat.check())
+            r->apply();
+            if (!core::sat.check())
             {
-                return false;
+                throw unsolvable_exception();
             }
             restore_var();
             if (r->preconditions.empty())
@@ -426,8 +432,6 @@ bool causal_graph::add_layer()
             resolvers.pop_front();
         }
     }
-
-    return true;
 }
 
 bool causal_graph::has_solution()

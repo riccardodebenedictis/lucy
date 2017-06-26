@@ -113,20 +113,17 @@ void reusable_resource::new_predicate(predicate &p)
     throw std::logic_error("it is not possible to define predicates on a reusable resource..");
 }
 
-bool reusable_resource::new_fact(atom &atm)
+void reusable_resource::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
     set_var(graph.set_th.allows(atm.state, *graph.active));
-    if (!static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm))
-    {
-        return false;
-    }
+    static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm);
     restore_var();
 
     // reusable resource facts cannot unify..
     if (!graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *graph.unified), false)}))
     {
-        return false;
+        throw unsolvable_exception();
     }
 
     atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
@@ -142,13 +139,9 @@ bool reusable_resource::new_fact(atom &atm)
     {
         to_check.insert(&*c_scope);
     }
-    return true;
 }
 
-bool reusable_resource::new_goal(atom &atm)
-{
-    throw std::logic_error("it is not possible to define goals on a reusable resource..");
-}
+void reusable_resource::new_goal(atom &atm) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
 
 reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}, {}, {new ast::assignment_statement({THIS_KEYWORD}, REUSABLE_RESOURCE_CAPACITY, new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
@@ -176,7 +169,6 @@ void reusable_resource::rr_atom_listener::something_changed()
 }
 
 reusable_resource::rr_flaw::rr_flaw(causal_graph &graph, const std::set<atom *> &overlapping_atoms) : flaw(graph), overlapping_atoms(overlapping_atoms) {}
-
 reusable_resource::rr_flaw::~rr_flaw() {}
 
 void reusable_resource::rr_flaw::compute_resolvers()
@@ -229,16 +221,12 @@ void reusable_resource::rr_flaw::compute_resolvers()
 }
 
 reusable_resource::rr_resolver::rr_resolver(causal_graph &graph, const lin &cost, rr_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
-
 reusable_resource::rr_resolver::~rr_resolver() {}
-
-bool reusable_resource::rr_resolver::apply() { return graph.core::sat.new_clause({lit(chosen, false), to_do}); }
+void reusable_resource::rr_resolver::apply() { graph.core::sat.new_clause({lit(chosen, false), to_do}); }
 
 reusable_resource::order_resolver::order_resolver(causal_graph &graph, const lin &cost, rr_flaw &f, const atom &before, const atom &after, const lit &to_do) : rr_resolver(graph, cost, f, to_do), before(before), after(after) {}
-
 reusable_resource::order_resolver::~order_resolver() {}
 
 reusable_resource::displace_resolver::displace_resolver(causal_graph &graph, const lin &cost, rr_flaw &f, const atom &a, const item &i, const lit &to_do) : rr_resolver(graph, cost, f, to_do), a(a), i(i) {}
-
 reusable_resource::displace_resolver::~displace_resolver() {}
 }

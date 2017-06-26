@@ -20,7 +20,7 @@ public:
   resolver(const resolver &orig) = delete;
   virtual ~resolver();
 
-  virtual bool apply() = 0;
+  virtual void apply() = 0;
 
   var get_chosen() const { return chosen; }
   flaw &get_effect() const { return effect; }

@@ -63,8 +63,8 @@ protected:
   void restore_var();
 
 private:
-  virtual bool new_fact(atom &a) { return true; }
-  virtual bool new_goal(atom &a) { return true; }
+  virtual void new_fact(atom &a) {}
+  virtual void new_goal(atom &a) {}
 
 public:
   const std::string name;

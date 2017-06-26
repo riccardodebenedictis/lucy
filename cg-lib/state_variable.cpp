@@ -105,19 +105,13 @@ std::vector<flaw *> state_variable::get_flaws()
     }
 }
 
-void state_variable::new_predicate(predicate &pred)
-{
-    inherit(static_cast<predicate &>(graph.get_predicate("IntervalPredicate")), pred);
-}
+void state_variable::new_predicate(predicate &pred) { inherit(static_cast<predicate &>(graph.get_predicate("IntervalPredicate")), pred); }
 
-bool state_variable::new_fact(atom &atm)
+void state_variable::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
     set_var(graph.set_th.allows(atm.state, *graph.active));
-    if (!static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm))
-    {
-        return false;
-    }
+    static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm);
     restore_var();
 
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
@@ -133,10 +127,9 @@ bool state_variable::new_fact(atom &atm)
     {
         to_check.insert(&*c_scope);
     }
-    return true;
 }
 
-bool state_variable::new_goal(atom &atm)
+void state_variable::new_goal(atom &atm)
 {
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
     expr c_scope = atm.get("scope");
@@ -151,11 +144,9 @@ bool state_variable::new_goal(atom &atm)
     {
         to_check.insert(&*c_scope);
     }
-    return true;
 }
 
 state_variable::sv_atom_listener::sv_atom_listener(state_variable &sv, atom &atm) : atom_listener(atm), sv(sv) {}
-
 state_variable::sv_atom_listener::~sv_atom_listener() {}
 
 void state_variable::sv_atom_listener::something_changed()
@@ -175,7 +166,6 @@ void state_variable::sv_atom_listener::something_changed()
 }
 
 state_variable::sv_flaw::sv_flaw(causal_graph &graph, const std::set<atom *> &overlapping_atoms) : flaw(graph), overlapping_atoms(overlapping_atoms) {}
-
 state_variable::sv_flaw::~sv_flaw() {}
 
 void state_variable::sv_flaw::compute_resolvers()
@@ -228,16 +218,12 @@ void state_variable::sv_flaw::compute_resolvers()
 }
 
 state_variable::sv_resolver::sv_resolver(causal_graph &graph, const lin &cost, sv_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
-
 state_variable::sv_resolver::~sv_resolver() {}
-
-bool state_variable::sv_resolver::apply() { return graph.core::sat.new_clause({lit(chosen, false), to_do}); }
+void state_variable::sv_resolver::apply() { graph.core::sat.new_clause({lit(chosen, false), to_do}); }
 
 state_variable::order_resolver::order_resolver(causal_graph &graph, const lin &cost, sv_flaw &f, const atom &before, const atom &after, const lit &to_do) : sv_resolver(graph, cost, f, to_do), before(before), after(after) {}
-
 state_variable::order_resolver::~order_resolver() {}
 
 state_variable::displace_resolver::displace_resolver(causal_graph &graph, const lin &cost, sv_flaw &f, const atom &a, const item &i, const lit &to_do) : sv_resolver(graph, cost, f, to_do), a(a), i(i) {}
-
 state_variable::displace_resolver::~displace_resolver() {}
 }

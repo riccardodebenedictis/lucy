@@ -24,7 +24,7 @@ public:
   statement(const statement &orig) = delete;
   virtual ~statement();
 
-  virtual bool execute(const scope &scp, context &ctx) const = 0;
+  virtual void execute(const scope &scp, context &ctx) const = 0;
 };
 
 #pragma warning(disable : 4251)
@@ -35,7 +35,7 @@ public:
   assignment_statement(const assignment_statement &orig) = delete;
   virtual ~assignment_statement();
 
-  bool execute(const scope &scp, context &ctx) const override;
+  void execute(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<std::string> ids;
@@ -50,7 +50,7 @@ public:
   local_field_statement(const local_field_statement &orig) = delete;
   virtual ~local_field_statement();
 
-  bool execute(const scope &scp, context &ctx) const override;
+  void execute(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<std::string> field_type;
@@ -65,7 +65,7 @@ public:
   expression_statement(const expression_statement &orig) = delete;
   virtual ~expression_statement();
 
-  bool execute(const scope &scp, context &ctx) const override;
+  void execute(const scope &scp, context &ctx) const override;
 
 private:
   const bool_expression *const xpr;
@@ -78,7 +78,7 @@ public:
   block_statement(const block_statement &orig) = delete;
   virtual ~block_statement();
 
-  bool execute(const scope &scp, context &ctx) const override;
+  void execute(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<statement *> statements;
@@ -91,7 +91,7 @@ public:
   disjunction_statement(const disjunction_statement &orig) = delete;
   virtual ~disjunction_statement();
 
-  bool execute(const scope &scp, context &ctx) const override;
+  void execute(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<block_statement *> disjunctions;
@@ -104,7 +104,7 @@ public:
   formula_statement(const formula_statement &orig) = delete;
   virtual ~formula_statement();
 
-  bool execute(const scope &scp, context &ctx) const override;
+  void execute(const scope &scp, context &ctx) const override;
 
 private:
   const bool is_fact;
@@ -121,7 +121,7 @@ public:
   return_statement(const return_statement &orig) = delete;
   virtual ~return_statement();
 
-  bool execute(const scope &scp, context &ctx) const override;
+  void execute(const scope &scp, context &ctx) const override;
 
 private:
   const expression *const xpr;

@@ -7,6 +7,7 @@
 namespace lucy
 {
 
+class scope;
 class context;
 class expr;
 
@@ -20,7 +21,7 @@ public:
   expression(const expression &orig) = delete;
   virtual ~expression();
 
-  virtual expr evaluate(context &ctx) const = 0;
+  virtual expr evaluate(const scope &scp, context &ctx) const = 0;
 };
 
 #pragma warning(disable : 4251)
@@ -31,7 +32,7 @@ public:
   cast_expression(const cast_expression &orig) = delete;
   virtual ~cast_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<std::string> cast_to_type;
@@ -45,7 +46,7 @@ public:
   constructor_expression(const constructor_expression &orig) = delete;
   virtual ~constructor_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<std::string> instance_type;
@@ -59,7 +60,7 @@ public:
   id_expression(const id_expression &orig) = delete;
   virtual ~id_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<std::string> ids;
@@ -72,7 +73,7 @@ public:
   function_expression(const function_expression &orig) = delete;
   virtual ~function_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<std::string> ids;
@@ -87,7 +88,7 @@ public:
   string_literal_expression(const string_literal_expression &orig) = delete;
   virtual ~string_literal_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::string literal;
@@ -108,7 +109,7 @@ public:
   arith_literal_expression(const arith_literal_expression &orig) = delete;
   virtual ~arith_literal_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const double literal;
@@ -121,7 +122,7 @@ public:
   plus_expression(const plus_expression &orig) = delete;
   virtual ~plus_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const arith_expression *const xpr;
@@ -134,7 +135,7 @@ public:
   minus_expression(const minus_expression &orig) = delete;
   virtual ~minus_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const arith_expression *const xpr;
@@ -147,7 +148,7 @@ public:
   range_expression(const range_expression &orig) = delete;
   virtual ~range_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const arith_expression *const min_xpr;
@@ -161,7 +162,7 @@ public:
   addition_expression(const addition_expression &orig) = delete;
   virtual ~addition_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<arith_expression *> expressions;
@@ -174,7 +175,7 @@ public:
   subtraction_expression(const subtraction_expression &orig) = delete;
   virtual ~subtraction_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<arith_expression *> expressions;
@@ -187,7 +188,7 @@ public:
   multiplication_expression(const multiplication_expression &orig) = delete;
   virtual ~multiplication_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<arith_expression *> expressions;
@@ -200,7 +201,7 @@ public:
   division_expression(const division_expression &orig) = delete;
   virtual ~division_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<arith_expression *> expressions;
@@ -221,7 +222,7 @@ public:
   bool_literal_expression(const bool_literal_expression &orig) = delete;
   virtual ~bool_literal_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const bool literal;
@@ -234,7 +235,7 @@ public:
   eq_expression(const eq_expression &orig) = delete;
   virtual ~eq_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const expression *const left;
@@ -248,7 +249,7 @@ public:
   neq_expression(const neq_expression &orig) = delete;
   virtual ~neq_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const expression *const left;
@@ -262,7 +263,7 @@ public:
   lt_expression(const lt_expression &orig) = delete;
   virtual ~lt_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const arith_expression *const left;
@@ -276,7 +277,7 @@ public:
   leq_expression(const leq_expression &orig) = delete;
   virtual ~leq_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const arith_expression *const left;
@@ -290,7 +291,7 @@ public:
   geq_expression(const geq_expression &orig) = delete;
   virtual ~geq_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const arith_expression *const left;
@@ -304,7 +305,7 @@ public:
   gt_expression(const gt_expression &orig) = delete;
   virtual ~gt_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const arith_expression *const left;
@@ -318,7 +319,7 @@ public:
   implication_expression(const implication_expression &orig) = delete;
   virtual ~implication_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const bool_expression *const left;
@@ -332,7 +333,7 @@ public:
   disjunction_expression(const disjunction_expression &orig) = delete;
   virtual ~disjunction_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<bool_expression *> expressions;
@@ -345,7 +346,7 @@ public:
   conjunction_expression(const conjunction_expression &orig) = delete;
   virtual ~conjunction_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<bool_expression *> expressions;
@@ -358,7 +359,7 @@ public:
   exct_one_expression(const exct_one_expression &orig) = delete;
   virtual ~exct_one_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const std::vector<bool_expression *> expressions;
@@ -371,7 +372,7 @@ public:
   not_expression(const not_expression &orig) = delete;
   virtual ~not_expression();
 
-  expr evaluate(context &ctx) const override;
+  expr evaluate(const scope &scp, context &ctx) const override;
 
 private:
   const bool_expression *const xpr;
