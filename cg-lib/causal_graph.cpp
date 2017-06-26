@@ -63,7 +63,7 @@ bool causal_graph::new_goal(atom &atm)
     return core::new_goal(atm);
 }
 
-void causal_graph::new_disjunction(context &ctx, disjunction &disj)
+void causal_graph::new_disjunction(context &ctx, const disjunction &disj)
 {
     // we creaste a new disjunction flaw..
     disjunction_flaw *df = new disjunction_flaw(*this, ctx, disj);

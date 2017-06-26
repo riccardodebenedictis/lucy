@@ -13,6 +13,9 @@ class core;
 namespace ast
 {
 class assignment_statement;
+class local_field_statement;
+class formula_statement;
+class return_statement;
 }
 
 #pragma warning(disable : 4251)
@@ -24,6 +27,9 @@ class DLL_PUBLIC env
   friend class predicate;
   friend class constructor;
   friend class ast::assignment_statement;
+  friend class ast::local_field_statement;
+  friend class ast::formula_statement;
+  friend class ast::return_statement;
 
 public:
   env(core &cr, const context ctx);

@@ -24,9 +24,17 @@ class atom;
 class disjunction;
 class atom_state;
 
+namespace ast
+{
+class disjunction_statement;
+class formula_statement;
+}
+
 class DLL_PUBLIC core : public scope, public env
 {
   friend class type;
+  friend class ast::disjunction_statement;
+  friend class ast::formula_statement;
 
 public:
   core();
@@ -99,7 +107,7 @@ public:
 protected:
   virtual bool new_fact(atom &atm);
   virtual bool new_goal(atom &atm);
-  virtual void new_disjunction(context &ctx, disjunction &disj) = 0;
+  virtual void new_disjunction(context &ctx, const disjunction &disj) = 0;
 
 protected:
   void set_var(var v)
