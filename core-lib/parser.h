@@ -10,6 +10,7 @@ class core;
 
 namespace ast
 {
+class compilation_unit;
 class typedef_declaration;
 class enum_declaration;
 class class_declaration;
@@ -24,11 +25,11 @@ class expression;
 class parser
 {
 public:
-  parser(core &cr);
+  parser();
   parser(const parser &orig) = delete;
   virtual ~parser();
 
-  void parse(std::istream &is);
+  ast::compilation_unit *parse(std::istream &is);
 
 private:
   token *next();
@@ -48,7 +49,6 @@ private:
   void error(const std::string &err);
 
 private:
-  core &cr;
   lexer *lex = nullptr;     // the current lexer..
   token *tk = nullptr;      // the current lookahead token..
   std::vector<token *> tks; // all the tokens parsed so far..

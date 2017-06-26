@@ -3,6 +3,7 @@
 #include "atom.h"
 #include "method.h"
 #include "field.h"
+#include "declaration.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -11,7 +12,7 @@
 namespace lucy
 {
 
-core::core() : scope(*this, *this), env(*this, this), prs(*this), sat(), la_th(sat), set_th(sat), active(new atom_state()), inactive(new atom_state()), unified(new atom_state())
+core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat), active(new atom_state()), inactive(new atom_state()), unified(new atom_state())
 {
     types.insert({BOOL_KEYWORD, new bool_type(*this)});
     types.insert({INT_KEYWORD, new int_type(*this)});
@@ -42,6 +43,12 @@ core::~core()
         }
     }
 
+    // we delete the compilation units..
+    for (const auto &cu : cus)
+    {
+        delete cu;
+    }
+
     // we delete the atom states..
     delete active;
     delete inactive;
@@ -50,18 +57,28 @@ core::~core()
 
 bool core::read(const std::string &script)
 {
-    prs.parse(std::stringstream(script));
+    ast::compilation_unit *cu = prs.parse(std::stringstream(script));
+    cus.push_back(cu);
+
+    context ctx(this);
+    cu->declare(*this);
+    cu->define(*this);
+    cu->execute(*this, ctx);
+
     return sat.check();
 }
 
 bool core::read(const std::vector<std::string> &files)
 {
+    std::vector<ast::compilation_unit *> c_cus;
     for (const auto &f : files)
     {
         std::ifstream ifs(f);
         if (ifs)
         {
-            prs.parse(ifs);
+            ast::compilation_unit *cu = prs.parse(ifs);
+            c_cus.push_back(cu);
+            cus.push_back(cu);
             ifs.close();
         }
         else
@@ -70,6 +87,21 @@ bool core::read(const std::vector<std::string> &files)
             return false;
         }
     }
+
+    context ctx(this);
+    for (const auto &cu : c_cus)
+    {
+        cu->declare(*this);
+    }
+    for (const auto &cu : c_cus)
+    {
+        cu->define(*this);
+    }
+    for (const auto &cu : c_cus)
+    {
+        cu->execute(*this, ctx);
+    }
+
     return sat.check();
 }
 

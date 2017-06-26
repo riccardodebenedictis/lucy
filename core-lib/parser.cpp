@@ -13,10 +13,10 @@ namespace lucy
 
 using namespace ast;
 
-parser::parser(core &cr) : cr(cr) {}
+parser::parser() {}
 parser::~parser() {}
 
-void parser::parse(std::istream &is)
+compilation_unit *parser::parse(std::istream &is)
 {
     lex = new lexer(is);
     tk = next();
@@ -73,20 +73,7 @@ void parser::parse(std::istream &is)
         }
     }
 
-    for (const auto &s : ss)
-    {
-    }
-
-    // cleanings..
-    delete lex;
-    for (const auto &t : ts)
-        delete t;
-    for (const auto &m : ms)
-        delete m;
-    for (const auto &p : ps)
-        delete p;
-    for (const auto &s : ss)
-        delete s;
+    return new compilation_unit(ts, ms, ps, ss);
 }
 
 token *parser::next()

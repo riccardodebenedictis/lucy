@@ -28,6 +28,7 @@ class parser;
 
 namespace ast
 {
+class compilation_unit;
 class disjunction_statement;
 class formula_statement;
 }
@@ -138,6 +139,7 @@ private:
 
 private:
   parser prs;
+  std::vector<ast::compilation_unit *> cus;
 
 public:
   sat_core sat;      // the sat core..

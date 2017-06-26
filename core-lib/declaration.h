@@ -6,6 +6,9 @@
 namespace lucy
 {
 
+class scope;
+class context;
+
 namespace ast
 {
 
@@ -18,6 +21,9 @@ public:
   declaration();
   declaration(const declaration &orig) = delete;
   virtual ~declaration();
+
+  virtual void declare(scope &scp) const = 0;
+  virtual void define(scope &scp) const = 0;
 };
 
 class type_declaration : public declaration
@@ -38,6 +44,9 @@ public:
   typedef_declaration(const typedef_declaration &orig) = delete;
   virtual ~typedef_declaration();
 
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
+
 private:
   const std::string primitive_type;
   const expression *const xpr;
@@ -49,6 +58,9 @@ public:
   enum_declaration(const std::string &n, const std::vector<std::string> &es, const std::vector<std::vector<std::string>> &trs);
   enum_declaration(const enum_declaration &orig) = delete;
   virtual ~enum_declaration();
+
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
 
 private:
   const std::vector<std::string> enums;
@@ -62,6 +74,9 @@ public:
   variable_declaration(const variable_declaration &orig) = delete;
   virtual ~variable_declaration();
 
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
+
 private:
   const std::string name;
   const expression *const xpr;
@@ -73,6 +88,9 @@ public:
   field_declaration(const std::vector<std::string> &tp, const std::vector<variable_declaration *> &ds);
   field_declaration(const field_declaration &orig) = delete;
   virtual ~field_declaration();
+
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
 
 private:
   const std::vector<std::string> type;
@@ -86,6 +104,9 @@ public:
   constructor_declaration(const constructor_declaration &orig) = delete;
   virtual ~constructor_declaration();
 
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
+
 private:
   const std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
   const std::vector<std::pair<std::string, std::vector<expression *>>> init_list;
@@ -98,6 +119,9 @@ public:
   method_declaration(const std::vector<std::string> &rt, const std::string &n, const std::vector<std::pair<std::vector<std::string>, std::string>> &pars, const std::vector<statement *> &stmnts);
   method_declaration(const method_declaration &orig) = delete;
   virtual ~method_declaration();
+
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
 
 private:
   const std::vector<std::string> return_type;
@@ -113,6 +137,9 @@ public:
   predicate_declaration(const predicate_declaration &orig) = delete;
   virtual ~predicate_declaration();
 
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
+
 private:
   const std::string name;
   const std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
@@ -127,6 +154,9 @@ public:
   class_declaration(const class_declaration &orig) = delete;
   virtual ~class_declaration();
 
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
+
 private:
   const std::vector<std::vector<std::string>> base_classes;
   const std::vector<field_declaration *> fields;
@@ -134,6 +164,24 @@ private:
   const std::vector<method_declaration *> methods;
   const std::vector<predicate_declaration *> predicates;
   const std::vector<type_declaration *> types;
+};
+
+class compilation_unit : public declaration
+{
+public:
+  compilation_unit(const std::vector<type_declaration *> &ts, const std::vector<method_declaration *> &ms, const std::vector<predicate_declaration *> &ps, const std::vector<statement *> &stmnts);
+  compilation_unit(const compilation_unit &orig) = delete;
+  virtual ~compilation_unit();
+
+  void declare(scope &scp) const override;
+  void define(scope &scp) const override;
+  void execute(const scope &scp, context &ctx) const;
+
+private:
+  const std::vector<type_declaration *> types;
+  const std::vector<method_declaration *> methods;
+  const std::vector<predicate_declaration *> predicates;
+  const std::vector<statement *> statements;
 };
 }
 }
