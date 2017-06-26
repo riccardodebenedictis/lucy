@@ -52,7 +52,7 @@ bool predicate::apply_rule(atom &a) const
 	ctx->items.insert({THIS_KEYWORD, &a});
 	for (const auto &s : statements)
 	{
-		if (!s->execute(ctx))
+		if (!s->execute(*this, ctx))
 			return false;
 	}
 	return true;

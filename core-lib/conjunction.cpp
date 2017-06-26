@@ -13,7 +13,7 @@ bool conjunction::apply(context &ctx) const
     context c_ctx(new env(cr, ctx));
     for (const auto &s : statements)
     {
-        if (!s->execute(c_ctx))
+        if (!s->execute(*this, c_ctx))
             return false;
     }
     return true;

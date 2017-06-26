@@ -36,7 +36,7 @@ bool method::invoke(context &ctx, const std::vector<expr> &exprs)
 
 	for (const auto &s : statements)
 	{
-		if (!s->execute(c_ctx))
+		if (!s->execute(*this, c_ctx))
 			return false;
 	}
 	return true;

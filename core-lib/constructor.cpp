@@ -91,7 +91,7 @@ bool constructor::invoke(item &i, const std::vector<expr> &exprs)
     // we execute the constructor body..
     for (const auto &s : statements)
     {
-        if (!s->execute(ctx))
+        if (!s->execute(*this, ctx))
             return false;
     }
     return true;

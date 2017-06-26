@@ -785,7 +785,7 @@ statement *parser::_statement()
             {
                 error("expected ';'..");
             }
-            return new local_field_statement(cr, ids, n, _expression());
+            return new local_field_statement(ids, n, _expression());
         }
         case symbol::EQ: // an assignment..
         {
@@ -797,7 +797,7 @@ statement *parser::_statement()
             {
                 error("expected ';'..");
             }
-            return new assignment_statement(cr, ids, id, xpr);
+            return new assignment_statement(ids, id, xpr);
         }
         default:
             error("expected either '=' or an identifier..");
@@ -814,7 +814,7 @@ statement *parser::_statement()
         if (tk->sym == symbol::OR)
         {
             std::vector<block_statement *> disjs;
-            disjs.push_back(new block_statement(cr, stmnts));
+            disjs.push_back(new block_statement(stmnts));
             while (match(symbol::OR))
             {
                 stmnts.clear();
@@ -822,13 +822,13 @@ statement *parser::_statement()
                 {
                     stmnts.push_back(_statement());
                 }
-                disjs.push_back(new block_statement(cr, stmnts));
+                disjs.push_back(new block_statement(stmnts));
             }
             if (!match(symbol::SEMICOLON))
             {
                 error("expected ';'..");
             }
-            return new disjunction_statement(cr, disjs);
+            return new disjunction_statement(disjs);
         }
         else
         {
@@ -836,7 +836,7 @@ statement *parser::_statement()
             {
                 error("expected ';'..");
             }
-            return new block_statement(cr, stmnts);
+            return new block_statement(stmnts);
         }
     }
     case symbol::FACT:
@@ -900,7 +900,7 @@ statement *parser::_statement()
         {
             error("expected ';'..");
         }
-        return new formula_statement(cr, isf, fn, scp, pn, assgns);
+        return new formula_statement(isf, fn, scp, pn, assgns);
     }
     case symbol::RETURN:
     {
@@ -909,10 +909,10 @@ statement *parser::_statement()
         {
             error("expected ';'..");
         }
-        return new return_statement(cr, xpr);
+        return new return_statement(xpr);
     }
     default:
-        return new expression_statement(cr, dynamic_cast<bool_expression *>(_expression()));
+        return new expression_statement(dynamic_cast<bool_expression *>(_expression()));
     }
 }
 
@@ -924,13 +924,13 @@ expression *parser::_expression(const size_t &pr)
     case symbol::TRUE:
     case symbol::FALSE:
         tk = next();
-        e = new bool_literal_expression(cr, tks[pos - 2]->sym == symbol::TRUE);
+        e = new bool_literal_expression(tks[pos - 2]->sym == symbol::TRUE);
     case symbol::NumericLiteral:
         tk = next();
-        e = new arith_literal_expression(cr, dynamic_cast<numeric_token *>(tks[pos - 2])->val);
+        e = new arith_literal_expression(dynamic_cast<numeric_token *>(tks[pos - 2])->val);
     case symbol::StringLiteral:
         tk = next();
-        e = new string_literal_expression(cr, dynamic_cast<string_token *>(tks[pos - 2])->str);
+        e = new string_literal_expression(dynamic_cast<string_token *>(tks[pos - 2])->str);
     case symbol::LPAREN: // either a parenthesys expression or a cast..
     {
         tk = next();
@@ -966,7 +966,7 @@ expression *parser::_expression(const size_t &pr)
                     error("expected ')'..");
                 }
                 expression *xpr = _expression();
-                e = new cast_expression(cr, ids, xpr);
+                e = new cast_expression(ids, xpr);
             }
             else // a parenthesis..
             {
@@ -985,7 +985,7 @@ expression *parser::_expression(const size_t &pr)
         tk = next();
         if (arith_expression *ae = dynamic_cast<arith_expression *>(_expression()))
         {
-            e = new plus_expression(cr, ae);
+            e = new plus_expression(ae);
         }
         else
         {
@@ -995,7 +995,7 @@ expression *parser::_expression(const size_t &pr)
         tk = next();
         if (arith_expression *ae = dynamic_cast<arith_expression *>(_expression()))
         {
-            e = new minus_expression(cr, ae);
+            e = new minus_expression(ae);
         }
         else
         {
@@ -1005,7 +1005,7 @@ expression *parser::_expression(const size_t &pr)
         tk = next();
         if (bool_expression *be = dynamic_cast<bool_expression *>(_expression()))
         {
-            e = new not_expression(cr, be);
+            e = new not_expression(be);
         }
         else
         {
@@ -1040,7 +1040,7 @@ expression *parser::_expression(const size_t &pr)
         {
             error("expected ']'..");
         }
-        e = new range_expression(cr, min_e, max_e);
+        e = new range_expression(min_e, max_e);
     }
     case symbol::NEW:
     {
@@ -1074,7 +1074,7 @@ expression *parser::_expression(const size_t &pr)
                 xprs.push_back(_expression());
             }
         }
-        e = new constructor_expression(cr, ids, xprs);
+        e = new constructor_expression(ids, xprs);
     }
     case symbol::ID:
     {
@@ -1107,11 +1107,11 @@ expression *parser::_expression(const size_t &pr)
                     xprs.push_back(_expression());
                 }
             }
-            e = new function_expression(cr, is, fn, xprs);
+            e = new function_expression(is, fn, xprs);
         }
         else
         {
-            e = new id_expression(cr, is);
+            e = new id_expression(is);
         }
     }
     }
@@ -1125,10 +1125,10 @@ expression *parser::_expression(const size_t &pr)
             {
             case symbol::EQEQ:
                 tk = next();
-                return new eq_expression(cr, e, _expression(1));
+                return new eq_expression(e, _expression(1));
             case symbol::BANGEQ:
                 tk = next();
-                return new neq_expression(cr, e, _expression(1));
+                return new neq_expression(e, _expression(1));
             }
         }
         if (1 >= pr)
@@ -1156,7 +1156,7 @@ expression *parser::_expression(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                return new lt_expression(cr, l, r);
+                return new lt_expression(l, r);
             }
             case symbol::LTEQ:
             {
@@ -1179,7 +1179,7 @@ expression *parser::_expression(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                return new leq_expression(cr, l, r);
+                return new leq_expression(l, r);
             }
             case symbol::GTEQ:
             {
@@ -1202,7 +1202,7 @@ expression *parser::_expression(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                return new geq_expression(cr, l, r);
+                return new geq_expression(l, r);
             }
             case symbol::GT:
             {
@@ -1225,7 +1225,7 @@ expression *parser::_expression(const size_t &pr)
                 {
                     error("expected arithmetic expression..");
                 }
-                return new gt_expression(cr, l, r);
+                return new gt_expression(l, r);
             }
             case symbol::IMPLICATION:
             {
@@ -1248,7 +1248,7 @@ expression *parser::_expression(const size_t &pr)
                 {
                     error("expected boolean expression..");
                 }
-                return new implication_expression(cr, l, r);
+                return new implication_expression(l, r);
             }
             case symbol::BAR:
             {
@@ -1273,7 +1273,7 @@ expression *parser::_expression(const size_t &pr)
                         error("expected boolean expression..");
                     }
                 }
-                return new disjunction_expression(cr, xprs);
+                return new disjunction_expression(xprs);
             }
             case symbol::AMP:
             {
@@ -1298,7 +1298,7 @@ expression *parser::_expression(const size_t &pr)
                         error("expected boolean expression..");
                     }
                 }
-                return new conjunction_expression(cr, xprs);
+                return new conjunction_expression(xprs);
             }
             case symbol::CARET:
             {
@@ -1323,7 +1323,7 @@ expression *parser::_expression(const size_t &pr)
                         error("expected boolean expression..");
                     }
                 }
-                return new exct_one_expression(cr, xprs);
+                return new exct_one_expression(xprs);
             }
             }
         }
@@ -1354,7 +1354,7 @@ expression *parser::_expression(const size_t &pr)
                         error("expected arithmetic expression..");
                     }
                 }
-                return new addition_expression(cr, xprs);
+                return new addition_expression(xprs);
             }
             case symbol::MINUS:
             {
@@ -1379,7 +1379,7 @@ expression *parser::_expression(const size_t &pr)
                         error("expected arithmetic expression..");
                     }
                 }
-                return new subtraction_expression(cr, xprs);
+                return new subtraction_expression(xprs);
             }
             }
         }
@@ -1410,7 +1410,7 @@ expression *parser::_expression(const size_t &pr)
                         error("expected arithmetic expression..");
                     }
                 }
-                return new multiplication_expression(cr, xprs);
+                return new multiplication_expression(xprs);
             }
             case symbol::SLASH:
             {
@@ -1435,7 +1435,7 @@ expression *parser::_expression(const size_t &pr)
                         error("expected arithmetic expression..");
                     }
                 }
-                return new division_expression(cr, xprs);
+                return new division_expression(xprs);
             }
             }
         }
