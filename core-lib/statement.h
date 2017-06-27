@@ -14,8 +14,6 @@ namespace ast
 {
 
 class expression;
-class bool_expression;
-class arith_expression;
 
 class DLL_PUBLIC statement
 {
@@ -61,14 +59,14 @@ private:
 class DLL_PUBLIC expression_statement : public statement
 {
 public:
-  expression_statement(const bool_expression *const e);
+  expression_statement(const expression *const e);
   expression_statement(const expression_statement &orig) = delete;
   virtual ~expression_statement();
 
   void execute(const scope &scp, context &ctx) const override;
 
 private:
-  const bool_expression *const xpr;
+  const expression *const xpr;
 };
 
 class DLL_PUBLIC block_statement : public statement

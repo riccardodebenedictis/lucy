@@ -781,8 +781,9 @@ statement *parser::_statement()
 {
     switch (tk->sym)
     {
-    case symbol::ID: // either an assignment or a local field or an expression..
+    case symbol::ID: // either a local field, an assignment or an expression..
     {
+        size_t c_pos = pos;
         std::vector<std::string> ids;
         ids.push_back(dynamic_cast<id_token *>(tk)->id);
         tk = next();
@@ -819,6 +820,22 @@ statement *parser::_statement()
                 error("expected ';'..");
             return new assignment_statement(ids, id, xpr);
         }
+        case symbol::PLUS: // an expression..
+        case symbol::MINUS:
+        case symbol::STAR:
+        case symbol::SLASH:
+        case symbol::LT:
+        case symbol::LTEQ:
+        case symbol::EQEQ:
+        case symbol::GTEQ:
+        case symbol::GT:
+        case symbol::BANGEQ:
+        case symbol::IMPLICATION:
+        case symbol::BAR:
+        case symbol::AMP:
+        case symbol::CARET:
+            backtrack(c_pos);
+            return new expression_statement(_expression());
         default:
             error("expected either '=' or an identifier..");
         }
@@ -906,7 +923,7 @@ statement *parser::_statement()
         return new return_statement(xpr);
     }
     default:
-        return new expression_statement(dynamic_cast<bool_expression *>(_expression()));
+        return new expression_statement(_expression());
     }
 }
 
@@ -931,81 +948,60 @@ expression *parser::_expression(const size_t &pr)
     case symbol::LPAREN: // either a parenthesys expression or a cast..
     {
         tk = next();
-        switch (tk->sym)
+
+        size_t c_pos = pos;
+        if (!match(symbol::ID))
+            error("expected identifier..");
+
+        while (match(symbol::DOT))
         {
-        case symbol::ID:
+            if (!match(symbol::ID))
+                error("expected identifier..");
+        }
+
+        if (match(symbol::RPAREN)) // a cast..
         {
-            size_t c_pos = pos;
+            backtrack(c_pos);
+            std::vector<std::string> ids;
+            ids.push_back(dynamic_cast<id_token *>(tk)->id);
             tk = next();
             while (match(symbol::DOT))
             {
                 if (!match(symbol::ID))
                     error("expected identifier..");
+                ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
             }
-            if (match(symbol::RPAREN)) // a cast..
-            {
-                backtrack(c_pos);
-                std::vector<std::string> ids;
-                ids.push_back(dynamic_cast<id_token *>(tk)->id);
-                tk = next();
-                while (match(symbol::DOT))
-                {
-                    if (!match(symbol::ID))
-                        error("expected identifier..");
-                    ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-                }
-                if (!match(symbol::RPAREN))
-                    error("expected ')'..");
-                expression *xpr = _expression();
-                e = new cast_expression(ids, xpr);
-            }
-            else // a parenthesis..
-            {
-                backtrack(c_pos);
-                expression *xpr = _expression();
-                if (!match(symbol::RPAREN))
-                    error("expected ')'..");
-                e = xpr;
-            }
+            if (!match(symbol::RPAREN))
+                error("expected ')'..");
+            expression *xpr = _expression();
+            e = new cast_expression(ids, xpr);
         }
+        else // a parenthesis..
+        {
+            backtrack(c_pos);
+            expression *xpr = _expression();
+            if (!match(symbol::RPAREN))
+                error("expected ')'..");
+            e = xpr;
         }
     }
     case symbol::PLUS:
         tk = next();
-        if (arith_expression *ae = dynamic_cast<arith_expression *>(_expression()))
-            e = new plus_expression(ae);
-        else
-            error("expected arithmetic expression..");
+        e = new plus_expression(e);
+        break;
     case symbol::MINUS:
         tk = next();
-        if (arith_expression *ae = dynamic_cast<arith_expression *>(_expression()))
-            e = new minus_expression(ae);
-        else
-            error("expected arithmetic expression..");
+        e = new minus_expression(e);
+        break;
     case symbol::BANG:
         tk = next();
-        if (bool_expression *be = dynamic_cast<bool_expression *>(_expression()))
-            e = new not_expression(be);
-        else
-            error("expected boolean expression..");
+        e = new not_expression(e);
+        break;
     case symbol::LBRACKET:
     {
         tk = next();
-        arith_expression *min_e;
-        arith_expression *max_e;
-
-        if (arith_expression *e = dynamic_cast<arith_expression *>(_expression()))
-            min_e = e;
-        else
-            error("expected arithmetic expression..");
-
-        if (!match(symbol::COMMA))
-            error("expected ','..");
-
-        if (arith_expression *e = dynamic_cast<arith_expression *>(_expression()))
-            max_e = e;
-        else
-            error("expected arithmetic expression..");
+        expression *min_e = _expression();
+        expression *max_e = _expression();
 
         if (!match(symbol::RBRACKET))
             error("expected ']'..");
@@ -1097,152 +1093,103 @@ expression *parser::_expression(const size_t &pr)
             case symbol::LT:
             {
                 tk = next();
-                arith_expression *l = nullptr;
-                arith_expression *r = nullptr;
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
-                    l = c_e;
-                else
-                    error("expected arithmetic expression..");
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(2)))
-                    r = c_e;
-                else
-                    error("expected arithmetic expression..");
+                expression *l = e;
+                expression *r = _expression(2);
 
                 return new lt_expression(l, r);
             }
             case symbol::LTEQ:
             {
                 tk = next();
-                arith_expression *l = nullptr;
-                arith_expression *r = nullptr;
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
-                    l = c_e;
-                else
-                    error("expected arithmetic expression..");
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(2)))
-                    r = c_e;
-                else
-                    error("expected arithmetic expression..");
+                expression *l = e;
+                expression *r = _expression(2);
 
                 return new leq_expression(l, r);
             }
             case symbol::GTEQ:
             {
                 tk = next();
-                arith_expression *l = nullptr;
-                arith_expression *r = nullptr;
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
-                    l = c_e;
-                else
-                    error("expected arithmetic expression..");
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(2)))
-                    r = c_e;
-                else
-                    error("expected arithmetic expression..");
+                expression *l = e;
+                expression *r = _expression(2);
 
                 return new geq_expression(l, r);
             }
             case symbol::GT:
             {
                 tk = next();
-                arith_expression *l = nullptr;
-                arith_expression *r = nullptr;
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
-                    l = c_e;
-                else
-                    error("expected arithmetic expression..");
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(2)))
-                    r = c_e;
-                else
-                    error("expected arithmetic expression..");
+                expression *l = e;
+                expression *r = _expression(2);
 
                 return new gt_expression(l, r);
             }
             case symbol::IMPLICATION:
             {
                 tk = next();
-                bool_expression *l = nullptr;
-                bool_expression *r = nullptr;
-
-                if (bool_expression *c_e = dynamic_cast<bool_expression *>(e))
-                    l = c_e;
-                else
-                    error("expected boolean expression..");
-
-                if (bool_expression *c_e = dynamic_cast<bool_expression *>(_expression(2)))
-                    r = c_e;
-                else
-                    error("expected boolean expression..");
+                expression *l = e;
+                expression *r = _expression(2);
 
                 return new implication_expression(l, r);
             }
             case symbol::BAR:
             {
                 tk = next();
-                std::vector<bool_expression *> xprs;
-
-                if (bool_expression *c_e = dynamic_cast<bool_expression *>(e))
-                    xprs.push_back(c_e);
-                else
-                    error("expected boolean expression..");
+                std::vector<expression *> xprs;
+                xprs.push_back(e);
 
                 while (match(symbol::BAR))
-                {
-                    if (bool_expression *c_e = dynamic_cast<bool_expression *>(_expression(2)))
-                        xprs.push_back(c_e);
-                    else
-                        error("expected boolean expression..");
-                }
+                    xprs.push_back(_expression(2));
 
                 return new disjunction_expression(xprs);
             }
             case symbol::AMP:
             {
                 tk = next();
-                std::vector<bool_expression *> xprs;
-
-                if (bool_expression *c_e = dynamic_cast<bool_expression *>(e))
-                    xprs.push_back(c_e);
-                else
-                    error("expected boolean expression..");
+                std::vector<expression *> xprs;
+                xprs.push_back(e);
 
                 while (match(symbol::BAR))
-                {
-                    if (bool_expression *c_e = dynamic_cast<bool_expression *>(_expression(2)))
-                        xprs.push_back(c_e);
-                    else
-                        error("expected boolean expression..");
-                }
+                    xprs.push_back(_expression(2));
 
                 return new conjunction_expression(xprs);
             }
             case symbol::CARET:
             {
                 tk = next();
-                std::vector<bool_expression *> xprs;
-
-                if (bool_expression *c_e = dynamic_cast<bool_expression *>(e))
-                    xprs.push_back(c_e);
-                else
-                    error("expected boolean expression..");
+                std::vector<expression *> xprs;
+                xprs.push_back(e);
 
                 while (match(symbol::BAR))
-                {
-                    if (bool_expression *c_e = dynamic_cast<bool_expression *>(_expression(2)))
-                        xprs.push_back(c_e);
-                    else
-                        error("expected boolean expression..");
-                }
+                    xprs.push_back(_expression(2));
 
                 return new exct_one_expression(xprs);
+            }
+            }
+        }
+        if (2 >= pr)
+        {
+            switch (tk->sym)
+            {
+            case symbol::PLUS:
+            {
+                tk = next();
+                std::vector<expression *> xprs;
+                xprs.push_back(e);
+
+                while (match(symbol::PLUS))
+                    xprs.push_back(_expression(3));
+
+                return new addition_expression(xprs);
+            }
+            case symbol::MINUS:
+            {
+                tk = next();
+                std::vector<expression *> xprs;
+                xprs.push_back(e);
+
+                while (match(symbol::MINUS))
+                    xprs.push_back(_expression(3));
+
+                return new subtraction_expression(xprs);
             }
             }
         }
@@ -1250,89 +1197,25 @@ expression *parser::_expression(const size_t &pr)
         {
             switch (tk->sym)
             {
-            case symbol::PLUS:
-            {
-                tk = next();
-                std::vector<arith_expression *> xprs;
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
-                    xprs.push_back(c_e);
-                else
-                    error("expected arithmetic expression..");
-
-                while (match(symbol::PLUS))
-                {
-                    if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(4)))
-                        xprs.push_back(c_e);
-                    else
-                        error("expected arithmetic expression..");
-                }
-
-                return new addition_expression(xprs);
-            }
-            case symbol::MINUS:
-            {
-                tk = next();
-                std::vector<arith_expression *> xprs;
-
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
-                    xprs.push_back(c_e);
-                else
-                    error("expected arithmetic expression..");
-
-                while (match(symbol::PLUS))
-                {
-                    if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(4)))
-                        xprs.push_back(c_e);
-                    else
-                        error("expected arithmetic expression..");
-                }
-
-                return new subtraction_expression(xprs);
-            }
-            }
-        }
-        if (5 >= pr)
-        {
-            switch (tk->sym)
-            {
             case symbol::STAR:
             {
                 tk = next();
-                std::vector<arith_expression *> xprs;
+                std::vector<expression *> xprs;
+                xprs.push_back(e);
 
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
-                    xprs.push_back(c_e);
-                else
-                    error("expected arithmetic expression..");
-
-                while (match(symbol::PLUS))
-                {
-                    if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(4)))
-                        xprs.push_back(c_e);
-                    else
-                        error("expected arithmetic expression..");
-                }
+                while (match(symbol::STAR))
+                    xprs.push_back(_expression(4));
 
                 return new multiplication_expression(xprs);
             }
             case symbol::SLASH:
             {
                 tk = next();
-                std::vector<arith_expression *> xprs;
+                std::vector<expression *> xprs;
+                xprs.push_back(e);
 
-                if (arith_expression *c_e = dynamic_cast<arith_expression *>(e))
-                    xprs.push_back(c_e);
-                else
-                    error("expected arithmetic expression..");
-
-                while (match(symbol::PLUS))
-                {
-                    if (arith_expression *c_e = dynamic_cast<arith_expression *>(_expression(4)))
-                        xprs.push_back(c_e);
-                    else
-                        error("expected arithmetic expression..");
-                }
+                while (match(symbol::SLASH))
+                    xprs.push_back(_expression(4));
 
                 return new division_expression(xprs);
             }

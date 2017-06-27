@@ -54,7 +54,7 @@ void local_field_statement::execute(const scope &scp, context &ctx) const
     }
 }
 
-expression_statement::expression_statement(const bool_expression *const e) : xpr(e) {}
+expression_statement::expression_statement(const expression *const e) : xpr(e) {}
 expression_statement::~expression_statement() { delete xpr; }
 void expression_statement::execute(const scope &scp, context &ctx) const
 {
