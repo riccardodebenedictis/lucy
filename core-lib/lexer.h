@@ -56,7 +56,6 @@ enum symbol
   IntLiteral,    // [0-9]+
   RealLiteral,   // [0-9]+ '.' [0-9]+)? | '.' [0-9]+
   StringLiteral, // '" . . ."'
-  COMMENT,
   EOF_Symbol
 };
 

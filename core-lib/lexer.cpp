@@ -59,14 +59,12 @@ token *lexer::next()
                 {
                 case '\r':
                     if (is.get() != '\n')
-                    {
                         is.unget();
-                    }
                 case '\n':
                     end_line++;
                     end_pos = 0;
                 case EOF:
-                    return mk_token(symbol::COMMENT);
+                    return mk_token(symbol::EOF_Symbol);
                 }
             }
         case '*': // in multi-line comment
@@ -81,15 +79,11 @@ token *lexer::next()
                     ch = is.get();
                     end_pos++;
                     if (ch == '/')
-                    {
-                        return mk_token(symbol::COMMENT);
-                    }
+                        return next();
                     break;
                 case '\r':
                     if (is.get() != '\n')
-                    {
                         is.unget();
-                    }
                 case '\n':
                     end_line++;
                     end_pos = 0;
@@ -540,6 +534,39 @@ token *lexer::next()
             return finish_id(str);
         }
     }
+    case 'n':
+    {
+        end_pos++;
+        std::vector<char> str;
+        str.push_back(ch);
+        ch = is.get();
+        if (ch != 'e')
+        {
+            is.unget();
+            return finish_id(str);
+        }
+        end_pos++;
+        str.push_back(ch);
+        ch = is.get();
+        if (ch != 'w')
+        {
+            is.unget();
+            return finish_id(str);
+        }
+        end_pos++;
+        str.push_back(ch);
+        ch = is.get();
+        if (!is_id_part(ch))
+        {
+            is.unget();
+            return mk_token(symbol::NEW);
+        }
+        else
+        {
+            is.unget();
+            return finish_id(str);
+        }
+    }
     case 'o':
     {
         end_pos++;
@@ -927,7 +954,6 @@ token *lexer::next()
     case 'k':
     case 'l':
     case 'm':
-    case 'n':
     case 'q':
     case 'u':
     case 'w':
@@ -977,9 +1003,7 @@ token *lexer::next()
         return finish_whitespaces();
     case '\r':
         if (is.get() != '\n')
-        {
             is.unget();
-        }
     case '\n':
         end_line++;
         end_pos = 0;
@@ -998,9 +1022,7 @@ token *lexer::finish_id(std::vector<char> &str)
     {
         ch = is.get();
         if (str.empty() && ch >= '0' && ch <= '9')
-        {
             error("identifiers cannot start with numbers..");
-        }
         if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || (ch >= '0' && ch <= '9'))
         {
             end_pos++;
@@ -1031,9 +1053,7 @@ token *lexer::finish_whitespaces()
             break;
         case '\r':
             if (is.get() != '\n')
-            {
                 is.unget();
-            }
         case '\n':
             end_line++;
             end_pos = 0;

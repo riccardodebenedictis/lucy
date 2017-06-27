@@ -141,7 +141,7 @@ typedef_declaration *parser::_typedef_declaration()
 
     if (!match(symbol::ID))
         error("expected identifier..");
-    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+    n = static_cast<id_token *>(tks[pos - 2])->id;
 
     if (!match(symbol::SEMICOLON))
         error("expected ';'..");
@@ -160,45 +160,9 @@ enum_declaration *parser::_enum_declaration()
 
     if (!match(symbol::ID))
         error("expected identifier..");
-    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+    n = static_cast<id_token *>(tks[pos - 2])->id;
 
-    switch (tk->sym)
-    {
-    case symbol::LBRACE:
-        tk = next();
-        if (!match(symbol::StringLiteral))
-            error("expected string literal..");
-        es.push_back(dynamic_cast<string_token *>(tks[pos - 2])->str);
-
-        while (match(symbol::COMMA))
-        {
-            if (!match(symbol::StringLiteral))
-                error("expected string literal..");
-            es.push_back(dynamic_cast<string_token *>(tks[pos - 2])->str);
-        }
-
-        if (!match(symbol::RBRACE))
-            error("expected '}'..");
-        break;
-    case symbol::ID:
-    {
-        std::vector<std::string> ids;
-        ids.push_back(dynamic_cast<id_token *>(tk)->id);
-        tk = next();
-        while (match(symbol::DOT))
-        {
-            if (!match(symbol::ID))
-                error("expected identifier..");
-            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        }
-        trs.push_back(ids);
-        break;
-    }
-    default:
-        error("expected either '{' or identifier..");
-    }
-
-    while (match(symbol::BAR))
+    do
     {
         switch (tk->sym)
         {
@@ -206,13 +170,13 @@ enum_declaration *parser::_enum_declaration()
             tk = next();
             if (!match(symbol::StringLiteral))
                 error("expected string literal..");
-            es.push_back(dynamic_cast<string_token *>(tks[pos - 2])->str);
+            es.push_back(static_cast<string_token *>(tks[pos - 2])->str);
 
             while (match(symbol::COMMA))
             {
                 if (!match(symbol::StringLiteral))
                     error("expected string literal..");
-                es.push_back(dynamic_cast<string_token *>(tks[pos - 2])->str);
+                es.push_back(static_cast<string_token *>(tks[pos - 2])->str);
             }
 
             if (!match(symbol::RBRACE))
@@ -221,13 +185,13 @@ enum_declaration *parser::_enum_declaration()
         case symbol::ID:
         {
             std::vector<std::string> ids;
-            ids.push_back(dynamic_cast<id_token *>(tk)->id);
+            ids.push_back(static_cast<id_token *>(tk)->id);
             tk = next();
             while (match(symbol::DOT))
             {
                 if (!match(symbol::ID))
                     error("expected identifier..");
-                ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+                ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
             }
             trs.push_back(ids);
             break;
@@ -235,7 +199,7 @@ enum_declaration *parser::_enum_declaration()
         default:
             error("expected either '{' or identifier..");
         }
-    }
+    } while (match(symbol::BAR));
 
     if (!match(symbol::SEMICOLON))
         error("expected ';'..");
@@ -245,88 +209,65 @@ enum_declaration *parser::_enum_declaration()
 
 class_declaration *parser::_class_declaration()
 {
-    std::string n;
-    std::vector<std::vector<std::string>> bcs;
-    std::vector<field_declaration *> fs;
-    std::vector<constructor_declaration *> cs;
-    std::vector<method_declaration *> ms;
-    std::vector<predicate_declaration *> ps;
-    std::vector<type_declaration *> ts;
+    std::string n;                             // the name of the class..
+    std::vector<std::vector<std::string>> bcs; // the base classes..
+    std::vector<field_declaration *> fs;       // the fields of the class..
+    std::vector<constructor_declaration *> cs; // the constructors of the class..
+    std::vector<method_declaration *> ms;      // the methods of the class..
+    std::vector<predicate_declaration *> ps;   // the predicates of the class..
+    std::vector<type_declaration *> ts;        // the types of the class..
 
     if (!match(symbol::CLASS))
         error("expected 'class'..");
 
     if (!match(symbol::ID))
         error("expected identifier..");
-    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+    n = static_cast<id_token *>(tks[pos - 2])->id;
 
     if (match(symbol::COLON))
     {
-        std::vector<std::string> ids;
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        tk = next();
-        while (match(symbol::DOT))
+        do
         {
-            if (!match(symbol::ID))
-                error("expected identifier..");
-            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        }
-        bcs.push_back(ids);
-        while (match(symbol::COMMA))
-        {
-            ids.clear();
-            if (!match(symbol::ID))
-                error("expected identifier..");
-            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-            tk = next();
-            while (match(symbol::DOT))
+            std::vector<std::string> ids;
+            do
             {
                 if (!match(symbol::ID))
                     error("expected identifier..");
-                ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-            }
+                ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+            } while (match(symbol::DOT));
             bcs.push_back(ids);
-        }
+        } while (match(symbol::COMMA));
     }
 
     if (!match(symbol::LBRACE))
         error("expected '{'..");
 
-    switch (tk->sym)
+    while (!match(symbol::RBRACE))
     {
-    case symbol::TYPEDEF:
-        ts.push_back(_typedef_declaration());
-        break;
-    case symbol::ENUM:
-        ts.push_back(_enum_declaration());
-        break;
-    case symbol::CLASS:
-        ts.push_back(_class_declaration());
-        break;
-    case symbol::PREDICATE:
-        ps.push_back(_predicate_declaration());
-        break;
-    case symbol::VOID:
-        ms.push_back(_method_declaration());
-        break;
-    case symbol::ID:
-    {
-        size_t c_pos = pos;
-        tk = next();
         switch (tk->sym)
         {
-        case symbol::LPAREN:
-            backtrack(c_pos);
-            cs.push_back(_constructor_declaration());
+        case symbol::TYPEDEF:
+            ts.push_back(_typedef_declaration());
             break;
-        case symbol::DOT:
-            while (match(symbol::DOT))
-            {
-                if (!match(symbol::ID))
-                    error("expected identifier..");
-            }
+        case symbol::ENUM:
+            ts.push_back(_enum_declaration());
+            break;
+        case symbol::CLASS:
+            ts.push_back(_class_declaration());
+            break;
+        case symbol::PREDICATE:
+            ps.push_back(_predicate_declaration());
+            break;
+        case symbol::VOID:
+            ms.push_back(_method_declaration());
+            break;
+        case symbol::BOOL:
+        case symbol::INT:
+        case symbol::REAL:
+        case symbol::STRING: // either a primitive type method or a field declaration..
+        {
+            size_t c_pos = pos;
+            tk = next();
             if (!match(symbol::ID))
                 error("expected identifier..");
             switch (tk->sym)
@@ -343,16 +284,67 @@ class_declaration *parser::_class_declaration()
             default:
                 error("expected either '(' or '=' or ';'..");
             }
+            break;
+        }
+        case symbol::ID: // either a constructor, a method or a field declaration..
+        {
+            size_t c_pos = pos;
+            tk = next();
+            switch (tk->sym)
+            {
+            case symbol::LPAREN:
+                backtrack(c_pos);
+                cs.push_back(_constructor_declaration());
+                break;
+            case symbol::DOT:
+                while (match(symbol::DOT))
+                {
+                    if (!match(symbol::ID))
+                        error("expected identifier..");
+                }
+                if (!match(symbol::ID))
+                    error("expected identifier..");
+                switch (tk->sym)
+                {
+                case symbol::LPAREN:
+                    backtrack(c_pos);
+                    ms.push_back(_method_declaration());
+                    break;
+                case symbol::EQ:
+                case symbol::SEMICOLON:
+                    backtrack(c_pos);
+                    fs.push_back(_field_declaration());
+                    break;
+                default:
+                    error("expected either '(' or '=' or ';'..");
+                }
+                break;
+            case symbol::ID:
+                tk = next();
+                switch (tk->sym)
+                {
+                case symbol::LPAREN:
+                    backtrack(c_pos);
+                    ms.push_back(_method_declaration());
+                    break;
+                case symbol::EQ:
+                case symbol::SEMICOLON:
+                    backtrack(c_pos);
+                    fs.push_back(_field_declaration());
+                    break;
+                default:
+                    error("expected either '(' or '=' or ';'..");
+                }
+                break;
+            default:
+                error("expected either '(' or '.' or an identifier..");
+            }
+            break;
+        }
         default:
-            error("expected either '(' or '.'..");
+            error("expected either 'typedef' or 'enum' or 'class' or 'predicate' or 'void' or identifier..");
         }
     }
-    default:
-        error("expected either 'typedef' or 'enum' or 'class' or 'predicate' or 'void' or identifier..");
-    }
-
-    if (!match(symbol::RBRACE))
-        error("expected '}'..");
 
     return new class_declaration(n, bcs, fs, cs, ms, ps, ts);
 }
@@ -363,20 +355,41 @@ field_declaration *parser::_field_declaration()
     std::string n;
     std::vector<variable_declaration *> ds;
 
-    if (!match(symbol::ID))
-        error("expected identifier..");
-    ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-    tk = next();
-    while (match(symbol::DOT))
+    switch (tk->sym)
     {
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+    case symbol::BOOL:
+        ids.push_back("bool");
+        tk = next();
+        break;
+    case symbol::INT:
+        ids.push_back("int");
+        tk = next();
+        break;
+    case symbol::REAL:
+        ids.push_back("real");
+        tk = next();
+        break;
+    case symbol::STRING:
+        ids.push_back("string");
+        tk = next();
+        break;
+    case symbol::ID:
+        ids.push_back(static_cast<id_token *>(tk)->id);
+        tk = next();
+        while (match(symbol::DOT))
+        {
+            if (!match(symbol::ID))
+                error("expected identifier..");
+            ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+        }
+        break;
+    default:
+        error("expected either 'bool' or 'int' or 'real' or 'string' or an identifier..");
     }
 
     if (!match(symbol::ID))
         error("expected identifier..");
-    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+    n = static_cast<id_token *>(tks[pos - 2])->id;
 
     if (match(symbol::EQ))
         ds.push_back(new variable_declaration(n, _expression()));
@@ -387,7 +400,7 @@ field_declaration *parser::_field_declaration()
     {
         if (!match(symbol::ID))
             error("expected identifier..");
-        n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+        n = static_cast<id_token *>(tks[pos - 2])->id;
 
         if (match(symbol::EQ))
             ds.push_back(new variable_declaration(n, _expression()));
@@ -410,21 +423,17 @@ method_declaration *parser::_method_declaration()
 
     if (!match(symbol::VOID))
     {
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        tk = next();
-        while (match(symbol::DOT))
+        do
         {
             if (!match(symbol::ID))
                 error("expected identifier..");
-            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        }
+            ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+        } while (match(symbol::DOT));
     }
 
     if (!match(symbol::ID))
         error("expected identifier..");
-    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+    n = static_cast<id_token *>(tks[pos - 2])->id;
 
     if (!match(symbol::LPAREN))
         error("expected '('..");
@@ -432,53 +441,19 @@ method_declaration *parser::_method_declaration()
     std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
     if (type_set.find(tk->sym) != type_set.end())
     {
-        std::vector<std::string> p_ids;
-        switch (tk->sym)
-        {
-        case symbol::ID:
-            p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
-            tk = next();
-            while (match(symbol::DOT))
-            {
-                if (!match(symbol::ID))
-                    error("expected identifier..");
-                p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-            }
-            break;
-        case symbol::BOOL:
-            p_ids.push_back("bool");
-            tk = next();
-            break;
-        case symbol::INT:
-            p_ids.push_back("int");
-            tk = next();
-            break;
-        case symbol::REAL:
-            p_ids.push_back("real");
-            tk = next();
-            break;
-        case symbol::STRING:
-            p_ids.push_back("string");
-            tk = next();
-            break;
-        }
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
-        pars.push_back({p_ids, pn});
-        while (match(symbol::COMMA))
+        do
         {
             std::vector<std::string> p_ids;
             switch (tk->sym)
             {
             case symbol::ID:
-                p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
+                p_ids.push_back(static_cast<id_token *>(tk)->id);
                 tk = next();
                 while (match(symbol::DOT))
                 {
                     if (!match(symbol::ID))
                         error("expected identifier..");
-                    p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+                    p_ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
                 }
                 break;
             case symbol::BOOL:
@@ -497,14 +472,12 @@ method_declaration *parser::_method_declaration()
                 p_ids.push_back("string");
                 tk = next();
                 break;
-            default:
-                error("expected either 'bool' or 'int' or 'real' or 'string' or an identifier..");
             }
             if (!match(symbol::ID))
                 error("expected identifier..");
-            std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+            std::string pn = static_cast<id_token *>(tks[pos - 2])->id;
             pars.push_back({p_ids, pn});
-        }
+        } while (match(symbol::COMMA));
     }
 
     if (!match(symbol::RPAREN))
@@ -534,53 +507,19 @@ constructor_declaration *parser::_constructor_declaration()
     std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
     if (type_set.find(tk->sym) != type_set.end())
     {
-        std::vector<std::string> p_ids;
-        switch (tk->sym)
-        {
-        case symbol::ID:
-            p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
-            tk = next();
-            while (match(symbol::DOT))
-            {
-                if (!match(symbol::ID))
-                    error("expected identifier..");
-                p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-            }
-            break;
-        case symbol::BOOL:
-            p_ids.push_back("bool");
-            tk = next();
-            break;
-        case symbol::INT:
-            p_ids.push_back("int");
-            tk = next();
-            break;
-        case symbol::REAL:
-            p_ids.push_back("real");
-            tk = next();
-            break;
-        case symbol::STRING:
-            p_ids.push_back("string");
-            tk = next();
-            break;
-        }
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
-        pars.push_back({p_ids, pn});
-        while (match(symbol::COMMA))
+        do
         {
             std::vector<std::string> p_ids;
             switch (tk->sym)
             {
             case symbol::ID:
-                p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
+                p_ids.push_back(static_cast<id_token *>(tk)->id);
                 tk = next();
                 while (match(symbol::DOT))
                 {
                     if (!match(symbol::ID))
                         error("expected identifier..");
-                    p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+                    p_ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
                 }
                 break;
             case symbol::BOOL:
@@ -599,14 +538,12 @@ constructor_declaration *parser::_constructor_declaration()
                 p_ids.push_back("string");
                 tk = next();
                 break;
-            default:
-                error("expected either 'bool' or 'int' or 'real' or 'string' or an identifier..");
             }
             if (!match(symbol::ID))
                 error("expected identifier..");
-            std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+            std::string pn = static_cast<id_token *>(tks[pos - 2])->id;
             pars.push_back({p_ids, pn});
-        }
+        } while (match(symbol::COMMA));
     }
 
     if (!match(symbol::RPAREN))
@@ -614,26 +551,29 @@ constructor_declaration *parser::_constructor_declaration()
 
     if (match(symbol::COLON))
     {
-        std::string pn;
-        std::vector<expression *> xprs;
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
-
-        if (!match(symbol::LPAREN))
-            error("expected '('..");
-
-        if (!match(symbol::RPAREN))
+        do
         {
-            xprs.push_back(_expression());
-            while (!match(symbol::RPAREN))
+            std::string pn;
+            std::vector<expression *> xprs;
+            if (!match(symbol::ID))
+                error("expected identifier..");
+            pn = static_cast<id_token *>(tks[pos - 2])->id;
+
+            if (!match(symbol::LPAREN))
+                error("expected '('..");
+
+            if (!match(symbol::RPAREN))
             {
-                if (!match(symbol::COMMA))
-                    error("expected ','..");
-                xprs.push_back(_expression());
+                do
+                {
+                    xprs.push_back(_expression());
+                } while (match(symbol::COMMA));
             }
-        }
-        il.push_back({pn, xprs});
+
+            if (!match(symbol::RPAREN))
+                error("expected ')'..");
+            il.push_back({pn, xprs});
+        } while (match(symbol::COMMA));
     }
 
     if (!match(symbol::LBRACE))
@@ -657,7 +597,7 @@ predicate_declaration *parser::_predicate_declaration()
 
     if (!match(symbol::ID))
         error("expected identifier..");
-    n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+    n = static_cast<id_token *>(tks[pos - 2])->id;
 
     if (!match(symbol::LPAREN))
         error("expected '('..");
@@ -665,53 +605,19 @@ predicate_declaration *parser::_predicate_declaration()
     std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
     if (type_set.find(tk->sym) != type_set.end())
     {
-        std::vector<std::string> p_ids;
-        switch (tk->sym)
-        {
-        case symbol::ID:
-            p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
-            tk = next();
-            while (match(symbol::DOT))
-            {
-                if (!match(symbol::ID))
-                    error("expected identifier..");
-                p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-            }
-            break;
-        case symbol::BOOL:
-            p_ids.push_back("bool");
-            tk = next();
-            break;
-        case symbol::INT:
-            p_ids.push_back("int");
-            tk = next();
-            break;
-        case symbol::REAL:
-            p_ids.push_back("real");
-            tk = next();
-            break;
-        case symbol::STRING:
-            p_ids.push_back("string");
-            tk = next();
-            break;
-        }
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
-        pars.push_back({p_ids, pn});
-        while (match(symbol::COMMA))
+        do
         {
             std::vector<std::string> p_ids;
             switch (tk->sym)
             {
             case symbol::ID:
-                p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
+                p_ids.push_back(static_cast<id_token *>(tk)->id);
                 tk = next();
                 while (match(symbol::DOT))
                 {
                     if (!match(symbol::ID))
                         error("expected identifier..");
-                    p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+                    p_ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
                 }
                 break;
             case symbol::BOOL:
@@ -730,14 +636,12 @@ predicate_declaration *parser::_predicate_declaration()
                 p_ids.push_back("string");
                 tk = next();
                 break;
-            default:
-                error("expected either 'bool' or 'int' or 'real' or 'string' or an identifier..");
             }
             if (!match(symbol::ID))
                 error("expected identifier..");
-            std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+            std::string pn = static_cast<id_token *>(tks[pos - 2])->id;
             pars.push_back({p_ids, pn});
-        }
+        } while (match(symbol::COMMA));
     }
 
     if (!match(symbol::RPAREN))
@@ -745,33 +649,17 @@ predicate_declaration *parser::_predicate_declaration()
 
     if (match(symbol::COLON))
     {
-        std::vector<std::string> p_ids;
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        tk = next();
-        while (match(symbol::DOT))
+        do
         {
-            if (!match(symbol::ID))
-                error("expected identifier..");
-            p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        }
-        pl.push_back(p_ids);
-        while (match(symbol::COMMA))
-        {
-            p_ids.clear();
-            if (!match(symbol::ID))
-                error("expected identifier..");
-            p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-            tk = next();
-            while (match(symbol::DOT))
+            std::vector<std::string> p_ids;
+            do
             {
                 if (!match(symbol::ID))
                     error("expected identifier..");
-                p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-            }
+                p_ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+            } while (match(symbol::DOT));
             pl.push_back(p_ids);
-        }
+        } while (match(symbol::COMMA));
     }
 
     if (!match(symbol::LBRACE))
@@ -812,7 +700,7 @@ statement *parser::_statement()
 
         if (!match(symbol::ID))
             error("expected identifier..");
-        std::string n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+        std::string n = static_cast<id_token *>(tks[pos - 2])->id;
 
         expression *e = nullptr;
         if (tk->sym == symbol::EQ)
@@ -830,20 +718,20 @@ statement *parser::_statement()
     {
         size_t c_pos = pos;
         std::vector<std::string> ids;
-        ids.push_back(dynamic_cast<id_token *>(tk)->id);
+        ids.push_back(static_cast<id_token *>(tk)->id);
         tk = next();
         while (match(symbol::DOT))
         {
             if (!match(symbol::ID))
                 error("expected identifier..");
-            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+            ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
         }
 
         switch (tk->sym)
         {
         case symbol::ID: // a local field..
         {
-            std::string n = dynamic_cast<id_token *>(tk)->id;
+            std::string n = static_cast<id_token *>(tk)->id;
             expression *e = nullptr;
             tk = next();
             if (tk->sym == symbol::EQ)
@@ -896,8 +784,10 @@ statement *parser::_statement()
     {
         tk = next();
         std::vector<statement *> stmnts;
-        while (!match(symbol::RBRACE))
+        do
+        {
             stmnts.push_back(_statement());
+        } while (!match(symbol::RBRACE));
         if (tk->sym == symbol::OR)
         {
             std::vector<block_statement *> disjs;
@@ -905,26 +795,26 @@ statement *parser::_statement()
             while (match(symbol::OR))
             {
                 stmnts.clear();
-                while (!match(symbol::RBRACE))
+                if (!match(symbol::LBRACE))
+                    error("expected '{'..");
+                do
+                {
                     stmnts.push_back(_statement());
+                } while (!match(symbol::RBRACE));
                 disjs.push_back(new block_statement(stmnts));
             }
-            if (!match(symbol::SEMICOLON))
-                error("expected ';'..");
             return new disjunction_statement(disjs);
         }
         else
         {
-            if (!match(symbol::SEMICOLON))
-                error("expected ';'..");
             return new block_statement(stmnts);
         }
     }
     case symbol::FACT:
     case symbol::GOAL:
     {
-        tk = next();
         bool isf = tk->sym == symbol::FACT;
+        tk = next();
         std::string fn;
         std::vector<std::string> scp;
         std::string pn;
@@ -932,32 +822,41 @@ statement *parser::_statement()
 
         if (!match(symbol::ID))
             error("expected identifier..");
-        fn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+        fn = static_cast<id_token *>(tks[pos - 2])->id;
 
         if (!match(symbol::EQ))
             error("expected '='..");
 
-        if (!match(symbol::ID))
-            error("expected identifier..");
-        scp.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+        if (!match(symbol::NEW))
+            error("expected 'new'..");
 
-        while (match(symbol::DOT))
+        do
         {
             if (!match(symbol::ID))
                 error("expected identifier..");
-            scp.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        }
+            scp.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+        } while (match(symbol::DOT));
+
         pn = scp.back();
         scp.pop_back();
 
         if (!match(symbol::LPAREN))
             error("expected '('..");
 
-        while (match(symbol::ID))
+        if (!match(symbol::RPAREN))
         {
-            if (!match(symbol::ID))
-                error("expected identifier..");
-            assgns.push_back({dynamic_cast<id_token *>(tks[pos - 2])->id, _expression()});
+            do
+            {
+                if (!match(symbol::ID))
+                    error("expected identifier..");
+                std::string assgn_name = static_cast<id_token *>(tks[pos - 2])->id;
+
+                if (!match(symbol::COLON))
+                    error("expected ':'..");
+
+                expression *xpr = _expression();
+                assgns.push_back({assgn_name, xpr});
+            } while (match(symbol::COMMA));
         }
 
         if (!match(symbol::RPAREN))
@@ -996,42 +895,38 @@ expression *parser::_expression(const size_t &pr)
         break;
     case symbol::IntLiteral:
         tk = next();
-        e = new int_literal_expression(dynamic_cast<int_token *>(tks[pos - 2])->val);
+        e = new int_literal_expression(static_cast<int_token *>(tks[pos - 2])->val);
         break;
     case symbol::RealLiteral:
         tk = next();
-        e = new real_literal_expression(dynamic_cast<real_token *>(tks[pos - 2])->val);
+        e = new real_literal_expression(static_cast<real_token *>(tks[pos - 2])->val);
         break;
     case symbol::StringLiteral:
         tk = next();
-        e = new string_literal_expression(dynamic_cast<string_token *>(tks[pos - 2])->str);
+        e = new string_literal_expression(static_cast<string_token *>(tks[pos - 2])->str);
         break;
     case symbol::LPAREN: // either a parenthesys expression or a cast..
     {
         tk = next();
 
         size_t c_pos = pos;
-        if (!match(symbol::ID))
-            error("expected identifier..");
-
-        while (match(symbol::DOT))
+        do
         {
             if (!match(symbol::ID))
                 error("expected identifier..");
-        }
+        } while (match(symbol::DOT));
 
         if (match(symbol::RPAREN)) // a cast..
         {
             backtrack(c_pos);
             std::vector<std::string> ids;
-            ids.push_back(dynamic_cast<id_token *>(tk)->id);
-            tk = next();
-            while (match(symbol::DOT))
+            do
             {
                 if (!match(symbol::ID))
                     error("expected identifier..");
-                ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-            }
+                ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+            } while (match(symbol::DOT));
+
             if (!match(symbol::RPAREN))
                 error("expected ')'..");
             expression *xpr = _expression();
@@ -1074,41 +969,40 @@ expression *parser::_expression(const size_t &pr)
     {
         tk = next();
         std::vector<std::string> ids;
-        ids.push_back(dynamic_cast<id_token *>(tk)->id);
-        tk = next();
-        while (match(symbol::DOT))
+        do
         {
             if (!match(symbol::ID))
                 error("expected identifier..");
-            ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
-        }
+            ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+        } while (match(symbol::DOT));
 
         std::vector<expression *> xprs;
         if (!match(symbol::LPAREN))
             error("expected '('..");
+
         if (!match(symbol::RPAREN))
         {
-            xprs.push_back(_expression());
-            while (!match(symbol::RPAREN))
+            do
             {
-                if (!match(symbol::COMMA))
-                    error("expected ','..");
                 xprs.push_back(_expression());
-            }
+            } while (match(symbol::COMMA));
         }
+
+        if (!match(symbol::RPAREN))
+            error("expected ')'..");
         e = new constructor_expression(ids, xprs);
         break;
     }
     case symbol::ID:
     {
         std::vector<std::string> is;
-        is.push_back(dynamic_cast<id_token *>(tk)->id);
+        is.push_back(static_cast<id_token *>(tk)->id);
         tk = next();
         while (match(symbol::DOT))
         {
             if (!match(symbol::ID))
                 error("expected identifier..");
-            is.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+            is.push_back(static_cast<id_token *>(tks[pos - 2])->id);
         }
         if (match(symbol::LPAREN))
         {
@@ -1116,16 +1010,19 @@ expression *parser::_expression(const size_t &pr)
             std::string fn = is.back();
             is.pop_back();
             std::vector<expression *> xprs;
+            if (!match(symbol::LPAREN))
+                error("expected '('..");
+
             if (!match(symbol::RPAREN))
             {
-                xprs.push_back(_expression());
-                while (!match(symbol::RPAREN))
+                do
                 {
-                    if (!match(symbol::COMMA))
-                        error("expected ','..");
                     xprs.push_back(_expression());
-                }
+                } while (match(symbol::COMMA));
             }
+
+            if (!match(symbol::RPAREN))
+                error("expected ')'..");
             e = new function_expression(is, fn, xprs);
         }
         else
