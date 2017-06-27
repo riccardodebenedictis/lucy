@@ -2,8 +2,8 @@
 #include "sat_core.h"
 #include "la_constr.h"
 #include "la_value_listener.h"
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 
 namespace smt
 {

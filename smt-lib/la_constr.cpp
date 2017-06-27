@@ -1,6 +1,7 @@
 #include "la_constr.h"
 #include "la_theory.h"
 #include "sat_core.h"
+#include <limits>
 #include <cassert>
 
 namespace smt

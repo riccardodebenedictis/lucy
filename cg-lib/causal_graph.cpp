@@ -8,6 +8,7 @@
 #include "causal_graph_listener.h"
 #include "propositional_state.h"
 #include "propositional_agent.h"
+#include <algorithm>
 #include <cassert>
 
 namespace cg
@@ -26,9 +27,7 @@ causal_graph::causal_graph() : core(), theory(core::sat)
 causal_graph::~causal_graph()
 {
     for (const auto &f : in_plan)
-    {
         delete f.second;
-    }
 }
 
 expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)

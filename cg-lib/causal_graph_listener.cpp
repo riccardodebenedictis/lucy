@@ -3,6 +3,7 @@
 #include "flaw.h"
 #include "resolver.h"
 #include "log.h"
+#include <algorithm>
 
 #define GRAPH_FILE "graph.json"
 

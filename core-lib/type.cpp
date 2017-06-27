@@ -5,8 +5,9 @@
 #include "constructor.h"
 #include "method.h"
 #include "predicate.h"
-#include <cassert>
+#include <algorithm>
 #include <unordered_set>
+#include <cassert>
 
 namespace lucy
 {

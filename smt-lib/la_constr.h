@@ -7,6 +7,8 @@
 namespace smt
 {
 
+class la_theory;
+
 enum op
 {
   leq,

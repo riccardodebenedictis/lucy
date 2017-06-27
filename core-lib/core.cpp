@@ -4,6 +4,8 @@
 #include "method.h"
 #include "field.h"
 #include "declaration.h"
+#include <limits>
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -57,7 +59,8 @@ core::~core()
 
 bool core::read(const std::string &script)
 {
-    ast::compilation_unit *cu = prs.parse(std::stringstream(script));
+    std::stringstream ss(script);
+    ast::compilation_unit *cu = prs.parse(ss);
     cus.push_back(cu);
 
     context ctx(this);
