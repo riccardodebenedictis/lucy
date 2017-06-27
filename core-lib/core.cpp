@@ -338,9 +338,7 @@ void core::assert_facts(const std::vector<lit> &facts)
     for (const auto &f : facts)
     {
         if (!sat.new_clause({lit(ctr_var, false), f}))
-        {
             throw unsolvable_exception();
-        }
     }
 }
 
