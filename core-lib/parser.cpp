@@ -424,7 +424,7 @@ method_declaration *parser::_method_declaration()
         error("expected '('..");
 
     std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
-    while (type_set.find(tk->sym) != type_set.end())
+    if (type_set.find(tk->sym) != type_set.end())
     {
         std::vector<std::string> p_ids;
         switch (tk->sym)
@@ -460,6 +460,45 @@ method_declaration *parser::_method_declaration()
             error("expected identifier..");
         std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
         pars.push_back({p_ids, pn});
+        while (match(symbol::COMMA))
+        {
+            std::vector<std::string> p_ids;
+            switch (tk->sym)
+            {
+            case symbol::ID:
+                p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
+                tk = next();
+                while (match(symbol::DOT))
+                {
+                    if (!match(symbol::ID))
+                        error("expected identifier..");
+                    p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+                }
+                break;
+            case symbol::BOOL:
+                p_ids.push_back("bool");
+                tk = next();
+                break;
+            case symbol::INT:
+                p_ids.push_back("int");
+                tk = next();
+                break;
+            case symbol::REAL:
+                p_ids.push_back("real");
+                tk = next();
+                break;
+            case symbol::STRING:
+                p_ids.push_back("string");
+                tk = next();
+                break;
+            default:
+                error("expected either 'bool' or 'int' or 'real' or 'string' or an identifier..");
+            }
+            if (!match(symbol::ID))
+                error("expected identifier..");
+            std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+            pars.push_back({p_ids, pn});
+        }
     }
 
     if (!match(symbol::RPAREN))
@@ -487,7 +526,7 @@ constructor_declaration *parser::_constructor_declaration()
         error("expected '('..");
 
     std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
-    while (type_set.find(tk->sym) != type_set.end())
+    if (type_set.find(tk->sym) != type_set.end())
     {
         std::vector<std::string> p_ids;
         switch (tk->sym)
@@ -523,6 +562,45 @@ constructor_declaration *parser::_constructor_declaration()
             error("expected identifier..");
         std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
         pars.push_back({p_ids, pn});
+        while (match(symbol::COMMA))
+        {
+            std::vector<std::string> p_ids;
+            switch (tk->sym)
+            {
+            case symbol::ID:
+                p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
+                tk = next();
+                while (match(symbol::DOT))
+                {
+                    if (!match(symbol::ID))
+                        error("expected identifier..");
+                    p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+                }
+                break;
+            case symbol::BOOL:
+                p_ids.push_back("bool");
+                tk = next();
+                break;
+            case symbol::INT:
+                p_ids.push_back("int");
+                tk = next();
+                break;
+            case symbol::REAL:
+                p_ids.push_back("real");
+                tk = next();
+                break;
+            case symbol::STRING:
+                p_ids.push_back("string");
+                tk = next();
+                break;
+            default:
+                error("expected either 'bool' or 'int' or 'real' or 'string' or an identifier..");
+            }
+            if (!match(symbol::ID))
+                error("expected identifier..");
+            std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+            pars.push_back({p_ids, pn});
+        }
     }
 
     if (!match(symbol::RPAREN))
@@ -579,7 +657,7 @@ predicate_declaration *parser::_predicate_declaration()
         error("expected '('..");
 
     std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
-    while (type_set.find(tk->sym) != type_set.end())
+    if (type_set.find(tk->sym) != type_set.end())
     {
         std::vector<std::string> p_ids;
         switch (tk->sym)
@@ -615,6 +693,45 @@ predicate_declaration *parser::_predicate_declaration()
             error("expected identifier..");
         std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
         pars.push_back({p_ids, pn});
+        while (match(symbol::COMMA))
+        {
+            std::vector<std::string> p_ids;
+            switch (tk->sym)
+            {
+            case symbol::ID:
+                p_ids.push_back(dynamic_cast<id_token *>(tk)->id);
+                tk = next();
+                while (match(symbol::DOT))
+                {
+                    if (!match(symbol::ID))
+                        error("expected identifier..");
+                    p_ids.push_back(dynamic_cast<id_token *>(tks[pos - 2])->id);
+                }
+                break;
+            case symbol::BOOL:
+                p_ids.push_back("bool");
+                tk = next();
+                break;
+            case symbol::INT:
+                p_ids.push_back("int");
+                tk = next();
+                break;
+            case symbol::REAL:
+                p_ids.push_back("real");
+                tk = next();
+                break;
+            case symbol::STRING:
+                p_ids.push_back("string");
+                tk = next();
+                break;
+            default:
+                error("expected either 'bool' or 'int' or 'real' or 'string' or an identifier..");
+            }
+            if (!match(symbol::ID))
+                error("expected identifier..");
+            std::string pn = dynamic_cast<id_token *>(tks[pos - 2])->id;
+            pars.push_back({p_ids, pn});
+        }
     }
 
     if (!match(symbol::RPAREN))
@@ -664,7 +781,7 @@ statement *parser::_statement()
 {
     switch (tk->sym)
     {
-    case symbol::ID: // either an assignment or a local field..
+    case symbol::ID: // either an assignment or a local field or an expression..
     {
         std::vector<std::string> ids;
         ids.push_back(dynamic_cast<id_token *>(tk)->id);
