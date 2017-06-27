@@ -33,7 +33,7 @@ public:
   type_declaration(const type_declaration &orig) = delete;
   virtual ~type_declaration();
 
-private:
+protected:
   const std::string name;
 };
 

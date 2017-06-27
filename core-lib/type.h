@@ -13,10 +13,20 @@ class constructor;
 class context;
 class atom;
 
+namespace ast
+{
+class typedef_declaration;
+class enum_declaration;
+class class_declaration;
+}
+
 #pragma warning(disable : 4251)
 class DLL_PUBLIC type : public scope
 {
   friend class core;
+  friend class ast::typedef_declaration;
+  friend class ast::enum_declaration;
+  friend class ast::class_declaration;
 
 public:
   type(core &cr, scope &scp, const std::string &name, bool primitive = false);

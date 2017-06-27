@@ -28,6 +28,9 @@ class parser;
 
 namespace ast
 {
+class typedef_declaration;
+class enum_declaration;
+class class_declaration;
 class compilation_unit;
 class disjunction_statement;
 class formula_statement;
@@ -41,6 +44,9 @@ class unsolvable_exception : public std::exception
 class DLL_PUBLIC core : public scope, public env
 {
   friend class type;
+  friend class ast::typedef_declaration;
+  friend class ast::enum_declaration;
+  friend class ast::class_declaration;
   friend class ast::disjunction_statement;
   friend class ast::formula_statement;
 

@@ -1,6 +1,9 @@
 #include "declaration.h"
 #include "statement.h"
 #include "expression.h"
+#include "core.h"
+#include "typedef_type.h"
+#include "enum_type.h"
 
 namespace lucy
 {
@@ -16,12 +19,34 @@ type_declaration::~type_declaration() {}
 
 typedef_declaration::typedef_declaration(const std::string &n, const std::string &pt, const expression *const e) : type_declaration(n), primitive_type(pt), xpr(e) {}
 typedef_declaration::~typedef_declaration() { delete xpr; }
-void typedef_declaration::declare(scope &scp) const {}
+void typedef_declaration::declare(scope &scp) const
+{
+    // A new typedef type has been declared..
+    typedef_type *td = new typedef_type(scp.get_core(), scp, name, scp.get_type(primitive_type), xpr);
+
+    if (core *c = dynamic_cast<core *>(&scp))
+        c->types.insert({name, td});
+    else if (type *t = dynamic_cast<type *>(&scp))
+        t->types.insert({name, td});
+}
 void typedef_declaration::define(scope &scp) const {}
 
 enum_declaration::enum_declaration(const std::string &n, const std::vector<std::string> &es, const std::vector<std::vector<std::string>> &trs) : type_declaration(n), enums(es), type_refs(trs) {}
 enum_declaration::~enum_declaration() {}
-void enum_declaration::declare(scope &scp) const {}
+void enum_declaration::declare(scope &scp) const
+{
+    // A new enum type has been declared..
+    enum_type *et = new enum_type(scp.get_core(), scp, name);
+
+    // We add the enum values..
+    for (const auto &e : enums)
+        et->instances.push_back(scp.get_core().new_string(e));
+
+    if (core *c = dynamic_cast<core *>(&scp))
+        c->types.insert({name, et});
+    else if (type *t = dynamic_cast<type *>(&scp))
+        t->types.insert({name, et});
+}
 void enum_declaration::define(scope &scp) const {}
 
 variable_declaration::variable_declaration(const std::string &n, const expression *const e) : name(n), xpr(e) {}
@@ -104,7 +129,21 @@ class_declaration::~class_declaration()
         delete t;
     }
 }
-void class_declaration::declare(scope &scp) const {}
+void class_declaration::declare(scope &scp) const
+{
+    // A new type has been declared..
+    type *t = new type(scp.get_core(), scp, name);
+
+    if (core *c = dynamic_cast<core *>(&scp))
+        c->types.insert({name, t});
+    else if (type *t = dynamic_cast<type *>(&scp))
+        t->types.insert({name, t});
+
+    for (const auto &tp : types)
+    {
+        tp->declare(*t);
+    }
+}
 void class_declaration::define(scope &scp) const {}
 
 compilation_unit::compilation_unit(const std::vector<type_declaration *> &ts, const std::vector<method_declaration *> &ms, const std::vector<predicate_declaration *> &ps, const std::vector<statement *> &stmnts) : types(ts), methods(ms), predicates(ps), statements(stmnts) {}
@@ -127,7 +166,13 @@ compilation_unit::~compilation_unit()
         delete s;
     }
 }
-void compilation_unit::declare(scope &scp) const {}
+void compilation_unit::declare(scope &scp) const
+{
+    for (const auto &tp : types)
+    {
+        tp->declare(scp);
+    }
+}
 void compilation_unit::define(scope &scp) const {}
 void compilation_unit::execute(const scope &scp, context &ctx) const
 {
