@@ -45,6 +45,12 @@ compilation_unit *parser::parse(std::istream &is)
         case symbol::VOID:
             ms.push_back(_method_declaration());
             break;
+        case symbol::BOOL:
+        case symbol::INT:
+        case symbol::REAL:
+        case symbol::STRING:
+            ss.push_back(_statement());
+            break;
         case symbol::ID:
         {
             size_t c_pos = pos;
@@ -781,6 +787,45 @@ statement *parser::_statement()
 {
     switch (tk->sym)
     {
+    case symbol::BOOL:
+    case symbol::INT:
+    case symbol::REAL:
+    case symbol::STRING: // a local field having a primitive type..
+    {
+        std::vector<std::string> ids;
+        switch (tk->sym)
+        {
+        case symbol::BOOL:
+            ids.push_back("bool");
+            break;
+        case symbol::INT:
+            ids.push_back("int");
+            break;
+        case symbol::REAL:
+            ids.push_back("real");
+            break;
+        case symbol::STRING:
+            ids.push_back("string");
+            break;
+        }
+        tk = next();
+
+        if (!match(symbol::ID))
+            error("expected identifier..");
+        std::string n = dynamic_cast<id_token *>(tks[pos - 2])->id;
+
+        expression *e = nullptr;
+        if (tk->sym == symbol::EQ)
+        {
+            tk = next();
+            e = _expression();
+        }
+
+        if (!match(symbol::SEMICOLON))
+            error("expected ';'..");
+
+        return new local_field_statement(ids, n, e);
+    }
     case symbol::ID: // either a local field, an assignment or an expression..
     {
         size_t c_pos = pos;
@@ -806,9 +851,11 @@ statement *parser::_statement()
                 tk = next();
                 e = _expression();
             }
+
             if (!match(symbol::SEMICOLON))
                 error("expected ';'..");
-            return new local_field_statement(ids, n, _expression());
+
+            return new local_field_statement(ids, n, e);
         }
         case symbol::EQ: // an assignment..
         {
@@ -834,8 +881,13 @@ statement *parser::_statement()
         case symbol::BAR:
         case symbol::AMP:
         case symbol::CARET:
+        {
             backtrack(c_pos);
-            return new expression_statement(_expression());
+            expression *xpr = _expression();
+            if (!match(symbol::SEMICOLON))
+                error("expected ';'..");
+            return new expression_statement(xpr);
+        }
         default:
             error("expected either '=' or an identifier..");
         }
@@ -923,7 +975,12 @@ statement *parser::_statement()
         return new return_statement(xpr);
     }
     default:
-        return new expression_statement(_expression());
+    {
+        expression *xpr = _expression();
+        if (!match(symbol::SEMICOLON))
+            error("expected ';'..");
+        return new expression_statement(xpr);
+    }
     }
 }
 
@@ -936,15 +993,19 @@ expression *parser::_expression(const size_t &pr)
     case symbol::FALSE:
         tk = next();
         e = new bool_literal_expression(tks[pos - 2]->sym == symbol::TRUE);
+        break;
     case symbol::IntLiteral:
         tk = next();
         e = new int_literal_expression(dynamic_cast<int_token *>(tks[pos - 2])->val);
+        break;
     case symbol::RealLiteral:
         tk = next();
         e = new real_literal_expression(dynamic_cast<real_token *>(tks[pos - 2])->val);
+        break;
     case symbol::StringLiteral:
         tk = next();
         e = new string_literal_expression(dynamic_cast<string_token *>(tks[pos - 2])->str);
+        break;
     case symbol::LPAREN: // either a parenthesys expression or a cast..
     {
         tk = next();
@@ -984,6 +1045,7 @@ expression *parser::_expression(const size_t &pr)
                 error("expected ')'..");
             e = xpr;
         }
+        break;
     }
     case symbol::PLUS:
         tk = next();
@@ -1006,6 +1068,7 @@ expression *parser::_expression(const size_t &pr)
         if (!match(symbol::RBRACKET))
             error("expected ']'..");
         e = new range_expression(min_e, max_e);
+        break;
     }
     case symbol::NEW:
     {
@@ -1034,6 +1097,7 @@ expression *parser::_expression(const size_t &pr)
             }
         }
         e = new constructor_expression(ids, xprs);
+        break;
     }
     case symbol::ID:
     {
@@ -1068,7 +1132,10 @@ expression *parser::_expression(const size_t &pr)
         {
             e = new id_expression(is);
         }
+        break;
     }
+    default:
+        error("expected either '(' or '+' or '-' or '!' or '[' or 'new' or a literal or an identifier..");
     }
 
     std::unordered_set<symbol> la_set({symbol::PLUS, symbol::MINUS, symbol::STAR, symbol::SLASH, symbol::LT, symbol::LTEQ, symbol::EQEQ, symbol::GTEQ, symbol::GT, symbol::BANGEQ, symbol::IMPLICATION, symbol::BAR, symbol::AMP, symbol::CARET});
@@ -1132,7 +1199,6 @@ expression *parser::_expression(const size_t &pr)
             }
             case symbol::BAR:
             {
-                tk = next();
                 std::vector<expression *> xprs;
                 xprs.push_back(e);
 
@@ -1143,7 +1209,6 @@ expression *parser::_expression(const size_t &pr)
             }
             case symbol::AMP:
             {
-                tk = next();
                 std::vector<expression *> xprs;
                 xprs.push_back(e);
 
@@ -1154,7 +1219,6 @@ expression *parser::_expression(const size_t &pr)
             }
             case symbol::CARET:
             {
-                tk = next();
                 std::vector<expression *> xprs;
                 xprs.push_back(e);
 
@@ -1171,7 +1235,6 @@ expression *parser::_expression(const size_t &pr)
             {
             case symbol::PLUS:
             {
-                tk = next();
                 std::vector<expression *> xprs;
                 xprs.push_back(e);
 
@@ -1182,7 +1245,6 @@ expression *parser::_expression(const size_t &pr)
             }
             case symbol::MINUS:
             {
-                tk = next();
                 std::vector<expression *> xprs;
                 xprs.push_back(e);
 
@@ -1199,7 +1261,6 @@ expression *parser::_expression(const size_t &pr)
             {
             case symbol::STAR:
             {
-                tk = next();
                 std::vector<expression *> xprs;
                 xprs.push_back(e);
 
@@ -1210,7 +1271,6 @@ expression *parser::_expression(const size_t &pr)
             }
             case symbol::SLASH:
             {
-                tk = next();
                 std::vector<expression *> xprs;
                 xprs.push_back(e);
 
