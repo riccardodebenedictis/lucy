@@ -15,23 +15,15 @@ namespace ast
 class expression;
 class statement;
 
-class declaration
-{
-public:
-  declaration();
-  declaration(const declaration &orig) = delete;
-  virtual ~declaration();
-
-  virtual void declare(scope &scp) const = 0;
-  virtual void define(scope &scp) const = 0;
-};
-
-class type_declaration : public declaration
+class type_declaration
 {
 public:
   type_declaration(const std::string &n);
   type_declaration(const type_declaration &orig) = delete;
   virtual ~type_declaration();
+
+  virtual void declare(scope &scp) const {}
+  virtual void refine(scope &scp) const {}
 
 protected:
   const std::string name;
@@ -45,7 +37,6 @@ public:
   virtual ~typedef_declaration();
 
   void declare(scope &scp) const override;
-  void define(scope &scp) const override;
 
 private:
   const std::string primitive_type;
@@ -60,52 +51,49 @@ public:
   virtual ~enum_declaration();
 
   void declare(scope &scp) const override;
-  void define(scope &scp) const override;
+  void refine(scope &scp) const override;
 
 private:
   const std::vector<std::string> enums;
   const std::vector<std::vector<std::string>> type_refs;
 };
 
-class variable_declaration : public declaration
+class variable_declaration
 {
+  friend class field_declaration;
+
 public:
   variable_declaration(const std::string &n, const expression *const e = nullptr);
   variable_declaration(const variable_declaration &orig) = delete;
   virtual ~variable_declaration();
-
-  void declare(scope &scp) const override;
-  void define(scope &scp) const override;
 
 private:
   const std::string name;
   const expression *const xpr;
 };
 
-class field_declaration : public declaration
+class field_declaration
 {
 public:
   field_declaration(const std::vector<std::string> &tp, const std::vector<variable_declaration *> &ds);
   field_declaration(const field_declaration &orig) = delete;
   virtual ~field_declaration();
 
-  void declare(scope &scp) const override;
-  void define(scope &scp) const override;
+  void refine(scope &scp) const;
 
 private:
-  const std::vector<std::string> type;
+  const std::vector<std::string> field_type;
   const std::vector<variable_declaration *> declarations;
 };
 
-class constructor_declaration : public declaration
+class constructor_declaration
 {
 public:
   constructor_declaration(const std::vector<std::pair<std::vector<std::string>, std::string>> &pars, const std::vector<std::pair<std::string, std::vector<expression *>>> &il, const std::vector<statement *> &stmnts);
   constructor_declaration(const constructor_declaration &orig) = delete;
   virtual ~constructor_declaration();
 
-  void declare(scope &scp) const override;
-  void define(scope &scp) const override;
+  void refine(scope &scp) const;
 
 private:
   const std::vector<std::pair<std::vector<std::string>, std::string>> parameters;
@@ -113,15 +101,14 @@ private:
   const std::vector<statement *> statements;
 };
 
-class method_declaration : public declaration
+class method_declaration
 {
 public:
   method_declaration(const std::vector<std::string> &rt, const std::string &n, const std::vector<std::pair<std::vector<std::string>, std::string>> &pars, const std::vector<statement *> &stmnts);
   method_declaration(const method_declaration &orig) = delete;
   virtual ~method_declaration();
 
-  void declare(scope &scp) const override;
-  void define(scope &scp) const override;
+  void refine(scope &scp) const;
 
 private:
   const std::vector<std::string> return_type;
@@ -130,15 +117,14 @@ private:
   const std::vector<statement *> statements;
 };
 
-class predicate_declaration : public declaration
+class predicate_declaration
 {
 public:
   predicate_declaration(const std::string &n, const std::vector<std::pair<std::vector<std::string>, std::string>> &pars, const std::vector<std::vector<std::string>> &pl, const std::vector<statement *> &stmnts);
   predicate_declaration(const predicate_declaration &orig) = delete;
   virtual ~predicate_declaration();
 
-  void declare(scope &scp) const override;
-  void define(scope &scp) const override;
+  void refine(scope &scp) const;
 
 private:
   const std::string name;
@@ -155,7 +141,7 @@ public:
   virtual ~class_declaration();
 
   void declare(scope &scp) const override;
-  void define(scope &scp) const override;
+  void refine(scope &scp) const override;
 
 private:
   const std::vector<std::vector<std::string>> base_classes;
@@ -166,15 +152,15 @@ private:
   const std::vector<type_declaration *> types;
 };
 
-class compilation_unit : public declaration
+class compilation_unit
 {
 public:
   compilation_unit(const std::vector<type_declaration *> &ts, const std::vector<method_declaration *> &ms, const std::vector<predicate_declaration *> &ps, const std::vector<statement *> &stmnts);
   compilation_unit(const compilation_unit &orig) = delete;
   virtual ~compilation_unit();
 
-  void declare(scope &scp) const override;
-  void define(scope &scp) const override;
+  void declare(scope &scp) const;
+  void refine(scope &scp) const;
   void execute(const scope &scp, context &ctx) const;
 
 private:

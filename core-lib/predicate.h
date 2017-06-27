@@ -6,23 +6,30 @@
 namespace lucy
 {
 
+namespace ast
+{
+class predicate_declaration;
+}
+
 class DLL_PUBLIC predicate : public type
 {
+  friend class ast::predicate_declaration;
+
 public:
-	predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts);
-	predicate(const predicate &orig) = delete;
-	virtual ~predicate();
+  predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts);
+  predicate(const predicate &orig) = delete;
+  virtual ~predicate();
 
-	const std::vector<field *> get_args() const { return args; }
+  const std::vector<field *> get_args() const { return args; }
 
-	expr new_instance(context &ctx) override;
+  expr new_instance(context &ctx) override;
 
-	void apply_rule(atom &a) const;
+  void apply_rule(atom &a) const;
 
 protected:
-	const std::vector<field *> args;
+  const std::vector<field *> args;
 
 private:
-	const std::vector<ast::statement *> statements;
+  const std::vector<ast::statement *> statements;
 };
 }

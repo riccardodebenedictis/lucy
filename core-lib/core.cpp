@@ -62,7 +62,7 @@ bool core::read(const std::string &script)
 
     context ctx(this);
     cu->declare(*this);
-    cu->define(*this);
+    cu->refine(*this);
     cu->execute(*this, ctx);
 
     return sat.check();
@@ -95,7 +95,7 @@ bool core::read(const std::vector<std::string> &files)
     }
     for (const auto &cu : c_cus)
     {
-        cu->define(*this);
+        cu->refine(*this);
     }
     for (const auto &cu : c_cus)
     {

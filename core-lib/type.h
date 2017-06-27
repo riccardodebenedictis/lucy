@@ -18,6 +18,9 @@ namespace ast
 class typedef_declaration;
 class enum_declaration;
 class class_declaration;
+class constructor_declaration;
+class method_declaration;
+class predicate_declaration;
 }
 
 #pragma warning(disable : 4251)
@@ -27,6 +30,9 @@ class DLL_PUBLIC type : public scope
   friend class ast::typedef_declaration;
   friend class ast::enum_declaration;
   friend class ast::class_declaration;
+  friend class ast::constructor_declaration;
+  friend class ast::method_declaration;
+  friend class ast::predicate_declaration;
 
 public:
   type(core &cr, scope &scp, const std::string &name, bool primitive = false);
@@ -67,12 +73,11 @@ public:
 protected:
   static void inherit(predicate &base, predicate &derived);
 
-  virtual void new_predicate(predicate &p) {}
-
   void set_var(var ctr_var);
   void restore_var();
 
 private:
+  virtual void new_predicate(predicate &p) {}
   virtual void new_fact(atom &a) {}
   virtual void new_goal(atom &a) {}
 

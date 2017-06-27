@@ -8,13 +8,10 @@ namespace lucy
 predicate::predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts) : type(cr, scp, name), args(args), statements(stmnts)
 {
 	if (type *t = dynamic_cast<type *>(&scp))
-	{
-		fields.insert({THIS_KEYWORD, new field(*t, THIS_KEYWORD, true)});
-	}
+		fields.insert({THIS_KEYWORD, new field(*t, THIS_KEYWORD, nullptr, true)});
+
 	for (const auto &arg : args)
-	{
 		fields.insert({arg->name, arg});
-	}
 }
 
 predicate::~predicate() {}
@@ -29,9 +26,7 @@ expr predicate::new_instance(context &ctx)
 	{
 		q.front()->instances.push_back(a);
 		for (const auto &st : q.front()->supertypes)
-		{
 			q.push(static_cast<predicate *>(st));
-		}
 		q.pop();
 	}
 
@@ -41,15 +36,11 @@ expr predicate::new_instance(context &ctx)
 void predicate::apply_rule(atom &a) const
 {
 	for (const auto &sp : supertypes)
-	{
 		static_cast<predicate *>(sp)->apply_rule(a);
-	}
 
 	context ctx(new env(cr, &a));
 	ctx->items.insert({THIS_KEYWORD, &a});
 	for (const auto &s : statements)
-	{
 		s->execute(*this, ctx);
-	}
 }
 }

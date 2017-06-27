@@ -18,9 +18,16 @@ class predicate;
 class env;
 class expr;
 
+namespace ast
+{
+class field_declaration;
+}
+
 #pragma warning(disable : 4251)
 class DLL_PUBLIC scope
 {
+	friend class ast::field_declaration;
+
   public:
 	scope(core &cr, scope &scp);
 	scope(const scope &orig) = delete;

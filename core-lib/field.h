@@ -1,6 +1,7 @@
 #pragma once
 
 #include "visibility.h"
+#include "expression.h"
 #include <string>
 
 namespace lucy
@@ -14,14 +15,13 @@ class expr;
 class DLL_PUBLIC field
 {
 public:
-  field(const type &tp, const std::string &name, bool synthetic = false);
+  field(const type &tp, const std::string &name, const ast::expression *const e = nullptr, bool synthetic = false);
   virtual ~field();
-
-  virtual expr new_instance(context &ctx);
 
 public:
   const type &tp;
   const std::string name;
+  const ast::expression *const xpr;
   const bool synthetic;
 };
 }

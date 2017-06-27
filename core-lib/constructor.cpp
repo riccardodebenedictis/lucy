@@ -9,11 +9,9 @@ namespace lucy
 
 constructor::constructor(core &cr, scope &scp, const std::vector<field *> &args, const std::vector<std::pair<std::string, std::vector<ast::expression *>>> &il, const std::vector<ast::statement *> &stmnts) : scope(cr, scp), args(args), init_list(il), statements(stmnts)
 {
-    fields.insert({THIS_KEYWORD, new field(static_cast<type &>(scp), THIS_KEYWORD, true)});
+    fields.insert({THIS_KEYWORD, new field(static_cast<type &>(scp), THIS_KEYWORD, nullptr, true)});
     for (const auto &arg : args)
-    {
         fields.insert({arg->name, new field(arg->tp, arg->name)});
-    }
 }
 
 constructor::~constructor() {}
@@ -35,9 +33,7 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
     context ctx(new env(cr, &itm));
     ctx->items.insert({THIS_KEYWORD, expr(&itm)});
     for (size_t i = 0; i < args.size(); i++)
-    {
         ctx->items.insert({args[i]->name, exprs[i]});
-    }
 
     // we initialize the supertypes..
     size_t il_idx = 0;
@@ -82,14 +78,22 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
     {
         if (!f.second->synthetic && itm.items.find((f.second->name)) == itm.items.end())
         {
-            itm.items.insert({f.second->name, f.second->new_instance(ctx)});
+            // the field is uninstantiated..
+            if (f.second->xpr)
+                itm.items.insert({f.second->name, f.second->xpr->evaluate(*this, ctx)});
+            else
+            {
+                type &tp = const_cast<type &>(f.second->tp);
+                if (tp.primitive)
+                    itm.items.insert({f.second->name, tp.new_instance(ctx)});
+                else
+                    itm.items.insert({f.second->name, tp.new_existential()});
+            }
         }
     }
 
     // we execute the constructor body..
     for (const auto &s : statements)
-    {
         s->execute(*this, ctx);
-    }
 }
 }

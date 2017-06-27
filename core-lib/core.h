@@ -31,6 +31,8 @@ namespace ast
 class typedef_declaration;
 class enum_declaration;
 class class_declaration;
+class method_declaration;
+class predicate_declaration;
 class compilation_unit;
 class disjunction_statement;
 class formula_statement;
@@ -47,6 +49,8 @@ class DLL_PUBLIC core : public scope, public env
   friend class ast::typedef_declaration;
   friend class ast::enum_declaration;
   friend class ast::class_declaration;
+  friend class ast::method_declaration;
+  friend class ast::predicate_declaration;
   friend class ast::disjunction_statement;
   friend class ast::formula_statement;
 
@@ -97,9 +101,7 @@ public:
   {
     std::vector<method *> c_methods;
     for (const auto &ms : methods)
-    {
       c_methods.insert(c_methods.begin(), ms.second.begin(), ms.second.end());
-    }
     return c_methods;
   }
 

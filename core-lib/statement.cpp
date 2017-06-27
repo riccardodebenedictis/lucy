@@ -160,24 +160,23 @@ void formula_statement::execute(const scope &scp, context &ctx) const
         {
             if (a->items.find(arg->name) == a->items.end())
             {
-                a->items.insert({arg->name, arg->new_instance(ctx)});
+                // the field is uninstantiated..
+                type &tp = const_cast<type &>(arg->tp);
+                if (tp.primitive)
+                    a->items.insert({arg->name, tp.new_instance(ctx)});
+                else
+                    a->items.insert({arg->name, tp.new_existential()});
             }
         }
         for (const auto &sp : q.front()->get_supertypes())
-        {
             q.push(static_cast<predicate *>(sp));
-        }
         q.pop();
     }
 
     if (is_fact)
-    {
         scp.get_core().new_fact(*a);
-    }
     else
-    {
         scp.get_core().new_goal(*a);
-    }
 
     ctx->items.insert({formula_name, expr(a)});
 }
