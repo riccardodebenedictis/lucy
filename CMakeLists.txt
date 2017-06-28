@@ -3,17 +3,23 @@ cmake_minimum_required(VERSION 3.7)
 project ( lucy VERSION 0.1 LANGUAGES CXX )
 
 enable_testing()
-find_package( Java )
 
 add_subdirectory( smt-lib )
 add_subdirectory( core-lib )
 add_subdirectory( cg-lib )
 
-include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
-
 add_executable( lucy main.cpp )
 
+include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
 target_link_libraries( lucy cg-lib core-lib smt-lib )
+
+find_package( Java )
+find_package( JNI )
+
+if( Java_FOUND )
+  include_directories( ${JNI_INCLUDE_DIRS} )
+  target_link_libraries( lucy ${JNI_LIBRARIES} )
+endif()
 
 add_test( NAME TestCG COMMAND lucy WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestCG0 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/example_0.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
