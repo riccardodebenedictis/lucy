@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.7)
 
+find_package( Java )
+find_package( JNI )
+
 project ( lucy VERSION 0.1 LANGUAGES CXX )
 
 enable_testing()
@@ -12,9 +15,6 @@ add_executable( lucy main.cpp )
 
 include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
 target_link_libraries( lucy cg-lib core-lib smt-lib )
-
-find_package( Java )
-find_package( JNI )
 
 if( Java_FOUND )
   include_directories( ${JNI_INCLUDE_DIRS} )

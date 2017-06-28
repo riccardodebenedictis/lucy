@@ -4,12 +4,11 @@ project ( core-lib )
 
 add_definitions(-DBUILDING_DLL)
 
-include_directories( ${CMAKE_SOURCE_DIR}/smt-lib )
-
 file( GLOB SOURCES "*.cpp" )
 
 add_library( core-lib SHARED ${SOURCES} )
 
+include_directories( ${CMAKE_SOURCE_DIR}/smt-lib )
 target_link_libraries( core-lib smt-lib )
 
 if( WIN32 )
