@@ -32,10 +32,7 @@ std::vector<flaw *> propositional_state::get_flaws()
     }
 }
 
-void propositional_state::new_predicate(predicate &pred)
-{
-    inherit(static_cast<predicate &>(graph.get_predicate("IntervalPredicate")), pred);
-}
+void propositional_state::new_predicate(predicate &pred) { inherit(static_cast<predicate &>(graph.get_predicate("IntervalPredicate")), pred); }
 
 void propositional_state::new_fact(atom &atm)
 {

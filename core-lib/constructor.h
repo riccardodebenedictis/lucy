@@ -24,10 +24,8 @@ public:
 private:
   void invoke(item &i, const std::vector<expr> &exprs);
 
-protected:
-  const std::vector<field *> args;
-
 private:
+  const std::vector<field *> args;
   const std::vector<std::pair<std::string, std::vector<ast::expression *>>> init_list;
   const std::vector<ast::statement *> statements;
 };

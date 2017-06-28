@@ -54,7 +54,7 @@ void enum_declaration::refine(scope &scp) const
         enum_type *et = static_cast<enum_type *>(&scp.get_type(name));
         for (const auto &tr : type_refs)
         {
-            scope *s = const_cast<scope *>(&scp);
+            scope *s = &scp;
             for (const auto &id : tr)
                 s = &s->get_type(id);
             et->enums.push_back(static_cast<enum_type *>(s));
@@ -74,7 +74,7 @@ field_declaration::~field_declaration()
 void field_declaration::refine(scope &scp) const
 {
     // we add fields to the current scope..
-    scope *s = const_cast<scope *>(&scp);
+    scope *s = &scp;
     for (const auto &id : field_type)
         s = &s->get_type(id);
     type *tp = static_cast<type *>(s);
@@ -97,7 +97,7 @@ void constructor_declaration::refine(scope &scp) const
     std::vector<field *> args;
     for (const auto &par : parameters)
     {
-        scope *s = const_cast<scope *>(&scp);
+        scope *s = &scp;
         for (const auto &id : par.first)
             s = &s->get_type(id);
         type *tp = static_cast<type *>(s);
@@ -118,7 +118,7 @@ void method_declaration::refine(scope &scp) const
     type *rt = nullptr;
     if (!return_type.empty())
     {
-        scope *s = const_cast<scope *>(&scp);
+        scope *s = &scp;
         for (const auto &id : return_type)
             s = &s->get_type(id);
         rt = static_cast<type *>(s);
@@ -127,7 +127,7 @@ void method_declaration::refine(scope &scp) const
     std::vector<field *> args;
     for (const auto &par : parameters)
     {
-        scope *s = const_cast<scope *>(&scp);
+        scope *s = &scp;
         for (const auto &id : par.first)
             s = &s->get_type(id);
         type *tp = static_cast<type *>(s);
@@ -161,7 +161,7 @@ void predicate_declaration::refine(scope &scp) const
     std::vector<field *> args;
     for (const auto &par : parameters)
     {
-        scope *s = const_cast<scope *>(&scp);
+        scope *s = &scp;
         for (const auto &id : par.first)
             s = &s->get_type(id);
         type *tp = static_cast<type *>(s);
@@ -173,7 +173,7 @@ void predicate_declaration::refine(scope &scp) const
     // we add the supertypes.. notice that we do not support forward declaration for predicate supertypes!!
     for (const auto &sp : predicate_list)
     {
-        scope *s = const_cast<scope *>(&scp);
+        scope *s = &scp;
         for (const auto &id : sp)
             s = &s->get_predicate(id);
         p->supertypes.push_back(static_cast<predicate *>(s));
@@ -182,7 +182,18 @@ void predicate_declaration::refine(scope &scp) const
     if (core *c = dynamic_cast<core *>(&scp))
         c->predicates.insert({name, p});
     else if (type *t = dynamic_cast<type *>(&scp))
+    {
         t->predicates.insert({name, p});
+        std::queue<type *> q;
+        q.push(t);
+        while (!q.empty())
+        {
+            q.front()->new_predicate(*p);
+            for (const auto &st : q.front()->supertypes)
+                q.push(st);
+            q.pop();
+        }
+    }
 }
 
 class_declaration::class_declaration(const std::string &n, const std::vector<std::vector<std::string>> &bcs, const std::vector<field_declaration *> &fs, const std::vector<constructor_declaration *> &cs, const std::vector<method_declaration *> &ms, const std::vector<predicate_declaration *> &ps, const std::vector<type_declaration *> &ts) : type_declaration(n), base_classes(bcs), fields(fs), constructors(cs), methods(ms), predicates(ps), types(ts) {}
@@ -215,8 +226,23 @@ void class_declaration::declare(scope &scp) const
 void class_declaration::refine(scope &scp) const
 {
     type &tp = scp.get_type(name);
-    for (const auto &c : constructors)
-        c->refine(tp);
+    for (const auto &bc : base_classes)
+    {
+        scope *s = &scp;
+        for (const auto &id : bc)
+            s = &s->get_type(id);
+        tp.supertypes.push_back(static_cast<type *>(s));
+    }
+
+    for (const auto &f : fields)
+        f->refine(tp);
+
+    if (constructors.empty())
+        tp.constructors.push_back(new constructor(scp.get_core(), scp, {}, {}, {})); // we add a default constructor..
+    else
+        for (const auto &c : constructors)
+            c->refine(tp);
+
     for (const auto &m : methods)
         m->refine(tp);
     for (const auto &p : predicates)

@@ -50,27 +50,22 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
                 par_types.push_back(&c_expr->tp);
             }
 
-            // we assume the constructor exists..
+            // we assume that the constructor exists..
             st->get_constructor(par_types).invoke(itm, exprs);
             il_idx++;
         }
         else // implicit supertype (default) constructor invocation..
         {
-            // we assume the default constructor exists..
+            // we assume that the default constructor exists..
             st->get_constructor({}).invoke(itm, {});
         }
     }
+
+    // we procede with the assignment list..
     for (; il_idx < init_list.size(); il_idx++)
     {
-        std::vector<expr> exprs;
-        std::vector<const type *> par_types;
-        for (const auto &ex : init_list[il_idx].second)
-        {
-            expr c_expr = ex->evaluate(*this, ctx);
-            exprs.push_back(c_expr);
-            par_types.push_back(&c_expr->tp);
-        }
-        itm.items.insert({init_list[il_idx].first, static_cast<type &>(scp).get_field(init_list[il_idx].first).tp.get_constructor(par_types).new_instance(ctx, exprs)});
+        assert(init_list[il_idx].second.size() == 1);
+        itm.items.insert({init_list[il_idx].first, init_list[il_idx].second[0]->evaluate(*this, ctx)});
     }
 
     // we instantiate the uninstantiated fields..
@@ -92,7 +87,7 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
         }
     }
 
-    // we execute the constructor body..
+    // finally, we execute the constructor body..
     for (const auto &s : statements)
         s->execute(*this, ctx);
 }

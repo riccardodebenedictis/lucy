@@ -49,6 +49,9 @@ compilation_unit *parser::parse(std::istream &is)
         case symbol::INT:
         case symbol::REAL:
         case symbol::STRING:
+        case symbol::LBRACE:
+        case symbol::FACT:
+        case symbol::GOAL:
             ss.push_back(_statement());
             break;
         case symbol::ID:
@@ -438,24 +441,13 @@ method_declaration *parser::_method_declaration()
     if (!match(symbol::LPAREN))
         error("expected '('..");
 
-    std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
-    if (type_set.find(tk->sym) != type_set.end())
+    if (!match(symbol::RPAREN))
     {
         do
         {
             std::vector<std::string> p_ids;
             switch (tk->sym)
             {
-            case symbol::ID:
-                p_ids.push_back(static_cast<id_token *>(tk)->id);
-                tk = next();
-                while (match(symbol::DOT))
-                {
-                    if (!match(symbol::ID))
-                        error("expected identifier..");
-                    p_ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
-                }
-                break;
             case symbol::BOOL:
                 p_ids.push_back("bool");
                 tk = next();
@@ -472,16 +464,28 @@ method_declaration *parser::_method_declaration()
                 p_ids.push_back("string");
                 tk = next();
                 break;
+            case symbol::ID:
+                p_ids.push_back(static_cast<id_token *>(tk)->id);
+                tk = next();
+                while (match(symbol::DOT))
+                {
+                    if (!match(symbol::ID))
+                        error("expected identifier..");
+                    p_ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+                }
+                break;
+            default:
+                error("expected either 'bool' or 'int' or 'real' or 'string' or an identifier..");
             }
             if (!match(symbol::ID))
                 error("expected identifier..");
             std::string pn = static_cast<id_token *>(tks[pos - 2])->id;
             pars.push_back({p_ids, pn});
         } while (match(symbol::COMMA));
-    }
 
-    if (!match(symbol::RPAREN))
-        error("expected ')'..");
+        if (!match(symbol::RPAREN))
+            error("expected ')'..");
+    }
 
     if (!match(symbol::LBRACE))
         error("expected '{'..");
@@ -504,8 +508,7 @@ constructor_declaration *parser::_constructor_declaration()
     if (!match(symbol::LPAREN))
         error("expected '('..");
 
-    std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
-    if (type_set.find(tk->sym) != type_set.end())
+    if (!match(symbol::RPAREN))
     {
         do
         {
@@ -544,10 +547,10 @@ constructor_declaration *parser::_constructor_declaration()
             std::string pn = static_cast<id_token *>(tks[pos - 2])->id;
             pars.push_back({p_ids, pn});
         } while (match(symbol::COMMA));
-    }
 
-    if (!match(symbol::RPAREN))
-        error("expected ')'..");
+        if (!match(symbol::RPAREN))
+            error("expected ')'..");
+    }
 
     if (match(symbol::COLON))
     {
@@ -568,10 +571,10 @@ constructor_declaration *parser::_constructor_declaration()
                 {
                     xprs.push_back(_expression());
                 } while (match(symbol::COMMA));
-            }
 
-            if (!match(symbol::RPAREN))
-                error("expected ')'..");
+                if (!match(symbol::RPAREN))
+                    error("expected ')'..");
+            }
             il.push_back({pn, xprs});
         } while (match(symbol::COMMA));
     }
@@ -602,24 +605,13 @@ predicate_declaration *parser::_predicate_declaration()
     if (!match(symbol::LPAREN))
         error("expected '('..");
 
-    std::unordered_set<symbol> type_set({symbol::ID, symbol::BOOL, symbol::INT, symbol::REAL, symbol::STRING});
-    if (type_set.find(tk->sym) != type_set.end())
+    if (!match(symbol::RPAREN))
     {
         do
         {
             std::vector<std::string> p_ids;
             switch (tk->sym)
             {
-            case symbol::ID:
-                p_ids.push_back(static_cast<id_token *>(tk)->id);
-                tk = next();
-                while (match(symbol::DOT))
-                {
-                    if (!match(symbol::ID))
-                        error("expected identifier..");
-                    p_ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
-                }
-                break;
             case symbol::BOOL:
                 p_ids.push_back("bool");
                 tk = next();
@@ -636,16 +628,26 @@ predicate_declaration *parser::_predicate_declaration()
                 p_ids.push_back("string");
                 tk = next();
                 break;
+            case symbol::ID:
+                p_ids.push_back(static_cast<id_token *>(tk)->id);
+                tk = next();
+                while (match(symbol::DOT))
+                {
+                    if (!match(symbol::ID))
+                        error("expected identifier..");
+                    p_ids.push_back(static_cast<id_token *>(tks[pos - 2])->id);
+                }
+                break;
             }
             if (!match(symbol::ID))
                 error("expected identifier..");
             std::string pn = static_cast<id_token *>(tks[pos - 2])->id;
             pars.push_back({p_ids, pn});
         } while (match(symbol::COMMA));
-    }
 
-    if (!match(symbol::RPAREN))
-        error("expected ')'..");
+        if (!match(symbol::RPAREN))
+            error("expected ')'..");
+    }
 
     if (match(symbol::COLON))
     {
@@ -857,10 +859,10 @@ statement *parser::_statement()
                 expression *xpr = _expression();
                 assgns.push_back({assgn_name, xpr});
             } while (match(symbol::COMMA));
-        }
 
-        if (!match(symbol::RPAREN))
-            error("expected ')'..");
+            if (!match(symbol::RPAREN))
+                error("expected ')'..");
+        }
 
         if (!match(symbol::SEMICOLON))
             error("expected ';'..");
@@ -962,6 +964,7 @@ expression *parser::_expression(const size_t &pr)
 
         if (!match(symbol::RBRACKET))
             error("expected ']'..");
+
         e = new range_expression(min_e, max_e);
         break;
     }
@@ -986,10 +989,11 @@ expression *parser::_expression(const size_t &pr)
             {
                 xprs.push_back(_expression());
             } while (match(symbol::COMMA));
+
+            if (!match(symbol::RPAREN))
+                error("expected ')'..");
         }
 
-        if (!match(symbol::RPAREN))
-            error("expected ')'..");
         e = new constructor_expression(ids, xprs);
         break;
     }
@@ -1019,10 +1023,11 @@ expression *parser::_expression(const size_t &pr)
                 {
                     xprs.push_back(_expression());
                 } while (match(symbol::COMMA));
+
+                if (!match(symbol::RPAREN))
+                    error("expected ')'..");
             }
 
-            if (!match(symbol::RPAREN))
-                error("expected ')'..");
             e = new function_expression(is, fn, xprs);
         }
         else

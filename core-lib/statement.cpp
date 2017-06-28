@@ -21,9 +21,7 @@ void assignment_statement::execute(const scope &scp, context &ctx) const
 {
     env *c_e = &*ctx;
     for (const auto &c_id : ids)
-    {
         c_e = &*c_e->get(c_id);
-    }
     c_e->items.insert({id, xpr->evaluate(scp, ctx)});
 }
 
@@ -32,25 +30,17 @@ local_field_statement::~local_field_statement() { delete xpr; }
 void local_field_statement::execute(const scope &scp, context &ctx) const
 {
     if (xpr)
-    {
         ctx->items.insert({name, xpr->evaluate(scp, ctx)});
-    }
     else
     {
         scope *s = const_cast<scope *>(&scp);
         for (const auto &tp : field_type)
-        {
             s = &s->get_type(tp);
-        }
         type *t = static_cast<type *>(s);
         if (t->primitive)
-        {
             ctx->items.insert({name, t->new_instance(ctx)});
-        }
         else
-        {
             ctx->items.insert({name, t->new_existential()});
-        }
     }
 }
 
@@ -66,25 +56,19 @@ block_statement::block_statement(const std::vector<statement *> &stmnts) : state
 block_statement::~block_statement()
 {
     for (const auto &st : statements)
-    {
         delete st;
-    }
 }
 void block_statement::execute(const scope &scp, context &ctx) const
 {
     for (const auto &st : statements)
-    {
         st->execute(scp, ctx);
-    }
 }
 
 disjunction_statement::disjunction_statement(const std::vector<block_statement *> &conjs) : conjunctions(conjs) {}
 disjunction_statement::~disjunction_statement()
 {
     for (const auto &d : conjunctions)
-    {
         delete d;
-    }
 }
 void disjunction_statement::execute(const scope &scp, context &ctx) const { scp.get_core().new_disjunction(ctx, *static_cast<const disjunction *>(&scp)); }
 
@@ -92,9 +76,7 @@ formula_statement::formula_statement(const bool &isf, const std::string &fn, con
 formula_statement::~formula_statement()
 {
     for (const auto &asgnmnt : assignments)
-    {
         delete asgnmnt.second;
-    }
 }
 void formula_statement::execute(const scope &scp, context &ctx) const
 {
@@ -104,35 +86,23 @@ void formula_statement::execute(const scope &scp, context &ctx) const
     {
         env *c_scope = &*ctx;
         for (const auto &s : formula_scope)
-        {
             c_scope = &*c_scope->get(s);
-            p = &static_cast<item *>(c_scope)->tp.get_predicate(predicate_name);
-            if (enum_item *ee = dynamic_cast<enum_item *>(c_scope))
-            {
-                // the scope is an enumerative expression..
-                assgnments.insert({"scope", ee});
-            }
-            else
-            {
-                // the scope is a single item..
-                assgnments.insert({"scope", context(c_scope)});
-            }
-        }
+        p = &static_cast<item *>(c_scope)->tp.get_predicate(predicate_name);
+
+        if (enum_item *ee = dynamic_cast<enum_item *>(c_scope)) // the scope is an enumerative expression..
+            assgnments.insert({"scope", ee});
+        else // the scope is a single item..
+            assgnments.insert({"scope", context(c_scope)});
     }
     else
     {
         p = &scp.get_predicate(predicate_name);
-        if (&p->get_scope() != &scp.get_core())
-        {
-            // we inherit the scope..
+        if (&p->get_scope() != &scp.get_core()) // we inherit the scope..
             assgnments.insert({"scope", ctx->get("scope")});
-        }
     }
 
     for (const auto &a : assignments)
-    {
         assgnments.insert({a.first, a.second->evaluate(scp, ctx)});
-    }
 
     atom *a;
     if (assgnments.find("scope") == assgnments.end())
