@@ -16,22 +16,15 @@ resolver::~resolver() {}
 
 double resolver::get_cost() const
 {
-    if (graph.core::sat.value(chosen) == False)
-    {
-        // the resolver cannot be chosen..
+    if (graph.core::sat.value(chosen) == False) // the resolver cannot be chosen..
         return std::numeric_limits<double>::infinity();
-    }
     else
     {
         // the cost of the resolver is given by the cost of its most expensive precondition plus the cost of the resolver itself..
         double r_cost = preconditions.empty() ? 0.0 : -std::numeric_limits<double>::infinity();
         for (const auto &f : preconditions)
-        {
             if (f->cost > r_cost)
-            {
                 r_cost = f->cost;
-            }
-        }
         r_cost += graph.la_th.value(cost);
         return r_cost;
     }

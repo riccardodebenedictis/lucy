@@ -4,25 +4,17 @@
 namespace cg
 {
 
-propositional_agent::propositional_agent(causal_graph &graph) : smart_type(graph, graph, PROPOSITIONAL_AGENT_NAME)
-{
-    constructors.push_back(new agnt_constructor(*this));
-}
+propositional_agent::propositional_agent(causal_graph &graph) : smart_type(graph, graph, PROPOSITIONAL_AGENT_NAME) { constructors.push_back(new agnt_constructor(*this)); }
 
 propositional_agent::~propositional_agent() {}
 
 std::vector<flaw *> propositional_agent::get_flaws()
 {
     std::vector<flaw *> flaws;
-    if (to_check.empty())
-    {
-        // nothing has changed since last inconsistency check..
+    if (to_check.empty()) // nothing has changed since last inconsistency check..
         return flaws;
-    }
     else
-    {
         return flaws;
-    }
 }
 
 void propositional_agent::new_fact(atom &atm) { throw std::logic_error("it is not possible to define facts on propositional agents.."); }

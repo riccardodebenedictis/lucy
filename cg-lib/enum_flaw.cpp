@@ -12,9 +12,7 @@ void enum_flaw::compute_resolvers()
 {
     std::unordered_set<set_item *> vals = graph.set_th.value(e_itm.ev);
     for (const auto &v : vals)
-    {
         add_resolver(*new choose_value(graph, *this, *v));
-    }
 }
 
 enum_flaw::choose_value::choose_value(causal_graph &graph, enum_flaw &enm_flaw, set_item &val) : resolver(graph, lin(1.0 / graph.set_th.value(enm_flaw.e_itm.ev).size()), enm_flaw), v(enm_flaw.e_itm.ev), val(val) {}

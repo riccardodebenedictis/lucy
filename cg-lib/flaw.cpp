@@ -91,9 +91,7 @@ void flaw::expand()
         // we need to take a decision for solving this flaw..
         std::vector<lit> r_chs;
         for (const auto &r : resolvers)
-        {
             r_chs.push_back(lit(r->chosen, true));
-        }
         if (!graph.core::sat.new_clause({lit(in_plan, false), lit(exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs), true)}))
             throw unsolvable_exception();
     }

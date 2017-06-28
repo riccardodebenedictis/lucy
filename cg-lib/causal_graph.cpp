@@ -105,9 +105,7 @@ main_loop:
             {
                 // we go back to root level..
                 while (!core::sat.root_level())
-                {
                     core::sat.pop();
-                }
                 goto main_loop;
             }
         }
@@ -116,33 +114,25 @@ main_loop:
         resolver &r_next = select_resolver(*f_next);
         res = &r_next;
         if (f_next->has_subgoals())
-        {
             resolvers.push_back(&r_next);
-        }
 
         // we apply the resolver..
         if (!core::sat.assume(lit(r_next.chosen, true)) || !core::sat.check())
-        {
             return false;
-        }
 
         while (!has_solution())
         {
             // we search within the graph..
             std::vector<lit> look_elsewhere;
             for (std::vector<layer>::reverse_iterator trail_it = trail.rbegin(); trail_it != trail.rend(); ++trail_it)
-            {
                 if (trail_it->r)
-                {
                     look_elsewhere.push_back(lit(trail_it->r->chosen, false));
-                }
-            }
             look_elsewhere.push_back(lit(graph_var, false));
+
+            // we backtrack..
             while (core::sat.value(look_elsewhere[0].v) != Undefined)
-            {
-                // we backtrack..
                 core::sat.pop();
-            }
+
             if (core::sat.root_level())
             {
                 // we have exhausted the search within the graph: we extend the graph..
@@ -165,9 +155,7 @@ main_loop:
             {
                 record(look_elsewhere);
                 if (!core::sat.check())
-                {
                     return false;
-                }
             }
         }
 
@@ -180,9 +168,7 @@ main_loop:
     {
         // we go back to root level..
         while (!core::sat.root_level())
-        {
             core::sat.pop();
-        }
         goto main_loop;
     }
 
@@ -194,11 +180,8 @@ void causal_graph::new_flaw(flaw &f)
 {
     f.init();
     flaw_q.push(&f);
-    if (core::sat.value(f.in_plan) == True)
-    {
-        // we have a top-level (landmark) flaw..
+    if (core::sat.value(f.in_plan) == True) // we have a top-level (landmark) flaw..
         flaws.insert(&f);
-    }
     else
     {
         // we listen for the flaw to become in_plan..
@@ -208,18 +191,14 @@ void causal_graph::new_flaw(flaw &f)
 
     // we notify the listeners that a new flaw has arised..
     for (const auto &l : listeners)
-    {
         l->new_flaw(f);
-    }
 }
 
 void causal_graph::new_resolver(resolver &r)
 {
     // we notify the listeners that a new resolver has arised..
     for (const auto &l : listeners)
-    {
         l->new_resolver(r);
-    }
 }
 
 void causal_graph::new_causal_link(flaw &f, resolver &r)
@@ -231,9 +210,7 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 
     // we notify the listeners that a new causal link has been created..
     for (const auto &l : listeners)
-    {
         l->causal_link_added(f, r);
-    }
 }
 
 bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
@@ -248,21 +225,14 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
             // a flaw has been added to the current partial solution..
             flaws.insert(f);
             if (!trail.empty())
-            {
                 trail.back().new_flaws.insert(f);
-            }
         }
-        else
-        {
-            // a flaw has been removed from the current partial solution..
+        else // a flaw has been removed from the current partial solution..
             set_cost(*f, std::numeric_limits<double>::infinity());
-        }
 
         // we notify the listeners that the state of a flaw has changed..
         for (const auto &l : listeners)
-        {
             l->flaw_state_changed(*f);
-        }
     }
     else
     {
@@ -278,13 +248,8 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
             // we have made the heuristic blind..
             cnfl.push_back(p);
             for (std::vector<layer>::reverse_iterator trail_it = trail.rbegin(); trail_it != trail.rend(); ++trail_it)
-            {
-                if (trail_it->r)
-                {
-                    // this resolver is null if we are calling the check from the sat core! Not bad: shorter conflict..
+                if (trail_it->r) // this resolver is null if we are calling the check from the sat core! Not bad: shorter conflict..
                     cnfl.push_back(lit(trail_it->r->chosen, false));
-                }
-            }
             return false;
         }
     }
@@ -313,34 +278,25 @@ void causal_graph::pop()
 {
     // we erase new flaws..
     for (const auto &f : trail.back().new_flaws)
-    {
         flaws.erase(f);
-    }
+
     // we reintroduce the solved flaw..
     for (const auto &f : trail.back().solved_flaws)
-    {
         flaws.insert(f);
-    }
+
     // we restore flaw costs..
     for (const auto &c : trail.back().old_costs)
-    {
         c.first->cost = c.second;
-    }
 
     // we notify the listeners that the cost of some flaws has been restored..
     for (const auto &l : listeners)
-    {
         for (const auto &c : trail.back().old_costs)
-        {
             l->flaw_cost_changed(*c.first);
-        }
-    }
 
     // we manage structural flaws..
     if (!resolvers.empty() && resolvers.back() == trail.back().r)
-    {
         resolvers.pop_back();
-    }
+
     trail.pop_back();
 }
 
@@ -353,11 +309,8 @@ void causal_graph::build()
     {
         assert(flaw_q.front()->initialized);
         assert(!flaw_q.front()->expanded);
-        if (is_deferrable(*flaw_q.front()))
-        {
-            // we postpone the expansion..
+        if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
             flaw_q.push(flaw_q.front());
-        }
         else
         {
             flaw_q.front()->expand();
@@ -435,12 +388,8 @@ void causal_graph::add_layer()
 bool causal_graph::has_solution()
 {
     for (const auto &f : flaws)
-    {
         if (f->cost == std::numeric_limits<double>::infinity())
-        {
             return false;
-        }
-    }
     return true;
 }
 
@@ -450,25 +399,14 @@ bool causal_graph::is_deferrable(flaw &f)
     q.push(&f);
     while (!q.empty())
     {
-        if (!q.front()->exclusive)
-        {
-            // we cannot defer this flaw..
+        if (!q.front()->exclusive) // we cannot defer this flaw..
             return false;
-        }
-        else if (core::sat.value(q.front()->in_plan) == False)
-        {
-            // it is not possible to solve this flaw with current assignments.. thus we defer..
+        else if (core::sat.value(q.front()->in_plan) == False) // it is not possible to solve this flaw with current assignments.. thus we defer..
             return true;
-        }
-        else if (q.front()->cost < std::numeric_limits<double>::infinity())
-        {
-            // we already have a possible solution for this flaw.. thus we defer..
+        else if (q.front()->cost < std::numeric_limits<double>::infinity()) // we already have a possible solution for this flaw.. thus we defer..
             return true;
-        }
         for (const auto &r : q.front()->causes)
-        {
             q.push(&r->effect);
-        }
         q.pop();
     }
     // we cannot defer this flaw..
@@ -480,21 +418,16 @@ void causal_graph::set_cost(flaw &f, double cost)
     if (f.cost != cost)
     {
         if (!trail.empty())
-        {
             trail.back().old_costs.insert({&f, f.cost});
-        }
         f.cost = cost;
 
         // we notify the listeners that a flaw cost has changed..
         for (const auto &l : listeners)
-        {
             l->flaw_cost_changed(f);
-        }
 
         for (const auto &supp : f.supports)
-        {
             flaw_costs_q.push(&supp->effect);
-        }
+
         propagate_costs();
     }
 }
@@ -508,28 +441,20 @@ void causal_graph::propagate_costs()
         {
             double c = r->get_cost();
             if (c < f_cost)
-            {
                 f_cost = c;
-            }
         }
         if (flaw_costs_q.front()->cost != f_cost)
         {
             if (!trail.empty())
-            {
                 trail.back().old_costs.insert({flaw_costs_q.front(), flaw_costs_q.front()->cost});
-            }
             flaw_costs_q.front()->cost = f_cost;
 
             // we notify the listeners that a flaw cost has changed..
             for (const auto &l : listeners)
-            {
                 l->flaw_cost_changed(*flaw_costs_q.front());
-            }
 
             for (const auto &supp : flaw_costs_q.front()->supports)
-            {
                 flaw_costs_q.push(&supp->effect);
-            }
         }
         flaw_costs_q.pop();
     }
@@ -540,12 +465,8 @@ bool causal_graph::has_inconsistencies()
     std::vector<flaw *> incs;
     std::queue<type *> q;
     for (const auto &t : get_types())
-    {
         if (!t.second->primitive)
-        {
             q.push(t.second);
-        }
-    }
     while (!q.empty())
     {
         if (smart_type *st = dynamic_cast<smart_type *>(q.front()))
@@ -554,17 +475,13 @@ bool causal_graph::has_inconsistencies()
             incs.insert(incs.end(), c_incs.begin(), c_incs.end());
         }
         for (const auto &st : q.front()->get_types())
-        {
             q.push(st.second);
-        }
         q.pop();
     }
 
     // we initialize the new flaws..
     for (const auto &f : incs)
-    {
         new_flaw(*f);
-    }
 
     return !incs.empty();
 }
@@ -583,41 +500,25 @@ flaw *causal_graph::select_flaw()
             assert(core::sat.value((*std::find_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != False; }))->chosen) == True);
             // we remove the trivial flaw from the current flaws..
             if (!trail.empty())
-            {
                 trail.back().solved_flaws.insert((*it));
-            }
             flaws.erase(it++);
         }
         else
         {
             // the flaw is not trivial: let's see if it's better than the previous one..
-            if (!f_next)
-            {
-                // it's the first flaw we see..
+            if (!f_next) // this is the first flaw we see..
                 f_next = *it;
-            }
-            else if (f_next->has_subgoals() && !(*it)->has_subgoals())
-            {
-                // we prefere non-structural flaws (i.e., inconsistencies) to structural ones..
+            else if (f_next->has_subgoals() && !(*it)->has_subgoals()) // we prefere non-structural flaws (i.e., inconsistencies) to structural ones..
                 f_next = *it;
-            }
-            else if (f_next->has_subgoals() == (*it)->has_subgoals() && f_next->cost < (*it)->cost)
-            {
-                // this flaw is actually better than the previous one..
+            else if (f_next->has_subgoals() == (*it)->has_subgoals() && f_next->cost < (*it)->cost) // this flaw is actually better than the previous one..
                 f_next = *it;
-            }
             ++it;
         }
     }
 
-    // we notify the listeners that we have chosen a flaw..
-    if (f_next)
-    {
+    if (f_next) // we notify the listeners that we have chosen a flaw..
         for (const auto &l : listeners)
-        {
             l->current_flaw(*f_next);
-        }
-    }
 
     return f_next;
 }
@@ -638,9 +539,7 @@ resolver &causal_graph::select_resolver(flaw &f)
 
     // we notify the listeners that we have chosen a resolver..
     for (const auto &l : listeners)
-    {
         l->current_resolver(*r_next);
-    }
 
     return *r_next;
 }

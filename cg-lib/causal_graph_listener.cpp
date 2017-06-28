@@ -16,10 +16,7 @@ causal_graph_listener::causal_graph_listener(causal_graph &graph) : graph(graph)
     WRITE(GRAPH_FILE, to_string());
 }
 
-causal_graph_listener::~causal_graph_listener()
-{
-    graph.listeners.erase(std::find(graph.listeners.begin(), graph.listeners.end(), this));
-}
+causal_graph_listener::~causal_graph_listener() { graph.listeners.erase(std::find(graph.listeners.begin(), graph.listeners.end(), this)); }
 
 void causal_graph_listener::new_flaw(const flaw &f)
 {
@@ -54,9 +51,7 @@ std::string causal_graph_listener::to_string()
         for (std::unordered_map<const flaw *, causal_graph_listener::flaw_listener *>::const_iterator fs_it = flaw_listeners.begin(); fs_it != flaw_listeners.end(); ++fs_it)
         {
             if (fs_it != flaw_listeners.begin())
-            {
                 g += ", ";
-            }
             g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(fs_it->first)) + "\", \"label\" : \"" + fs_it->first->get_label() + "\", \"in_plan_var\" : \"b" + std::to_string(fs_it->first->get_in_plan()) + "\", \"in_plan_val\" : ";
             switch (graph.core::sat.value(fs_it->first->get_in_plan()))
             {
@@ -71,9 +66,7 @@ std::string causal_graph_listener::to_string()
                 break;
             }
             if (fs_it->first->get_cost() < std::numeric_limits<double>::infinity())
-            {
                 g += ", \"cost\" : " + std::to_string(fs_it->first->get_cost());
-            }
             g += " }";
         }
         g += "]";
@@ -81,16 +74,12 @@ std::string causal_graph_listener::to_string()
     if (!resolver_listeners.empty())
     {
         if (!flaw_listeners.empty())
-        {
             g += ", ";
-        }
         g += "\"resolvers\" : [";
         for (std::unordered_map<const resolver *, causal_graph_listener::resolver_listener *>::const_iterator rs_it = resolver_listeners.begin(); rs_it != resolver_listeners.end(); ++rs_it)
         {
             if (rs_it != resolver_listeners.begin())
-            {
                 g += ", ";
-            }
             g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(rs_it->first)) + "\", \"label\" : \"" + rs_it->first->get_label() + "\", \"chosen_var\" : \"b" + std::to_string(rs_it->first->get_chosen()) + "\", \"chosen_val\" : ";
             switch (graph.core::sat.value(rs_it->first->get_chosen()))
             {
@@ -105,9 +94,7 @@ std::string causal_graph_listener::to_string()
                 break;
             }
             if (rs_it->first->get_cost() < std::numeric_limits<double>::infinity())
-            {
                 g += ", \"cost\" : " + std::to_string(rs_it->first->get_cost());
-            }
             g += ", \"solves\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(&rs_it->first->get_effect())) + "\"";
             std::vector<flaw *> pres = rs_it->first->get_preconditions();
             if (!pres.empty())
@@ -116,9 +103,7 @@ std::string causal_graph_listener::to_string()
                 for (std::vector<flaw *>::const_iterator cs_it = pres.begin(); cs_it != pres.end(); ++cs_it)
                 {
                     if (cs_it != pres.begin())
-                    {
                         g += ", ";
-                    }
                     g += "\"" + std::to_string(reinterpret_cast<uintptr_t>(*cs_it)) + "\"";
                 }
                 g += "]";
@@ -132,14 +117,10 @@ std::string causal_graph_listener::to_string()
 }
 
 causal_graph_listener::flaw_listener::flaw_listener(causal_graph_listener &listener, const flaw &f) : sat_value_listener(listener.get_graph().core::sat), listener(listener), f(f) {}
-
 causal_graph_listener::flaw_listener::~flaw_listener() {}
-
 void causal_graph_listener::flaw_listener::sat_value_change(var v) { listener.flaw_state_changed(f); }
 
 causal_graph_listener::resolver_listener::resolver_listener(causal_graph_listener &listener, const resolver &r) : sat_value_listener(listener.get_graph().core::sat), listener(listener), r(r) {}
-
 causal_graph_listener::resolver_listener::~resolver_listener() {}
-
 void causal_graph_listener::resolver_listener::sat_value_change(var v) { listener.resolver_state_changed(r); }
 }

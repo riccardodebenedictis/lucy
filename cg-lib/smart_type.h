@@ -44,26 +44,16 @@ public:
         {
           item *i = &*atm.get(f.first);
           if (bool_item *be = dynamic_cast<bool_item *>(i))
-          {
             listen_sat(be->l.v);
-          }
           else if (arith_item *ae = dynamic_cast<arith_item *>(i))
-          {
             for (const auto &term : ae->l.vars)
-            {
               listen_la(term.first);
-            }
-          }
           else if (enum_item *ee = dynamic_cast<enum_item *>(i))
-          {
             listen_set(ee->ev);
-          }
         }
       }
       for (const auto &st : q.front()->get_supertypes())
-      {
         q.push(st);
-      }
       q.pop();
     }
   }

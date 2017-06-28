@@ -17,11 +17,8 @@ reusable_resource::~reusable_resource() {}
 std::vector<flaw *> reusable_resource::get_flaws()
 {
     std::vector<flaw *> flaws;
-    if (to_check.empty())
-    {
-        // nothing has changed since last inconsistency check..
+    if (to_check.empty()) // nothing has changed since last inconsistency check..
         return flaws;
-    }
     else
     {
         // we collect atoms for each state variable..
@@ -35,12 +32,8 @@ std::vector<flaw *> reusable_resource::get_flaws()
                 if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
                 {
                     for (const auto &val : graph.set_th.value(enum_scope->ev))
-                    {
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
-                        {
                             instances[static_cast<item *>(val)].push_back(a.first);
-                        }
-                    }
                 }
                 else
                 {
@@ -76,30 +69,20 @@ std::vector<flaw *> reusable_resource::get_flaws()
             for (const auto &p : pulses)
             {
                 if (starting_atoms.find(p) != starting_atoms.end())
-                {
                     for (const auto &a : starting_atoms.at(p))
-                    {
                         overlapping_atoms.insert(a);
-                    }
-                }
                 if (ending_atoms.find(p) != ending_atoms.end())
-                {
                     for (const auto &a : ending_atoms.at(p))
-                    {
                         overlapping_atoms.erase(a);
-                    }
-                }
                 lin resource_usage;
                 for (const auto &a : overlapping_atoms)
                 {
                     arith_expr amount = a->get(REUSABLE_RESOURCE_USE_AMOUNT_NAME);
                     resource_usage += amount->l;
                 }
-                if (graph.la_th.value(resource_usage) > graph.la_th.value(capacity->l))
-                {
-                    // we have a peak..
+
+                if (graph.la_th.value(resource_usage) > graph.la_th.value(capacity->l)) // we have a peak..
                     flaws.push_back(new rr_flaw(graph, overlapping_atoms));
-                }
             }
         }
 
@@ -119,23 +102,15 @@ void reusable_resource::new_fact(atom &atm)
 
     // reusable resource facts cannot unify..
     if (!graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *graph.unified), false)}))
-    {
         throw unsolvable_exception();
-    }
 
     atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
     expr c_scope = atm.get("scope");
     if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
-    {
         for (const auto &val : graph.set_th.value(enum_scope->ev))
-        {
             to_check.insert(static_cast<item *>(val));
-        }
-    }
     else
-    {
         to_check.insert(&*c_scope);
-    }
 }
 
 void reusable_resource::new_goal(atom &atm) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
@@ -153,16 +128,10 @@ void reusable_resource::rr_atom_listener::something_changed()
 {
     expr c_scope = atm.get("scope");
     if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
-    {
         for (const auto &val : atm.get_core().set_th.value(enum_scope->ev))
-        {
             rr.to_check.insert(static_cast<item *>(val));
-        }
-    }
     else
-    {
         rr.to_check.insert(&*c_scope);
-    }
 }
 
 reusable_resource::rr_flaw::rr_flaw(causal_graph &graph, const std::set<atom *> &overlapping_atoms) : flaw(graph), overlapping_atoms(overlapping_atoms) {}
@@ -180,26 +149,18 @@ void reusable_resource::rr_flaw::compute_resolvers()
 
         bool_expr a0_before_a1 = graph.leq(a0_end, a1_start);
         if (graph.core::sat.value(a0_before_a1->l) != False)
-        {
             add_resolver(*new order_resolver(graph, lin(0.0), *this, *as[0], *as[1], a0_before_a1->l));
-        }
         bool_expr a1_before_a0 = graph.leq(a1_end, a0_start);
         if (graph.core::sat.value(a1_before_a0->l) != False)
-        {
             add_resolver(*new order_resolver(graph, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
-        }
 
         expr a0_scope = as[0]->get("scope");
         if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a0_scope))
         {
             std::unordered_set<set_item *> a0_scopes = graph.set_th.value(enum_scope->ev);
             if (a0_scopes.size() > 1)
-            {
                 for (const auto &sc : a0_scopes)
-                {
                     add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(graph.set_th.allows(enum_scope->ev, *sc), false)));
-                }
-            }
         }
 
         expr a1_scope = as[1]->get("scope");
@@ -207,12 +168,8 @@ void reusable_resource::rr_flaw::compute_resolvers()
         {
             std::unordered_set<set_item *> a1_scopes = graph.set_th.value(enum_scope->ev);
             if (a1_scopes.size() > 1)
-            {
                 for (const auto &sc : a1_scopes)
-                {
                     add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(graph.set_th.allows(enum_scope->ev, *sc), false)));
-                }
-            }
         }
     }
 }
