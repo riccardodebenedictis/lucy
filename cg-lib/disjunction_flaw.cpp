@@ -1,5 +1,4 @@
 #include "disjunction_flaw.h"
-#include "conjunction.h"
 #include "env.h"
 #include "causal_graph.h"
 

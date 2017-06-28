@@ -785,30 +785,46 @@ statement *parser::_statement()
     case symbol::LBRACE: // either a block or a disjunction..
     {
         tk = next();
-        std::vector<statement *> stmnts;
+        std::vector<const statement *> stmnts;
         do
         {
             stmnts.push_back(_statement());
         } while (!match(symbol::RBRACE));
-        if (tk->sym == symbol::OR)
+        switch (tk->sym)
         {
-            std::vector<block_statement *> disjs;
-            disjs.push_back(new block_statement(stmnts));
+        case symbol::LBRACKET:
+        case symbol::OR: // a disjunctive statement..
+        {
+            std::vector<std::pair<std::vector<const statement *>, const expression *const>> disjs;
+            expression *e = nullptr;
+            if (match(symbol::LBRACKET))
+            {
+                e = _expression();
+                if (!match(symbol::RBRACKET))
+                    error("expected ']'..");
+            }
+            disjs.push_back({stmnts, e});
             while (match(symbol::OR))
             {
                 stmnts.clear();
+                e = nullptr;
                 if (!match(symbol::LBRACE))
                     error("expected '{'..");
                 do
                 {
                     stmnts.push_back(_statement());
                 } while (!match(symbol::RBRACE));
-                disjs.push_back(new block_statement(stmnts));
+                if (match(symbol::LBRACKET))
+                {
+                    e = _expression();
+                    if (!match(symbol::RBRACKET))
+                        error("expected ']'..");
+                }
+                disjs.push_back({stmnts, e});
             }
             return new disjunction_statement(disjs);
         }
-        else
-        {
+        default: // a block statement..
             return new block_statement(stmnts);
         }
     }
@@ -820,7 +836,7 @@ statement *parser::_statement()
         std::string fn;
         std::vector<std::string> scp;
         std::string pn;
-        std::vector<std::pair<std::string, expression *>> assgns;
+        std::vector<std::pair<std::string, const expression *>> assgns;
 
         if (!match(symbol::ID))
             error("expected identifier..");

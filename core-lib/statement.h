@@ -72,33 +72,33 @@ private:
 class DLL_PUBLIC block_statement : public statement
 {
 public:
-  block_statement(const std::vector<statement *> &stmnts);
+  block_statement(const std::vector<const statement *> &stmnts);
   block_statement(const block_statement &orig) = delete;
   virtual ~block_statement();
 
   void execute(const scope &scp, context &ctx) const override;
 
 private:
-  const std::vector<statement *> statements;
+  const std::vector<const statement *> statements;
 };
 
 class DLL_PUBLIC disjunction_statement : public statement
 {
 public:
-  disjunction_statement(const std::vector<block_statement *> &conjs);
+  disjunction_statement(const std::vector<std::pair<std::vector<const statement *>, const expression *const>> &conjs);
   disjunction_statement(const disjunction_statement &orig) = delete;
   virtual ~disjunction_statement();
 
   void execute(const scope &scp, context &ctx) const override;
 
 private:
-  const std::vector<block_statement *> conjunctions;
+  const std::vector<std::pair<std::vector<const statement *>, const expression *const>> conjunctions;
 };
 
 class DLL_PUBLIC formula_statement : public statement
 {
 public:
-  formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, expression *>> &assns);
+  formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, const expression *>> &assns);
   formula_statement(const formula_statement &orig) = delete;
   virtual ~formula_statement();
 
@@ -109,7 +109,7 @@ private:
   const std::string formula_name;
   const std::vector<std::string> formula_scope;
   const std::string predicate_name;
-  const std::vector<std::pair<std::string, expression *>> assignments;
+  const std::vector<std::pair<std::string, const expression *>> assignments;
 };
 
 class DLL_PUBLIC return_statement : public statement

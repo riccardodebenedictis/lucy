@@ -52,7 +52,7 @@ void expression_statement::execute(const scope &scp, context &ctx) const
     scp.get_core().assert_facts({be->l});
 }
 
-block_statement::block_statement(const std::vector<statement *> &stmnts) : statements(stmnts) {}
+block_statement::block_statement(const std::vector<const statement *> &stmnts) : statements(stmnts) {}
 block_statement::~block_statement()
 {
     for (const auto &st : statements)
@@ -64,15 +64,34 @@ void block_statement::execute(const scope &scp, context &ctx) const
         st->execute(scp, ctx);
 }
 
-disjunction_statement::disjunction_statement(const std::vector<block_statement *> &conjs) : conjunctions(conjs) {}
+disjunction_statement::disjunction_statement(const std::vector<std::pair<std::vector<const statement *>, const expression *const>> &conjs) : conjunctions(conjs) {}
 disjunction_statement::~disjunction_statement()
 {
-    for (const auto &d : conjunctions)
-        delete d;
+    for (const auto &c : conjunctions)
+    {
+        for (const auto &s : c.first)
+            delete s;
+        delete c.second;
+    }
 }
-void disjunction_statement::execute(const scope &scp, context &ctx) const { scp.get_core().new_disjunction(ctx, *static_cast<const disjunction *>(&scp)); }
+void disjunction_statement::execute(const scope &scp, context &ctx) const
+{
+    std::vector<const conjunction *> cs;
+    for (const auto &c : conjunctions)
+    {
+        lin cost(1);
+        if (c.second)
+        {
+            arith_expr a_xpr = c.second->evaluate(scp, ctx);
+            cost = a_xpr->l;
+        }
+        cs.push_back(new conjunction(scp.get_core(), const_cast<scope &>(scp), cost, c.first));
+    }
+    disjunction *d = new disjunction(scp.get_core(), const_cast<scope &>(scp), cs);
+    scp.get_core().new_disjunction(ctx, *d);
+}
 
-formula_statement::formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, expression *>> &assns) : is_fact(isf), formula_name(fn), formula_scope(scp), predicate_name(pn), assignments(assns) {}
+formula_statement::formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, const expression *>> &assns) : is_fact(isf), formula_name(fn), formula_scope(scp), predicate_name(pn), assignments(assns) {}
 formula_statement::~formula_statement()
 {
     for (const auto &asgnmnt : assignments)
