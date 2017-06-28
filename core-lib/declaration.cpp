@@ -238,7 +238,7 @@ void class_declaration::refine(scope &scp) const
         f->refine(tp);
 
     if (constructors.empty())
-        tp.constructors.push_back(new constructor(scp.get_core(), scp, {}, {}, {})); // we add a default constructor..
+        tp.constructors.push_back(new constructor(scp.get_core(), tp, {}, {}, {})); // we add a default constructor..
     else
         for (const auto &c : constructors)
             c->refine(tp);
