@@ -37,7 +37,7 @@ public:
 
 private:
   const std::vector<std::string> ids;
-  const std::string &id;
+  const std::string id;
   const expression *const xpr;
 };
 

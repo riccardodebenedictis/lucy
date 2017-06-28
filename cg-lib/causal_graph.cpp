@@ -467,6 +467,7 @@ bool causal_graph::has_inconsistencies()
     for (const auto &t : get_types())
         if (!t.second->primitive)
             q.push(t.second);
+
     while (!q.empty())
     {
         if (smart_type *st = dynamic_cast<smart_type *>(q.front()))

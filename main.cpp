@@ -21,9 +21,7 @@ int main(int argc, char *argv[], char *envp[])
 
     std::vector<std::string> file_names;
     for (int i = 1; i < argc - 1; i++)
-    {
         file_names.push_back(argv[i]);
-    }
 
     std::cout << "parsing input files.." << std::endl;
     if (!g.read(file_names))
