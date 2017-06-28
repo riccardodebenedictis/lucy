@@ -22,17 +22,14 @@ constructor_expression::constructor_expression(const std::vector<std::string> &i
 constructor_expression::~constructor_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
+
 expr constructor_expression::evaluate(const scope &scp, context &ctx) const
 {
     scope *s = const_cast<scope *>(&scp);
     for (const auto &tp : instance_type)
-    {
         s = &s->get_type(tp);
-    }
 
     std::vector<expr> exprs;
     std::vector<const type *> par_types;
@@ -52,9 +49,7 @@ expr id_expression::evaluate(const scope &scp, context &ctx) const
 {
     env *c_e = &*ctx;
     for (const auto &id : ids)
-    {
         c_e = &*c_e->get(id);
-    }
     return expr(static_cast<item *>(c_e));
 }
 
@@ -62,17 +57,13 @@ function_expression::function_expression(const std::vector<std::string> &is, con
 function_expression::~function_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
 expr function_expression::evaluate(const scope &scp, context &ctx) const
 {
     scope *s = const_cast<scope *>(&scp);
     for (const auto &id : ids)
-    {
         s = &s->get_type(id);
-    }
 
     std::vector<expr> exprs;
     std::vector<const type *> par_types;
@@ -87,22 +78,14 @@ expr function_expression::evaluate(const scope &scp, context &ctx) const
     if (m.return_type)
     {
         if (m.return_type == &scp.get_core().get_type(BOOL_KEYWORD))
-        {
             return bool_expr(static_cast<bool_item *>(m.invoke(ctx, exprs)));
-        }
         else if (m.return_type == &scp.get_core().get_type(INT_KEYWORD) || m.return_type == &scp.get_core().get_type(REAL_KEYWORD))
-        {
             return arith_expr(static_cast<arith_item *>(m.invoke(ctx, exprs)));
-        }
         else
-        {
             return expr(m.invoke(ctx, exprs));
-        }
     }
     else
-    {
         return scp.get_core().new_bool(true);
-    }
 }
 
 string_literal_expression::string_literal_expression(const std::string &l) : literal(l) {}
@@ -118,17 +101,11 @@ real_literal_expression::~real_literal_expression() {}
 expr real_literal_expression::evaluate(const scope &scp, context &ctx) const { return scp.get_core().new_real(literal); }
 
 plus_expression::plus_expression(const expression *const e) : xpr(e) {}
-plus_expression::~plus_expression()
-{
-    delete xpr;
-}
+plus_expression::~plus_expression() { delete xpr; }
 expr plus_expression::evaluate(const scope &scp, context &ctx) const { return xpr->evaluate(scp, ctx); }
 
 minus_expression::minus_expression(const expression *const e) : xpr(e) {}
-minus_expression::~minus_expression()
-{
-    delete xpr;
-}
+minus_expression::~minus_expression() { delete xpr; }
 expr minus_expression::evaluate(const scope &scp, context &ctx) const { return scp.get_core().minus(xpr->evaluate(scp, ctx)); }
 
 range_expression::range_expression(const expression *const min_e, const expression *const max_e) : min_xpr(min_e), max_xpr(max_e) {}
@@ -150,17 +127,13 @@ addition_expression::addition_expression(const std::vector<expression *> &es) : 
 addition_expression::~addition_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
 expr addition_expression::evaluate(const scope &scp, context &ctx) const
 {
     std::vector<arith_expr> exprs;
     for (const auto &e : expressions)
-    {
         exprs.push_back(e->evaluate(scp, ctx));
-    }
     return scp.get_core().add(exprs);
 }
 
@@ -168,17 +141,13 @@ subtraction_expression::subtraction_expression(const std::vector<expression *> &
 subtraction_expression::~subtraction_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
 expr subtraction_expression::evaluate(const scope &scp, context &ctx) const
 {
     std::vector<arith_expr> exprs;
     for (const auto &e : expressions)
-    {
         exprs.push_back(e->evaluate(scp, ctx));
-    }
     return scp.get_core().sub(exprs);
 }
 
@@ -186,17 +155,13 @@ multiplication_expression::multiplication_expression(const std::vector<expressio
 multiplication_expression::~multiplication_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
 expr multiplication_expression::evaluate(const scope &scp, context &ctx) const
 {
     std::vector<arith_expr> exprs;
     for (const auto &e : expressions)
-    {
         exprs.push_back(e->evaluate(scp, ctx));
-    }
     return scp.get_core().mult(exprs);
 }
 
@@ -204,17 +169,13 @@ division_expression::division_expression(const std::vector<expression *> &es) : 
 division_expression::~division_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
 expr division_expression::evaluate(const scope &scp, context &ctx) const
 {
     std::vector<arith_expr> exprs;
     for (const auto &e : expressions)
-    {
         exprs.push_back(e->evaluate(scp, ctx));
-    }
     return scp.get_core().div(exprs);
 }
 
@@ -317,17 +278,13 @@ disjunction_expression::disjunction_expression(const std::vector<expression *> &
 disjunction_expression::~disjunction_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
 expr disjunction_expression::evaluate(const scope &scp, context &ctx) const
 {
     std::vector<bool_expr> exprs;
     for (const auto &e : expressions)
-    {
         exprs.push_back(e->evaluate(scp, ctx));
-    }
     return scp.get_core().disj(exprs);
 }
 
@@ -335,17 +292,13 @@ conjunction_expression::conjunction_expression(const std::vector<expression *> &
 conjunction_expression::~conjunction_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
 expr conjunction_expression::evaluate(const scope &scp, context &ctx) const
 {
     std::vector<bool_expr> exprs;
     for (const auto &e : expressions)
-    {
         exprs.push_back(e->evaluate(scp, ctx));
-    }
     return scp.get_core().conj(exprs);
 }
 
@@ -353,25 +306,18 @@ exct_one_expression::exct_one_expression(const std::vector<expression *> &es) : 
 exct_one_expression::~exct_one_expression()
 {
     for (const auto &e : expressions)
-    {
         delete e;
-    }
 }
 expr exct_one_expression::evaluate(const scope &scp, context &ctx) const
 {
     std::vector<bool_expr> exprs;
     for (const auto &e : expressions)
-    {
         exprs.push_back(e->evaluate(scp, ctx));
-    }
     return scp.get_core().exct_one(exprs);
 }
 
 not_expression::not_expression(const expression *const e) : xpr(e) {}
 not_expression::~not_expression() { delete xpr; }
-expr not_expression::evaluate(const scope &scp, context &ctx) const
-{
-    return scp.get_core().negate(xpr->evaluate(scp, ctx));
-}
+expr not_expression::evaluate(const scope &scp, context &ctx) const { return scp.get_core().negate(xpr->evaluate(scp, ctx)); }
 }
 }

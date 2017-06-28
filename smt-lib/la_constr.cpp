@@ -130,17 +130,12 @@ bool assertion::propagate_ub(var x, std::vector<lit> &cnfl)
 row::row(la_theory &th, var x, lin l) : th(th), x(x), l(l)
 {
     for (const auto &term : l.vars)
-    {
         th.t_watches[term.first].insert(this);
-    }
 }
 
 row::~row() {}
 
-std::string row::to_string() const
-{
-    return "{ \"basic-var\" : \"x" + std::to_string(x) + "\", \"expr\" : \"" + l.to_string() + "\" }";
-}
+std::string row::to_string() const { return "{ \"basic-var\" : \"x" + std::to_string(x) + "\", \"expr\" : \"" + l.to_string() + "\" }"; }
 
 bool row::propagate_lb(var v, std::vector<lit> &cnfl)
 {
@@ -182,11 +177,9 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
             }
         }
         if (lb > th.lb(x))
-        {
             for (const auto &c : th.a_watches[x])
             {
                 if (lb > c->v)
-                {
                     switch (c->o)
                     {
                     case leq:
@@ -216,9 +209,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
                         }
                         break;
                     }
-                }
             }
-        }
     }
     else
     {
@@ -255,11 +246,9 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
             }
         }
         if (ub < th.ub(x))
-        {
             for (const auto &c : th.a_watches[x])
             {
                 if (ub < c->v)
-                {
                     switch (c->o)
                     {
                     case leq:
@@ -289,9 +278,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
                         }
                         break;
                     }
-                }
             }
-        }
     }
 
     cnfl.clear();
@@ -338,11 +325,9 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
             }
         }
         if (ub < th.ub(x))
-        {
             for (const auto &c : th.a_watches[x])
             {
                 if (ub < c->v)
-                {
                     switch (c->o)
                     {
                     case leq:
@@ -372,9 +357,7 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
                         }
                         break;
                     }
-                }
             }
-        }
     }
     else
     {
@@ -411,11 +394,9 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
             }
         }
         if (lb > th.lb(x))
-        {
             for (const auto &c : th.a_watches[x])
             {
                 if (lb > c->v)
-                {
                     switch (c->o)
                     {
                     case leq:
@@ -445,9 +426,7 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
                         }
                         break;
                     }
-                }
             }
-        }
     }
 
     cnfl.clear();

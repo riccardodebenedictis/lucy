@@ -18,30 +18,20 @@ type::~type()
 {
     // we delete the predicates..
     for (const auto &p : predicates)
-    {
         delete p.second;
-    }
 
     // we delete the types..
     for (const auto &t : types)
-    {
         delete t.second;
-    }
 
     // we delete the methods..
     for (const auto &ms : methods)
-    {
         for (const auto &m : ms.second)
-        {
             delete m;
-        }
-    }
 
     // we delete the constructors..
     for (const auto &c : constructors)
-    {
         delete c;
-    }
 }
 
 bool type::is_assignable_from(const type &t) const noexcept
@@ -51,15 +41,11 @@ bool type::is_assignable_from(const type &t) const noexcept
     while (!q.empty())
     {
         if (q.front() == this)
-        {
             return true;
-        }
         else
         {
             for (const auto &st : q.front()->supertypes)
-            {
                 q.push(st);
-            }
             q.pop();
         }
     }
@@ -75,9 +61,7 @@ expr type::new_instance(context &ctx)
     {
         q.front()->instances.push_back(i);
         for (const auto &st : q.front()->supertypes)
-        {
             q.push(st);
-        }
         q.pop();
     }
 
@@ -87,16 +71,12 @@ expr type::new_instance(context &ctx)
 expr type::new_existential()
 {
     if (instances.size() == 1)
-    {
         return *instances.begin();
-    }
     else
     {
         std::unordered_set<item *> c_items;
         for (const auto &i : instances)
-        {
             c_items.insert(&*i);
-        }
         return cr.new_enum(*this, c_items);
     }
 }
@@ -119,9 +99,7 @@ constructor &type::get_constructor(const std::vector<const type *> &ts) const
                 }
             }
             if (found)
-            {
                 return *cnstr;
-            }
         }
     }
 
@@ -131,9 +109,7 @@ constructor &type::get_constructor(const std::vector<const type *> &ts) const
 field &type::get_field(const std::string &name) const
 {
     if (fields.find(name) != fields.end())
-    {
         return *fields.at(name);
-    }
 
     // if not here, check any enclosing scope
     try
@@ -178,9 +154,7 @@ method &type::get_method(const std::string &name, const std::vector<const type *
                     }
                 }
                 if (found)
-                {
                     return *mthd;
-                }
             }
         }
     }
@@ -212,9 +186,7 @@ method &type::get_method(const std::string &name, const std::vector<const type *
 predicate &type::get_predicate(const std::string &name) const
 {
     if (predicates.find(name) != predicates.end())
-    {
         return *predicates.at(name);
-    }
 
     // if not here, check any enclosing scope
     try
@@ -243,9 +215,7 @@ predicate &type::get_predicate(const std::string &name) const
 type &type::get_type(const std::string &name) const
 {
     if (types.find(name) != types.end())
-    {
         return *types.at(name);
-    }
 
     // if not here, check any enclosing scope
     try

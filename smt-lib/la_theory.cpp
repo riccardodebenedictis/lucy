@@ -45,21 +45,16 @@ var la_theory::new_leq(const lin &left, const lin &right)
     double c_right = -expr.known_term;
     expr.known_term = 0;
     interval i = bounds(expr);
-    if (i <= c_right)
-    {
-        return TRUE; // the constraint is already satisfied..
-    }
-    else if (i > c_right)
-    {
-        return FALSE; // the constraint is unsatisfable..
-    }
+
+    if (i <= c_right) // the constraint is already satisfied..
+        return TRUE;
+    else if (i > c_right) // the constraint is unsatisfable..
+        return FALSE;
 
     var slack = mk_slack(expr);
     std::string s_assertion = "x" + std::to_string(slack) + " <= " + std::to_string(c_right);
-    if (s_asrts.find(s_assertion) != s_asrts.end())
-    {
-        return s_asrts.at(s_assertion); // this assertion already exists..
-    }
+    if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
+        return s_asrts.at(s_assertion);
     else
     {
         var ctr = sat.new_var();
@@ -91,21 +86,16 @@ var la_theory::new_geq(const lin &left, const lin &right)
     double c_right = -expr.known_term;
     expr.known_term = 0;
     interval i = bounds(expr);
-    if (i >= c_right)
-    {
-        return TRUE; // the constraint is already satisfied..
-    }
-    else if (i < c_right)
-    {
-        return FALSE; // the constraint is unsatisfable..
-    }
+
+    if (i >= c_right) // the constraint is already satisfied..
+        return TRUE;
+    else if (i < c_right) // the constraint is unsatisfable..
+        return FALSE;
 
     var slack = mk_slack(expr);
     std::string s_assertion = "x" + std::to_string(slack) + " >= " + std::to_string(c_right);
-    if (s_asrts.find(s_assertion) != s_asrts.end())
-    {
-        return s_asrts.at(s_assertion); // this assertion already exists..
-    }
+    if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
+        return s_asrts.at(s_assertion);
     else
     {
         var ctr = sat.new_var();
@@ -120,11 +110,8 @@ var la_theory::mk_slack(const lin &l)
 {
     std::string s_expr = l.to_string();
     var slack;
-    if (exprs.find(s_expr) != exprs.end())
-    {
-        // the expression already exists..
+    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         slack = exprs.at(s_expr);
-    }
     else
     {
         // we need to create a new slack variable..
@@ -160,9 +147,7 @@ bool la_theory::check(std::vector<lit> &cnfl)
     {
         auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, row *> &v) { return value(v.first) < lb(v.first) || value(v.first) > ub(v.first); });
         if (x_i_it == tableau.end())
-        {
             return true;
-        }
         // the current value of the x_i variable is out of its bounds..
         var x_i = (*x_i_it).first;
         // the flawed row..
@@ -170,24 +155,17 @@ bool la_theory::check(std::vector<lit> &cnfl)
         if (value(x_i) < lb(x_i))
         {
             auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars.at(v.first) > 0 && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first) < 0 && value(v.first) > lb(v.first)); });
-            if (x_j_it != f_row->l.vars.end())
-            {
-                // var x_j can be used to increase the value of x_i..
+            if (x_j_it != f_row->l.vars.end()) // var x_j can be used to increase the value of x_i..
                 pivot_and_update(x_i, (*x_j_it).first, lb(x_i));
-            }
             else
             {
                 // we generate an explanation for the conflict..
                 for (auto &term : f_row->l.vars)
                 {
                     if (term.second > 0)
-                    {
                         cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(ub(term.first))), false));
-                    }
                     else if (term.second < 0)
-                    {
                         cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(lb(term.first))), false));
-                    }
                 }
                 cnfl.push_back(lit(s_asrts.at("x" + std::to_string(x_i) + " >= " + std::to_string(lb(x_i))), false));
                 return false;
@@ -196,24 +174,17 @@ bool la_theory::check(std::vector<lit> &cnfl)
         else if (value(x_i) > ub(x_i))
         {
             auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars[v.first] < 0 && value(v.first) < ub(v.first)) || (f_row->l.vars[v.first] > 0 && value(v.first) > lb(v.first)); });
-            if (x_j_it != f_row->l.vars.end())
-            {
-                // var x_j can be used to decrease the value of x_i..
+            if (x_j_it != f_row->l.vars.end()) // var x_j can be used to decrease the value of x_i..
                 pivot_and_update(x_i, (*x_j_it).first, ub(x_i));
-            }
             else
             {
                 // we generate an explanation for the conflict..
                 for (auto &term : f_row->l.vars)
                 {
                     if (term.second > 0)
-                    {
                         cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(lb(term.first))), false));
-                    }
                     else if (term.second < 0)
-                    {
                         cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(ub(term.first))), false));
-                    }
                 }
                 cnfl.push_back(lit(s_asrts.at("x" + std::to_string(x_i) + " <= " + std::to_string(ub(x_i))), false));
                 return false;
@@ -222,10 +193,7 @@ bool la_theory::check(std::vector<lit> &cnfl)
     }
 }
 
-void la_theory::push()
-{
-    layers.push_back(std::unordered_map<size_t, bound>());
-}
+void la_theory::push() { layers.push_back(std::unordered_map<size_t, bound>()); }
 
 void la_theory::pop()
 {
@@ -242,9 +210,7 @@ bool la_theory::assert_lower(var x_i, double val, const lit &p, std::vector<lit>
 {
     assert(cnfl.empty());
     if (val <= lb(x_i))
-    {
         return true;
-    }
     else if (val > ub(x_i))
     {
         // either the literal 'p' is false ..
@@ -256,31 +222,20 @@ bool la_theory::assert_lower(var x_i, double val, const lit &p, std::vector<lit>
     else
     {
         if (!layers.empty() && layers.back().find(lb_index(x_i)) == layers.back().end())
-        {
             layers.back().insert({lb_index(x_i), {lb(x_i), assigns[lb_index(x_i)].reason}});
-        }
         assigns[lb_index(x_i)] = {val, new lit(p.v, p.sign)};
+
         if (vals[x_i] < val && tableau.find(x_i) == tableau.end())
-        {
             update(x_i, val);
-        }
 
         // unate propagation..
         for (const auto &c : a_watches[x_i])
-        {
             if (!c->propagate_lb(x_i, cnfl))
-            {
                 return false;
-            }
-        }
         // bound propagation..
         for (const auto &c : t_watches[x_i])
-        {
             if (!c->propagate_lb(x_i, cnfl))
-            {
                 return false;
-            }
-        }
 
         return true;
     }
@@ -290,9 +245,7 @@ bool la_theory::assert_upper(var x_i, double val, const lit &p, std::vector<lit>
 {
     assert(cnfl.empty());
     if (val >= ub(x_i))
-    {
         return true;
-    }
     else if (val < lb(x_i))
     {
         // either the literal 'p' is false ..
@@ -304,31 +257,20 @@ bool la_theory::assert_upper(var x_i, double val, const lit &p, std::vector<lit>
     else
     {
         if (!layers.empty() && layers.back().find(ub_index(x_i)) == layers.back().end())
-        {
             layers.back().insert({ub_index(x_i), {ub(x_i), assigns[ub_index(x_i)].reason}});
-        }
         assigns[ub_index(x_i)] = {val, new lit(p.v, p.sign)};
+
         if (vals[x_i] > val && tableau.find(x_i) == tableau.end())
-        {
             update(x_i, val);
-        }
 
         // unate propagation..
         for (const auto &c : a_watches[x_i])
-        {
             if (!c->propagate_ub(x_i, cnfl))
-            {
                 return false;
-            }
-        }
         // bound propagation..
         for (const auto &c : t_watches[x_i])
-        {
             if (!c->propagate_ub(x_i, cnfl))
-            {
                 return false;
-            }
-        }
 
         return true;
     }
@@ -342,22 +284,14 @@ void la_theory::update(var x_i, double v)
         // x_j = x_j + a_ji(v - x_i)..
         vals[c->x] += c->l.vars[x_i] * (v - vals[x_i]);
         if (listening.find(c->x) != listening.end())
-        {
             for (const auto &l : listening[c->x])
-            {
                 l->la_value_change(c->x);
-            }
-        }
     }
     // x_i = v..
     vals[x_i] = v;
     if (listening.find(x_i) != listening.end())
-    {
         for (const auto &l : listening[x_i])
-        {
             l->la_value_change(x_i);
-        }
-    }
 }
 
 void la_theory::pivot_and_update(var x_i, var x_j, double v)
@@ -370,23 +304,16 @@ void la_theory::pivot_and_update(var x_i, var x_j, double v)
     // x_i = v
     vals[x_i] = v;
     if (listening.find(x_i) != listening.end())
-    {
         for (const auto &l : listening[x_i])
-        {
             l->la_value_change(x_i);
-        }
-    }
+
     // x_j = x_j + theta
     vals[x_j] += theta;
     if (listening.find(x_j) != listening.end())
-    {
         for (const auto &l : listening[x_j])
-        {
             l->la_value_change(x_j);
-        }
-    }
+
     for (const auto &c : t_watches[x_j])
-    {
         if (c->x != x_i)
         {
             // x_k = x_k + a_kj * theta..
@@ -399,7 +326,6 @@ void la_theory::pivot_and_update(var x_i, var x_j, double v)
                 }
             }
         }
-    }
 
     pivot(x_i, x_j);
 }
@@ -411,9 +337,7 @@ void la_theory::pivot(var x_i, var x_j)
     lin expr = std::move(ex_row->l);
     tableau.erase(x_i);
     for (const auto &c : expr.vars)
-    {
         t_watches[c.first].erase(ex_row);
-    }
     delete ex_row;
 
     double c = expr.vars.at(x_j);
@@ -423,40 +347,29 @@ void la_theory::pivot(var x_i, var x_j)
 
     std::vector<row *> rows;
     for (const auto &c : t_watches[x_j])
-    {
         rows.push_back(c);
-    }
     for (const auto &r : rows)
     {
         for (const auto &term : r->l.vars)
-        {
             t_watches[term.first].erase(r);
-        }
         double cc = r->l.vars.at(x_j);
         r->l.vars.erase(x_j);
         r->l += expr * cc;
         for (const auto &term : r->l.vars)
-        {
             t_watches[term.first].insert(r);
-        }
     }
 
     // we add a new row into the tableau..
     tableau.insert({x_j, new row(*this, x_j, expr)});
 }
 
-void la_theory::listen(var v, la_value_listener *const l)
-{
-    listening[v].push_back(l);
-}
+void la_theory::listen(var v, la_value_listener *const l) { listening[v].push_back(l); }
 
 void la_theory::forget(var v, la_value_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())
-    {
         listening.erase(v);
-    }
 }
 
 std::string la_theory::to_string()
@@ -466,36 +379,26 @@ std::string la_theory::to_string()
     for (size_t i = 0; i < assigns.size(); i++)
     {
         if (i)
-        {
             la += ", ";
-        }
         la += "{ \"name\" : \"x" + std::to_string(i) + "\", \"value\" : " + std::to_string(value(i));
         if (lb(i) > -std::numeric_limits<double>::infinity())
-        {
             la += ", \"lb\" : " + std::to_string(lb(i));
-        }
         if (ub(i) < std::numeric_limits<double>::infinity())
-        {
             la += ", \"ub\" : " + std::to_string(ub(i));
-        }
         la += "}";
     }
     la += "], \"asrts\" : [";
     for (std::unordered_map<var, assertion *>::const_iterator it = v_asrts.begin(); it != v_asrts.end(); ++it)
     {
         if (it != v_asrts.begin())
-        {
             la += ", ";
-        }
         la += it->second->to_string();
     }
     la += "], \"tableau\" : [";
     for (std::map<var, row *>::const_iterator it = tableau.begin(); it != tableau.end(); ++it)
     {
         if (it != tableau.begin())
-        {
             la += ", ";
-        }
         la += it->second->to_string();
     }
     la += "]";

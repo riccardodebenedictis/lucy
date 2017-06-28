@@ -23,9 +23,7 @@ sat_core::sat_core()
 sat_core::~sat_core()
 {
     for (const auto &c : constrs)
-    {
         delete c;
-    }
 }
 
 var sat_core::new_var()
@@ -44,24 +42,16 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
 {
     assert(root_level());
     if (std::any_of(lits.begin(), lits.end(), [&](const lit &p) { return value(p) == True; }))
-    {
         return true;
-    }
 
     std::vector<lit> c_lits;
     std::copy_if(lits.begin(), lits.end(), std::back_inserter(c_lits), [&](const lit &p) { return value(p) == Undefined; });
     if (c_lits.empty())
-    {
         return false;
-    }
     else if (c_lits.size() == 1)
-    {
         enqueue(c_lits[0]);
-    }
     else
-    {
         constrs.push_back(new clause(*this, c_lits));
-    }
     return true;
 }
 
@@ -69,19 +59,12 @@ var sat_core::new_eq(const lit &left, const lit &right)
 {
     assert(root_level());
     if (left == right)
-    {
         return TRUE;
-    }
     if (left.v > right.v)
-    {
         return new_eq(right, left);
-    }
     std::string s_expr = (left.sign ? "b" : "!b") + std::to_string(left.v) + " == " + (right.sign ? "b" : "!b") + std::to_string(right.v);
-    if (exprs.find(s_expr) != exprs.end())
-    {
-        // the expression already exists..
+    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
-    }
     else
     {
         // we need to create a new variable..
@@ -105,21 +88,12 @@ var sat_core::new_conj(const std::vector<lit> &ls)
     std::sort(c_lits.begin(), c_lits.end(), [](const lit &l0, const lit &l1) { return l0.v > l1.v; });
     std::string s_expr;
     for (std::vector<lit>::const_iterator it = c_lits.begin(); it != c_lits.end(); ++it)
-    {
         if (it == c_lits.begin())
-        {
             s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
-        }
         else
-        {
             s_expr += (" & " + it->sign ? "b" : "!b") + std::to_string(it->v);
-        }
-    }
-    if (exprs.find(s_expr) != exprs.end())
-    {
-        // the expression already exists..
+    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
-    }
     else
     {
         // we need to create a new variable..
@@ -146,21 +120,12 @@ var sat_core::new_disj(const std::vector<lit> &ls)
     std::sort(c_lits.begin(), c_lits.end(), [](const lit &l0, const lit &l1) { return l0.v > l1.v; });
     std::string s_expr;
     for (std::vector<lit>::const_iterator it = c_lits.begin(); it != c_lits.end(); ++it)
-    {
         if (it == c_lits.begin())
-        {
             s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
-        }
         else
-        {
             s_expr += (" | " + it->sign ? "b" : "!b") + std::to_string(it->v);
-        }
-    }
-    if (exprs.find(s_expr) != exprs.end())
-    {
-        // the expression already exists..
+    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
-    }
     else
     {
         // we need to create a new variable..
@@ -187,21 +152,12 @@ var sat_core::new_exct_one(const std::vector<lit> &ls)
     std::sort(c_lits.begin(), c_lits.end(), [](const lit &l0, const lit &l1) { return l0.v > l1.v; });
     std::string s_expr;
     for (std::vector<lit>::const_iterator it = c_lits.begin(); it != c_lits.end(); ++it)
-    {
         if (it == c_lits.begin())
-        {
             s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
-        }
         else
-        {
             s_expr += (" ^ " + it->sign ? "b" : "!b") + std::to_string(it->v);
-        }
-    }
-    if (exprs.find(s_expr) != exprs.end())
-    {
-        // the expression already exists..
+    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
-    }
     else
     {
         // we need to create a new variable..
@@ -229,23 +185,18 @@ bool sat_core::assume(const lit &p)
 {
     trail_lim.push_back(trail.size());
     for (const auto &th : theories)
-    {
         th->push();
-    }
     return enqueue(p);
 }
 
 void sat_core::pop()
 {
     while (trail_lim.back() < trail.size())
-    {
         pop_one();
-    }
     trail_lim.pop_back();
+
     for (const auto &th : theories)
-    {
         th->pop();
-    }
 }
 
 bool sat_core::check()
@@ -256,9 +207,7 @@ bool sat_core::check()
         if (!propagate(cnfl))
         {
             if (root_level())
-            {
                 return false;
-            }
             // we sort literals according to descending order of variable assignment..
             std::sort(cnfl.begin(), cnfl.end(), [&](lit &a, lit &b) { return level[a.v] > level[b.v]; });
             std::vector<lit> no_good;
@@ -266,17 +215,13 @@ bool sat_core::check()
             // we analyze the conflict..
             analyze(cnfl, no_good, bt_level);
             while (decision_level() > bt_level)
-            {
                 pop();
-            }
             // we record the no-good..
             record(no_good);
             cnfl.clear();
         }
         else
-        {
             return true;
-        }
     }
 }
 
@@ -290,16 +235,12 @@ bool sat_core::check(const std::vector<lit> &lits)
         if (!assume(p) || !propagate(cnfl))
         {
             while (decision_level() > c_level)
-            {
                 pop();
-            }
             return false;
         }
     }
     while (decision_level() > c_level)
-    {
         pop();
-    }
     return true;
 }
 
@@ -315,14 +256,10 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
             {
                 // constraint is conflicting..
                 for (size_t j = i + 1; j < tmp.size(); j++)
-                {
                     watches[index(prop_q.front())].push_back(tmp[j]);
-                }
                 assert(std::count_if(tmp[i]->lits.begin(), tmp[i]->lits.end(), [&](const lit &p) { return std::find(watches[index(!p)].begin(), watches[index(!p)].end(), tmp[i]) != watches[index(!p)].end(); }) == 2);
                 while (!prop_q.empty())
-                {
                     prop_q.pop();
-                }
                 cnfl.insert(cnfl.begin(), tmp[i]->lits.begin(), tmp[i]->lits.end());
                 return false;
             }
@@ -336,9 +273,7 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
             {
                 assert(!cnfl.empty());
                 while (!prop_q.empty())
-                {
                     prop_q.pop();
-                }
                 return false;
             }
         }
@@ -376,9 +311,7 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
             {
                 seen.insert(q.v);
                 if (level[q.v] == decision_level())
-                {
                     counter++;
-                }
                 else if (level[q.v] > 0) // exclude variables from decision level 0..
                 {
                     out_learnt.push_back(q);
@@ -437,12 +370,8 @@ bool sat_core::enqueue(const lit &p, clause *const c)
         trail.push_back(p);
         prop_q.push(p);
         if (listening.find(p.v) != listening.end())
-        {
             for (const auto &l : listening[p.v])
-            {
                 l->sat_value_change(p.v);
-            }
-        }
         return true;
     default:
         std::unexpected();
@@ -455,19 +384,12 @@ void sat_core::pop_one()
     reason[trail.back().v] = nullptr;
     level[trail.back().v] = 0;
     if (listening.find(trail.back().v) != listening.end())
-    {
         for (const auto &l : listening[trail.back().v])
-        {
             l->sat_value_change(trail.back().v);
-        }
-    }
     trail.pop_back();
 }
 
-void sat_core::add_theory(theory &th)
-{
-    theories.push_back(&th);
-}
+void sat_core::add_theory(theory &th) { theories.push_back(&th); }
 
 void sat_core::remove_theory(theory &th)
 {
@@ -476,39 +398,27 @@ void sat_core::remove_theory(theory &th)
     {
         theories.erase(it);
         for (const auto &lo : th.listening_on)
-        {
             unbind(lo, th);
-        }
         th.listening_on.clear();
     }
 }
 
-void sat_core::bind(var v, theory &th)
-{
-    bounds[v].push_back(&th);
-}
+void sat_core::bind(var v, theory &th) { bounds[v].push_back(&th); }
 
 void sat_core::unbind(var v, theory &th)
 {
     const auto &it = std::find(bounds[v].begin(), bounds[v].end(), &th);
     if (it != bounds[v].end())
-    {
         bounds[v].erase(it);
-    }
 }
 
-void sat_core::listen(var v, sat_value_listener *const l)
-{
-    listening[v].push_back(l);
-}
+void sat_core::listen(var v, sat_value_listener *const l) { listening[v].push_back(l); }
 
 void sat_core::forget(var v, sat_value_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())
-    {
         listening.erase(v);
-    }
 }
 
 std::string sat_core::to_string()
@@ -519,9 +429,7 @@ std::string sat_core::to_string()
     for (size_t i = 0; i < assigns.size(); i++)
     {
         if (!i)
-        {
             s += ", ";
-        }
         s += "{ \"name\" : \"b" + std::to_string(i) + "\", \"value\" : ";
         switch (value(i))
         {
@@ -536,9 +444,7 @@ std::string sat_core::to_string()
             break;
         }
         if (level[i] > 0)
-        {
             s += ", \"level\" : " + std::to_string(level[i]);
-        }
         s += "}";
     }
     s += "]";
@@ -547,9 +453,7 @@ std::string sat_core::to_string()
     for (std::vector<clause *>::const_iterator it = constrs.begin(); it != constrs.end(); ++it)
     {
         if (it != constrs.begin())
-        {
             s += ", ";
-        }
         s += (*it)->to_string();
     }
     s += "]";

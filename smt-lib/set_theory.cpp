@@ -17,9 +17,7 @@ var set_theory::new_var(const std::unordered_set<set_item *> &items)
     var id = assigns.size();
     assigns.push_back(std::unordered_map<set_item *, var>());
     if (items.size() == 1)
-    {
         assigns.back().insert({*items.begin(), TRUE});
-    }
     else
     {
         std::vector<lit> lits;
@@ -41,44 +39,30 @@ var set_theory::new_var(const std::unordered_set<set_item *> &items)
 var set_theory::allows(const var &left, set_item &right) const
 {
     if (assigns[left].find(&right) != assigns[left].end())
-    {
         return assigns[left].at(&right);
-    }
     else
-    {
         return FALSE;
-    }
 }
 
 var set_theory::eq(const var &left, const var &right)
 {
     if (left == right)
-    {
         return TRUE;
-    }
+
     if (left > right)
-    {
         return eq(right, left);
-    }
+
     std::unordered_set<set_item *> intersection;
     for (const auto &v : assigns[left])
-    {
         if (assigns[right].find(v.first) != assigns[right].end())
-        {
             intersection.insert(v.first);
-        }
-    }
 
     if (intersection.empty())
-    {
         return FALSE;
-    }
+
     std::string s_expr = "e" + std::to_string(left) + " == " + "e" + std::to_string(right);
-    if (exprs.find(s_expr) != exprs.end())
-    {
-        // the expression already exists..
+    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
-    }
     else
     {
         // we need to create a new variable..
@@ -118,12 +102,8 @@ std::unordered_set<set_item *> set_theory::value(var v) const
 {
     std::unordered_set<set_item *> vals;
     for (const auto &val : assigns[v])
-    {
         if (sat.value(val.second) != False)
-        {
             vals.insert(val.first);
-        }
-    }
     return vals;
 }
 
@@ -132,12 +112,8 @@ bool set_theory::propagate(const lit &p, std::vector<lit> &cnfl)
     assert(cnfl.empty());
     var set_var = is_contained_in[p.v];
     if (listening.find(set_var) != listening.end())
-    {
         for (const auto &l : listening[set_var])
-        {
             l->set_value_change(set_var);
-        }
-    }
     return true;
 }
 
@@ -147,37 +123,23 @@ bool set_theory::check(std::vector<lit> &cnfl)
     return true;
 }
 
-void set_theory::push()
-{
-    layers.push_back(layer());
-}
+void set_theory::push() { layers.push_back(layer()); }
 
 void set_theory::pop()
 {
     for (const auto &v : layers.back().vars)
-    {
         if (listening.find(v) != listening.end())
-        {
             for (const auto &l : listening[v])
-            {
                 l->set_value_change(v);
-            }
-        }
-    }
     layers.pop_back();
 }
 
-void set_theory::listen(var v, set_value_listener *const l)
-{
-    listening[v].push_back(l);
-}
+void set_theory::listen(var v, set_value_listener *const l) { listening[v].push_back(l); }
 
 void set_theory::forget(var v, set_value_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())
-    {
         listening.erase(v);
-    }
 }
 }

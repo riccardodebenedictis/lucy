@@ -9,18 +9,13 @@ enum_type::enum_type(core &cr, scope &scp, std::string name) : type(cr, scp, nam
 
 enum_type::~enum_type() {}
 
-expr enum_type::new_instance(context &ctx)
-{
-    return cr.new_enum(*this, get_all_instances());
-}
+expr enum_type::new_instance(context &ctx) { return cr.new_enum(*this, get_all_instances()); }
 
 std::unordered_set<item *> enum_type::get_all_instances() const
 {
     std::unordered_set<item *> c_instances;
     for (const auto &i : instances)
-    {
         c_instances.insert(&*i);
-    }
 
     for (const auto &es : enums)
     {

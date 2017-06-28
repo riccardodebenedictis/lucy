@@ -93,30 +93,17 @@ bool core::read(const std::vector<std::string> &files)
 
     context ctx(this);
     for (const auto &cu : c_cus)
-    {
         cu->declare(*this);
-    }
     for (const auto &cu : c_cus)
-    {
         cu->refine(*this);
-    }
     for (const auto &cu : c_cus)
-    {
         cu->execute(*this, ctx);
-    }
 
     return sat.check();
 }
 
-bool_expr core::new_bool()
-{
-    return new bool_item(*this, lit(sat.new_var(), true));
-}
-
-bool_expr core::new_bool(const bool &val)
-{
-    return new bool_item(*this, lit(val, true));
-}
+bool_expr core::new_bool() { return new bool_item(*this, lit(sat.new_var(), true)); }
+bool_expr core::new_bool(const bool &val) { return new bool_item(*this, lit(val, true)); }
 
 arith_expr core::new_int()
 {
@@ -130,25 +117,11 @@ arith_expr core::new_int(const long &val)
     return new arith_item(*this, *types.at(INT_KEYWORD), lin(val));
 }
 
-arith_expr core::new_real()
-{
-    return new arith_item(*this, *types.at(REAL_KEYWORD), lin(la_th.new_var(), 1));
-}
+arith_expr core::new_real() { return new arith_item(*this, *types.at(REAL_KEYWORD), lin(la_th.new_var(), 1)); }
+arith_expr core::new_real(const double &val) { return new arith_item(*this, *types.at(REAL_KEYWORD), lin(val)); }
 
-arith_expr core::new_real(const double &val)
-{
-    return new arith_item(*this, *types.at(REAL_KEYWORD), lin(val));
-}
-
-string_expr core::new_string()
-{
-    return new string_item(*this, "");
-}
-
-string_expr core::new_string(const std::string &val)
-{
-    return new string_item(*this, val);
-}
+string_expr core::new_string() { return new string_item(*this, ""); }
+string_expr core::new_string(const std::string &val) { return new string_item(*this, val); }
 
 expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_vals)
 {
@@ -202,23 +175,14 @@ expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_val
     }
 }
 
-bool_expr core::negate(bool_expr var)
-{
-    return new bool_item(*this, !var->l);
-}
-
-bool_expr core::eq(bool_expr left, bool_expr right)
-{
-    return new bool_item(*this, lit(sat.new_eq(left->l, right->l), true));
-}
+bool_expr core::negate(bool_expr var) { return new bool_item(*this, !var->l); }
+bool_expr core::eq(bool_expr left, bool_expr right) { return new bool_item(*this, lit(sat.new_eq(left->l, right->l), true)); }
 
 bool_expr core::conj(const std::vector<bool_expr> &exprs)
 {
     std::vector<lit> lits;
     for (const auto &bex : exprs)
-    {
         lits.push_back(bex->l);
-    }
     return new bool_item(*this, lit(sat.new_conj(lits), true));
 }
 
@@ -226,9 +190,7 @@ bool_expr core::disj(const std::vector<bool_expr> &exprs)
 {
     std::vector<lit> lits;
     for (const auto &bex : exprs)
-    {
         lits.push_back(bex->l);
-    }
     return new bool_item(*this, lit(sat.new_disj(lits), true));
 }
 
@@ -236,44 +198,36 @@ bool_expr core::exct_one(const std::vector<bool_expr> &exprs)
 {
     std::vector<lit> lits;
     for (const auto &bex : exprs)
-    {
         lits.push_back(bex->l);
-    }
     return new bool_item(*this, lit(sat.new_exct_one(lits), true));
 }
 
 arith_expr core::add(const std::vector<arith_expr> &exprs)
 {
-    assert(exprs.size() > 2);
+    assert(exprs.size() > 1);
     lin l;
     for (const auto &aex : exprs)
-    {
         l += aex->l;
-    }
     return new arith_item(*this, *types.at(REAL_KEYWORD), l);
 }
 
 arith_expr core::sub(const std::vector<arith_expr> &exprs)
 {
-    assert(exprs.size() > 2);
+    assert(exprs.size() > 1);
     lin l;
     for (std::vector<arith_expr>::const_iterator it = exprs.begin(); it != exprs.end(); ++it)
     {
         if (it == exprs.begin())
-        {
             l += (*it)->l;
-        }
         else
-        {
             l -= (*it)->l;
-        }
     }
     return new arith_item(*this, *types.at(REAL_KEYWORD), l);
 }
 
 arith_expr core::mult(const std::vector<arith_expr> &exprs)
 {
-    assert(exprs.size() > 2);
+    assert(exprs.size() > 1);
     arith_expr ae = *std::find_if(exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); });
     lin l = ae->l;
     for (const auto &aex : exprs)
@@ -289,20 +243,15 @@ arith_expr core::mult(const std::vector<arith_expr> &exprs)
 
 arith_expr core::div(const std::vector<arith_expr> &exprs)
 {
-    assert(exprs.size() > 2);
+    assert(exprs.size() > 1);
     assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); }) && "non-linear expression..");
     double c = la_th.value(exprs[1]->l);
     for (size_t i = 2; i < exprs.size(); i++)
-    {
         c *= la_th.value(exprs[i]->l);
-    }
     return new arith_item(*this, *types.at(REAL_KEYWORD), exprs[0]->l / c);
 }
 
-arith_expr core::minus(arith_expr ex)
-{
-    return new arith_item(*this, *types.at(REAL_KEYWORD), -ex->l);
-}
+arith_expr core::minus(arith_expr ex) { return new arith_item(*this, *types.at(REAL_KEYWORD), -ex->l); }
 
 bool_expr core::lt(arith_expr left, arith_expr right)
 {
@@ -310,20 +259,9 @@ bool_expr core::lt(arith_expr left, arith_expr right)
     return new bool_item(*this, lit(la_th.new_leq(left->l, right->l), true));
 }
 
-bool_expr core::leq(arith_expr left, arith_expr right)
-{
-    return new bool_item(*this, lit(la_th.new_leq(left->l, right->l), true));
-}
-
-bool_expr core::eq(arith_expr left, arith_expr right)
-{
-    return new bool_item(*this, lit(sat.new_conj({lit(la_th.new_leq(left->l, right->l), true), lit(la_th.new_geq(left->l, right->l), true)}), true));
-}
-
-bool_expr core::geq(arith_expr left, arith_expr right)
-{
-    return new bool_item(*this, lit(la_th.new_geq(left->l, right->l), true));
-}
+bool_expr core::leq(arith_expr left, arith_expr right) { return new bool_item(*this, lit(la_th.new_leq(left->l, right->l), true)); }
+bool_expr core::eq(arith_expr left, arith_expr right) { return new bool_item(*this, lit(sat.new_conj({lit(la_th.new_leq(left->l, right->l), true), lit(la_th.new_geq(left->l, right->l), true)}), true)); }
+bool_expr core::geq(arith_expr left, arith_expr right) { return new bool_item(*this, lit(la_th.new_geq(left->l, right->l), true)); }
 
 bool_expr core::gt(arith_expr left, arith_expr right)
 {
@@ -331,26 +269,19 @@ bool_expr core::gt(arith_expr left, arith_expr right)
     return new bool_item(*this, lit(la_th.new_geq(left->l, right->l), true));
 }
 
-bool_expr core::eq(expr left, expr right)
-{
-    return new bool_item(*this, lit(left->eq(*right), true));
-}
+bool_expr core::eq(expr left, expr right) { return new bool_item(*this, lit(left->eq(*right), true)); }
 
 void core::assert_facts(const std::vector<lit> &facts)
 {
     for (const auto &f : facts)
-    {
         if (!sat.new_clause({lit(ctr_var, false), f}))
             throw unsolvable_exception();
-    }
 }
 
 field &core::get_field(const std::string &name) const
 {
     if (fields.find(name) != fields.end())
-    {
         return *fields.at(name);
-    }
 
     // not found
     throw std::out_of_range(name);
@@ -375,9 +306,7 @@ method &core::get_method(const std::string &name, const std::vector<const type *
                     }
                 }
                 if (found)
-                {
                     return *mthd;
-                }
             }
         }
     }
@@ -389,9 +318,7 @@ method &core::get_method(const std::string &name, const std::vector<const type *
 predicate &core::get_predicate(const std::string &name) const
 {
     if (predicates.find(name) != predicates.end())
-    {
         return *predicates.at(name);
-    }
 
     // not found
     throw std::out_of_range(name);
@@ -400,9 +327,7 @@ predicate &core::get_predicate(const std::string &name) const
 type &core::get_type(const std::string &name) const
 {
     if (types.find(name) != types.end())
-    {
         return *types.at(name);
-    }
 
     // not found
     throw std::out_of_range(name);
@@ -411,9 +336,7 @@ type &core::get_type(const std::string &name) const
 expr core::get(const std::string &name) const
 {
     if (items.find(name) != items.end())
-    {
         return items.at(name);
-    }
 
     throw std::out_of_range(name);
 }
@@ -436,9 +359,7 @@ void core::new_fact(atom &atm)
         {
             q.front()->new_fact(atm);
             for (const auto &st : q.front()->get_supertypes())
-            {
                 q.push(st);
-            }
             q.pop();
         }
     }
@@ -454,9 +375,7 @@ void core::new_goal(atom &atm)
         {
             q.front()->new_goal(atm);
             for (const auto &st : q.front()->get_supertypes())
-            {
                 q.push(st);
-            }
             q.pop();
         }
     }
@@ -468,9 +387,7 @@ std::string core::to_string(std::unordered_map<std::string, expr> items)
     for (std::unordered_map<std::string, expr>::iterator is_it = items.begin(); is_it != items.end(); ++is_it)
     {
         if (is_it != items.begin())
-        {
             iss += ", ";
-        }
         iss += "{ \"name\" : \"" + is_it->first + "\", \"type\" : \"" + is_it->second->tp.name + "\", \"value\" : ";
         if (bool_item *bi = dynamic_cast<bool_item *>(&*is_it->second))
         {
@@ -495,13 +412,9 @@ std::string core::to_string(std::unordered_map<std::string, expr> items)
             interval bnds = la_th.bounds(ai->l);
             iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : " + std::to_string(la_th.value(ai->l));
             if (bnds.lb > -std::numeric_limits<double>::infinity())
-            {
                 iss += ", \"lb\" : " + std::to_string(bnds.lb);
-            }
             if (bnds.ub < std::numeric_limits<double>::infinity())
-            {
                 iss += ", \"ub\" : " + std::to_string(bnds.ub);
-            }
             iss += " }";
         }
         else if (enum_item *ei = dynamic_cast<enum_item *>(&*is_it->second))
@@ -511,9 +424,7 @@ std::string core::to_string(std::unordered_map<std::string, expr> items)
             for (std::unordered_set<set_item *>::iterator vals_it = vals.begin(); vals_it != vals.end(); ++vals_it)
             {
                 if (vals_it != vals.begin())
-                {
                     iss += ", ";
-                }
                 iss += "\"" + std::to_string(reinterpret_cast<uintptr_t>(static_cast<item *>(*vals_it))) + "\"";
             }
             iss += " ] }";
@@ -533,9 +444,7 @@ std::string core::to_string(item *i)
     is += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(i)) + "\", \"type\" : \"" + i->tp.name + "\"";
     std::unordered_map<std::string, expr> c_is = i->get_items();
     if (!c_is.empty())
-    {
         is += ", \"items\" : [ " + to_string(c_is) + " ]";
-    }
     is += "}";
     return is;
 }
@@ -548,28 +457,18 @@ std::string core::to_string(atom *a)
     for (std::unordered_set<set_item *>::iterator vals_it = state_vals.begin(); vals_it != state_vals.end(); ++vals_it)
     {
         if (vals_it != state_vals.begin())
-        {
             as += ", ";
-        }
         if (*vals_it == active)
-        {
             as += "\"Active\"";
-        }
         else if (*vals_it == inactive)
-        {
             as += "\"Inactive\"";
-        }
         else if (*vals_it == unified)
-        {
             as += "\"Unified\"";
-        }
     }
     as += "]";
     std::unordered_map<std::string, expr> is = a->get_items();
     if (!is.empty())
-    {
         as += ", \"pars\" : [ " + to_string(is) + " ]";
-    }
     as += "}";
     return as;
 }
@@ -579,33 +478,19 @@ std::string core::to_string()
     std::set<item *> all_items;
     std::set<atom *> all_atoms;
     for (const auto &p : get_predicates())
-    {
         for (const auto &a : p.second->get_instances())
-        {
             all_atoms.insert(static_cast<atom *>(&*a));
-        }
-    }
     std::queue<type *> q;
     for (const auto &t : get_types())
-    {
         if (!t.second->primitive)
-        {
             q.push(t.second);
-        }
-    }
     while (!q.empty())
     {
         for (const auto &i : q.front()->get_instances())
-        {
             all_items.insert(&*i);
-        }
         for (const auto &p : q.front()->get_predicates())
-        {
             for (const auto &a : p.second->get_instances())
-            {
                 all_atoms.insert(static_cast<atom *>(&*a));
-            }
-        }
         q.pop();
     }
 
@@ -617,9 +502,7 @@ std::string core::to_string()
         for (std::set<item *>::iterator is_it = all_items.begin(); is_it != all_items.end(); ++is_it)
         {
             if (is_it != all_items.begin())
-            {
                 cr += ", ";
-            }
             cr += to_string(*is_it);
         }
         cr += "]";
@@ -627,24 +510,18 @@ std::string core::to_string()
     if (!all_atoms.empty())
     {
         if (!all_items.empty())
-        {
             cr += ", ";
-        }
         cr += "\"atoms\" : [";
         for (std::set<atom *>::iterator as_it = all_atoms.begin(); as_it != all_atoms.end(); ++as_it)
         {
             if (as_it != all_atoms.begin())
-            {
                 cr += ", ";
-            }
             cr += to_string(*as_it);
         }
         cr += "]";
     }
     if (!all_items.empty() || !all_atoms.empty())
-    {
         cr += ", ";
-    }
     cr += "\"refs\" : [" + to_string(get_items()) + "] }";
     return cr;
 }

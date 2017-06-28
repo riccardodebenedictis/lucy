@@ -12,8 +12,6 @@ void conjunction::apply(context &ctx) const
 {
     context c_ctx(new env(cr, ctx));
     for (const auto &s : statements)
-    {
         s->execute(*this, c_ctx);
-    }
 }
 }
