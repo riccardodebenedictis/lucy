@@ -6,7 +6,11 @@ cg_java_listener::cg_java_listener(cg::causal_graph &graph) : causal_graph_liste
 {
     JavaVMInitArgs vm_args;
     JavaVMOption *options = new JavaVMOption[1];
-    options[0].optionString = (char *)"-Djava.class.path=./lucy_gui.jar";
+#ifdef _WIN32
+    options[0].optionString = (char *)"-Djava.class.path=./lucy_gui.jar;./prefuse.jar";
+#else
+    options[0].optionString = (char *)"-Djava.class.path=./lucy_gui.jar:./prefuse.jar";
+#endif
     vm_args.version = JNI_VERSION_1_8;
     vm_args.nOptions = 1;
     vm_args.options = options;
