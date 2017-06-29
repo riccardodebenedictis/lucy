@@ -23,13 +23,17 @@
             "includePath": [
                 "${workspaceRoot}",
                 "/usr/include",
-                "/usr/local/include"
+                "/usr/local/include",
+                "/usr/lib/jvm/java-8-openjdk-amd64/include",
+                "/usr/lib/jvm/java-8-openjdk-amd64/include/linux"
             ],
             "defines": [],
             "browse": {
                 "path": [
                     "/usr/include",
-                    "/usr/local/include"
+                    "/usr/local/include",
+                    "/usr/lib/jvm/java-8-openjdk-amd64/include",
+                    "/usr/lib/jvm/java-8-openjdk-amd64/include/linux"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
