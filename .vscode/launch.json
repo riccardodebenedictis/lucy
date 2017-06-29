@@ -20,6 +20,11 @@
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Skip SIGSEGV",
+                    "text": "handle SIGSEGV nostop noprint pass",
+                    "ignoreFailures": true
                 }
             ]
         },

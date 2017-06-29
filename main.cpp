@@ -1,5 +1,7 @@
 #include "causal_graph.h"
-#include "causal_graph_listener.h"
+#ifndef NDEBUG
+#include "cg_java_listener.h"
+#endif
 #include <iostream>
 #include <fstream>
 
@@ -16,7 +18,7 @@ int main(int argc, char *argv[], char *envp[])
     cg::causal_graph g;
 
 #ifndef NDEBUG
-    cg::causal_graph_listener gl(g);
+    gui::cg_java_listener gl(g);
 #endif
 
     std::vector<std::string> file_names;

@@ -1,9 +1,6 @@
 #pragma once
 
 #include "sat_value_listener.h"
-#ifndef NDEBUG
-#include <jni.h>
-#endif
 
 using namespace smt;
 
@@ -77,10 +74,6 @@ protected:
   causal_graph &graph;
 
 private:
-#ifndef NDEBUG
-  JavaVM *jvm; // denotes a Java VM..
-  JNIEnv *env; // pointer to native method interface..
-#endif
   std::unordered_map<const flaw *, flaw_listener *> flaw_listeners;
   std::unordered_map<const resolver *, resolver_listener *> resolver_listeners;
 };

@@ -14,18 +14,6 @@ causal_graph_listener::causal_graph_listener(causal_graph &graph) : graph(graph)
 {
     graph.listeners.push_back(this);
     WRITE(GRAPH_FILE, to_string());
-#ifndef NDEBUG
-    std::cout << "creating a Java VM.." << std::endl;
-    JavaVMInitArgs vm_args;
-    JavaVMOption *options = new JavaVMOption[1];
-    options[0].optionString = (char *)"-Djava.class.path=.";
-    vm_args.version = JNI_VERSION_1_6;
-    vm_args.nOptions = 1;
-    vm_args.options = options;
-    vm_args.ignoreUnrecognized = false;
-    // remember to -exec handle SIGSEGV nostop noprint pass
-    JNI_CreateJavaVM(&jvm, (void **)&env, &vm_args);
-#endif
 }
 
 causal_graph_listener::~causal_graph_listener() { graph.listeners.erase(std::find(graph.listeners.begin(), graph.listeners.end(), this)); }

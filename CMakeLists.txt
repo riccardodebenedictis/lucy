@@ -5,16 +5,23 @@ project ( lucy VERSION 0.1 LANGUAGES CXX )
 find_package( Java )
 find_package( JNI )
 
-file( GLOB SOURCES main.cpp "smt-lib/*.cpp" "core-lib/*.cpp" "cg-lib/*.cpp" )
+if( Java_FOUND )
+  include( UseJava )
+  file( GLOB GUI_SOURCES "gui/*.java" )
+  add_jar( lucy_gui ${GUI_SOURCES} )
+
+  file( GLOB SOURCES main.cpp "smt-lib/*.cpp" "core-lib/*.cpp" "cg-lib/*.cpp" "gui/*.cpp" )
+  include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib ${CMAKE_SOURCE_DIR}/gui ${JNI_INCLUDE_DIRS} )
+else()
+  file( GLOB SOURCES main.cpp "smt-lib/*.cpp" "core-lib/*.cpp" "cg-lib/*.cpp" )
+  include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
+endif()
 
 configure_file(cg-lib/init.rddl ${CMAKE_BINARY_DIR}/init.rddl COPYONLY)
 
 add_executable( lucy ${SOURCES} )
 
-include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
-
 if( Java_FOUND )
-  include_directories( ${JNI_INCLUDE_DIRS} )
   target_link_libraries( lucy ${JNI_LIBRARIES} )
 endif()
 
