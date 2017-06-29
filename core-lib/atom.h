@@ -7,7 +7,7 @@ namespace lucy
 
 class predicate;
 
-class DLL_PUBLIC atom : public item
+class atom : public item
 {
 public:
   atom(core &cr, const context ctx, const predicate &pred);

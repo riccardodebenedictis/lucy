@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include <vector>
 #include <string>
 
@@ -15,7 +14,7 @@ namespace ast
 
 class expression;
 
-class DLL_PUBLIC statement
+class statement
 {
 public:
   statement();
@@ -25,8 +24,7 @@ public:
   virtual void execute(const scope &scp, context &ctx) const = 0;
 };
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC assignment_statement : public statement
+class assignment_statement : public statement
 {
 public:
   assignment_statement(const std::vector<std::string> &is, const std::string &i, const expression *const e);
@@ -41,7 +39,7 @@ private:
   const expression *const xpr;
 };
 
-class DLL_PUBLIC local_field_statement : public statement
+class local_field_statement : public statement
 {
 public:
   local_field_statement(const std::vector<std::string> &ft, const std::string &n, const expression *const e = nullptr);
@@ -56,7 +54,7 @@ private:
   const expression *const xpr;
 };
 
-class DLL_PUBLIC expression_statement : public statement
+class expression_statement : public statement
 {
 public:
   expression_statement(const expression *const e);
@@ -69,7 +67,7 @@ private:
   const expression *const xpr;
 };
 
-class DLL_PUBLIC block_statement : public statement
+class block_statement : public statement
 {
 public:
   block_statement(const std::vector<const statement *> &stmnts);
@@ -82,7 +80,7 @@ private:
   const std::vector<const statement *> statements;
 };
 
-class DLL_PUBLIC disjunction_statement : public statement
+class disjunction_statement : public statement
 {
 public:
   disjunction_statement(const std::vector<std::pair<std::vector<const statement *>, const expression *const>> &conjs);
@@ -95,7 +93,7 @@ private:
   const std::vector<std::pair<std::vector<const statement *>, const expression *const>> conjunctions;
 };
 
-class DLL_PUBLIC formula_statement : public statement
+class formula_statement : public statement
 {
 public:
   formula_statement(const bool &isf, const std::string &fn, const std::vector<std::string> &scp, const std::string &pn, const std::vector<std::pair<std::string, const expression *>> &assns);
@@ -112,7 +110,7 @@ private:
   const std::vector<std::pair<std::string, const expression *>> assignments;
 };
 
-class DLL_PUBLIC return_statement : public statement
+class return_statement : public statement
 {
 public:
   return_statement(const expression *const e);

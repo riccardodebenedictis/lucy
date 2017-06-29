@@ -1,6 +1,9 @@
 #pragma once
 
 #include "sat_value_listener.h"
+#ifndef NDEBUG
+#include <jni.h>
+#endif
 
 using namespace smt;
 
@@ -11,7 +14,7 @@ class causal_graph;
 class flaw;
 class resolver;
 
-class DLL_PUBLIC causal_graph_listener
+class causal_graph_listener
 {
   friend class causal_graph;
 

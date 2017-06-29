@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "lit.h"
 #include <vector>
 #include <set>
@@ -10,8 +9,7 @@ namespace smt
 
 class sat_core;
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC theory
+class theory
 {
   friend class sat_core;
 

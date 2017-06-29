@@ -5,7 +5,7 @@
 namespace smt
 {
 
-class DLL_PUBLIC sat_value_listener
+class sat_value_listener
 {
     friend class sat_core;
 

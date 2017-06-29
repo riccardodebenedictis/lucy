@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include <unordered_map>
 #include <vector>
 
@@ -23,8 +22,7 @@ namespace ast
 class field_declaration;
 }
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC scope
+class scope
 {
 	friend class ast::field_declaration;
 

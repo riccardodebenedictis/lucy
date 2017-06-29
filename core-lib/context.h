@@ -1,7 +1,5 @@
 #pragma once
 
-#include "visibility.h"
-
 namespace lucy
 {
 
@@ -18,7 +16,7 @@ class arith_expr;
 class string_expr;
 class enum_expr;
 
-class DLL_PUBLIC context
+class context
 {
 public:
   context(env *const ptr);
@@ -42,7 +40,7 @@ protected:
   env *const ptr;
 };
 
-class DLL_PUBLIC expr : public context
+class expr : public context
 {
 public:
   expr(item *const ptr);
@@ -54,7 +52,7 @@ public:
   operator expr() const;
 };
 
-class DLL_PUBLIC bool_expr : public expr
+class bool_expr : public expr
 {
 public:
   bool_expr(bool_item *const ptr);
@@ -66,7 +64,7 @@ public:
   operator bool_expr() const;
 };
 
-class DLL_PUBLIC arith_expr : public expr
+class arith_expr : public expr
 {
 public:
   arith_expr(arith_item *const ptr);
@@ -78,7 +76,7 @@ public:
   operator arith_expr() const;
 };
 
-class DLL_PUBLIC string_expr : public expr
+class string_expr : public expr
 {
 public:
   string_expr(string_item *const ptr);
@@ -90,7 +88,7 @@ public:
   operator string_expr() const;
 };
 
-class DLL_PUBLIC enum_expr : public expr
+class enum_expr : public expr
 {
 public:
   enum_expr(enum_item *const ptr);

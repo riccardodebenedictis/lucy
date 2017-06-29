@@ -10,7 +10,7 @@ namespace lucy
 class context;
 class item;
 
-class DLL_PUBLIC constructor : public scope
+class constructor : public scope
 {
   friend class type;
 

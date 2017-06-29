@@ -12,7 +12,7 @@ namespace lucy
 
 class type;
 
-class DLL_PUBLIC item : public env, public set_item
+class item : public env, public set_item
 {
 public:
 	item(core &cr, const context ctx, const type &tp);
@@ -26,7 +26,7 @@ public:
 	const type &tp;
 };
 
-class DLL_PUBLIC bool_item : public item
+class bool_item : public item
 {
 public:
 	bool_item(core &cr, const lit &l);
@@ -40,7 +40,7 @@ public:
 	lit l;
 };
 
-class DLL_PUBLIC arith_item : public item
+class arith_item : public item
 {
 public:
 	arith_item(core &cr, const type &t, const lin &l);
@@ -54,7 +54,7 @@ public:
 	const lin l;
 };
 
-class DLL_PUBLIC string_item : public item
+class string_item : public item
 {
 public:
 	string_item(core &cr, const std::string &l);
@@ -70,7 +70,7 @@ private:
 	std::string l;
 };
 
-class DLL_PUBLIC enum_item : public item
+class enum_item : public item
 {
 public:
 	enum_item(core &cr, const type &t, var ev);

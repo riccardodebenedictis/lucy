@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "lit.h"
 #include <vector>
 #include <queue>
@@ -24,8 +23,7 @@ enum lbool
     Undefined
 };
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC sat_core
+class sat_core
 {
     friend class clause;
     friend class theory;

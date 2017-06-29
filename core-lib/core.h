@@ -43,7 +43,7 @@ class unsolvable_exception : public std::exception
   virtual const char *what() const throw() { return "the problem is unsolvable.."; }
 };
 
-class DLL_PUBLIC core : public scope, public env
+class core : public scope, public env
 {
   friend class type;
   friend class ast::typedef_declaration;
@@ -168,7 +168,7 @@ protected:
   std::unordered_map<std::string, predicate *> predicates;
 };
 
-class DLL_PUBLIC atom_state : public set_item
+class atom_state : public set_item
 {
   friend class core;
 

@@ -15,7 +15,7 @@ class statement;
 
 class context;
 
-class DLL_PUBLIC conjunction : public scope
+class conjunction : public scope
 {
 public:
   conjunction(core &cr, scope &scp, const lin &cst, const std::vector<const ast::statement *> &stmnts);
@@ -31,7 +31,7 @@ private:
   const std::vector<const ast::statement *> statements;
 };
 
-class DLL_PUBLIC disjunction : public scope
+class disjunction : public scope
 {
 public:
   disjunction(core &cr, scope &scp, const std::vector<const conjunction *> &conjs);

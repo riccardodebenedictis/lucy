@@ -13,7 +13,7 @@ class causal_graph_listener;
 
 class resolver;
 
-class DLL_PUBLIC causal_graph : public core, public theory
+class causal_graph : public core, public theory
 {
   friend class flaw;
   friend class atom_flaw;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "context.h"
 #include <unordered_map>
 #include <string>
@@ -18,8 +17,7 @@ class formula_statement;
 class return_statement;
 }
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC env
+class env
 {
   friend class context;
   friend class scope;

@@ -11,7 +11,7 @@ namespace ast
 class predicate_declaration;
 }
 
-class DLL_PUBLIC predicate : public type
+class predicate : public type
 {
   friend class ast::predicate_declaration;
 

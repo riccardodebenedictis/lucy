@@ -1,26 +1,24 @@
 cmake_minimum_required(VERSION 3.7)
 
+project ( lucy VERSION 0.1 LANGUAGES CXX )
+
 find_package( Java )
 find_package( JNI )
 
-project ( lucy VERSION 0.1 LANGUAGES CXX )
+file( GLOB SOURCES main.cpp "smt-lib/*.cpp" "core-lib/*.cpp" "cg-lib/*.cpp" )
 
-enable_testing()
+configure_file(cg-lib/init.rddl ${CMAKE_BINARY_DIR}/init.rddl COPYONLY)
 
-add_subdirectory( smt-lib )
-add_subdirectory( core-lib )
-add_subdirectory( cg-lib )
-
-add_executable( lucy main.cpp )
+add_executable( lucy ${SOURCES} )
 
 include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
-target_link_libraries( lucy cg-lib core-lib smt-lib )
 
 if( Java_FOUND )
   include_directories( ${JNI_INCLUDE_DIRS} )
   target_link_libraries( lucy ${JNI_LIBRARIES} )
 endif()
 
+enable_testing()
 add_test( NAME TestCG COMMAND lucy WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestCG0 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/example_0.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestCG1 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/example_1.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
@@ -32,9 +30,3 @@ add_test( NAME TestRR1 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/test_rr_1.rddl
 add_test( NAME TestBlocks2 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_2.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestBlocks3 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_3.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestBlocks4 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_4.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
-
-if( WIN32 )
-  set( PATH_STRING "$ENV{PATH};${CMAKE_BINARY_DIR}/smt-lib;${CMAKE_BINARY_DIR}/core-lib;${CMAKE_BINARY_DIR}/cg-lib" )
-  string( REPLACE ";" "\\;" PATH_STRING "${PATH_STRING}" )
-  set_tests_properties( TestCG TestCG0 TestCG1 TestSV0 TestSV1 TestSV2 TestRR0 TestRR1 TestBlocks2 TestBlocks3 TestBlocks4 PROPERTIES ENVIRONMENT "PATH=${PATH_STRING}" )
-endif()

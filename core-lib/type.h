@@ -23,8 +23,7 @@ class method_declaration;
 class predicate_declaration;
 }
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC type : public scope
+class type : public scope
 {
   friend class core;
   friend class ast::typedef_declaration;
@@ -94,7 +93,7 @@ protected:
   std::vector<expr> instances;
 };
 
-class DLL_PUBLIC bool_type : public type
+class bool_type : public type
 {
 public:
   bool_type(core &cr);
@@ -104,7 +103,7 @@ public:
   expr new_instance(context &ctx) override;
 };
 
-class DLL_PUBLIC int_type : public type
+class int_type : public type
 {
 public:
   int_type(core &cr);
@@ -114,7 +113,7 @@ public:
   expr new_instance(context &ctx) override;
 };
 
-class DLL_PUBLIC real_type : public type
+class real_type : public type
 {
 public:
   real_type(core &cr);
@@ -124,7 +123,7 @@ public:
   expr new_instance(context &ctx) override;
 };
 
-class DLL_PUBLIC string_type : public type
+class string_type : public type
 {
 public:
   string_type(core &cr);

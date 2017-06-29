@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include <string>
 
 namespace smt
@@ -8,7 +7,7 @@ namespace smt
 
 typedef size_t var;
 
-class DLL_PUBLIC lit
+class lit
 {
 public:
   lit(var v, bool sign);

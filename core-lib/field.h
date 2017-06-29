@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "expression.h"
 #include <string>
 
@@ -11,8 +10,7 @@ class type;
 class context;
 class expr;
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC field
+class field
 {
 public:
   field(const type &tp, const std::string &name, const ast::expression *const e = nullptr, bool synthetic = false);

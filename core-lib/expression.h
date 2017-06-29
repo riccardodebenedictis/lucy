@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include <vector>
 #include <string>
 
@@ -14,7 +13,7 @@ class expr;
 namespace ast
 {
 
-class DLL_PUBLIC expression
+class expression
 {
 public:
   expression();
@@ -24,8 +23,7 @@ public:
   virtual expr evaluate(const scope &scp, context &ctx) const = 0;
 };
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC cast_expression : public expression
+class cast_expression : public expression
 {
 public:
   cast_expression(const std::vector<std::string> &tp, const expression *const e);
@@ -39,7 +37,7 @@ private:
   const expression *const xpr;
 };
 
-class DLL_PUBLIC constructor_expression : public expression
+class constructor_expression : public expression
 {
 public:
   constructor_expression(const std::vector<std::string> &it, const std::vector<expression *> &es);
@@ -53,7 +51,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC id_expression : public expression
+class id_expression : public expression
 {
 public:
   id_expression(const std::vector<std::string> &is);
@@ -66,7 +64,7 @@ private:
   const std::vector<std::string> ids;
 };
 
-class DLL_PUBLIC function_expression : public expression
+class function_expression : public expression
 {
 public:
   function_expression(const std::vector<std::string> &is, const std::string &fn, const std::vector<expression *> &es);
@@ -81,7 +79,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC string_literal_expression : public expression
+class string_literal_expression : public expression
 {
 public:
   string_literal_expression(const std::string &l);
@@ -94,7 +92,7 @@ private:
   const std::string literal;
 };
 
-class DLL_PUBLIC int_literal_expression : public expression
+class int_literal_expression : public expression
 {
 public:
   int_literal_expression(const long &l);
@@ -107,7 +105,7 @@ private:
   const long literal;
 };
 
-class DLL_PUBLIC real_literal_expression : public expression
+class real_literal_expression : public expression
 {
 public:
   real_literal_expression(const double &l);
@@ -120,7 +118,7 @@ private:
   const double literal;
 };
 
-class DLL_PUBLIC plus_expression : public expression
+class plus_expression : public expression
 {
 public:
   plus_expression(const expression *const e);
@@ -133,7 +131,7 @@ private:
   const expression *const xpr;
 };
 
-class DLL_PUBLIC minus_expression : public expression
+class minus_expression : public expression
 {
 public:
   minus_expression(const expression *const e);
@@ -146,7 +144,7 @@ private:
   const expression *const xpr;
 };
 
-class DLL_PUBLIC range_expression : public expression
+class range_expression : public expression
 {
 public:
   range_expression(const expression *const min_e, const expression *const max_e);
@@ -160,7 +158,7 @@ private:
   const expression *const max_xpr;
 };
 
-class DLL_PUBLIC addition_expression : public expression
+class addition_expression : public expression
 {
 public:
   addition_expression(const std::vector<expression *> &es);
@@ -173,7 +171,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC subtraction_expression : public expression
+class subtraction_expression : public expression
 {
 public:
   subtraction_expression(const std::vector<expression *> &es);
@@ -186,7 +184,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC multiplication_expression : public expression
+class multiplication_expression : public expression
 {
 public:
   multiplication_expression(const std::vector<expression *> &es);
@@ -199,7 +197,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC division_expression : public expression
+class division_expression : public expression
 {
 public:
   division_expression(const std::vector<expression *> &es);
@@ -212,7 +210,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC bool_literal_expression : public expression
+class bool_literal_expression : public expression
 {
 public:
   bool_literal_expression(const bool &l);
@@ -225,7 +223,7 @@ private:
   const bool literal;
 };
 
-class DLL_PUBLIC eq_expression : public expression
+class eq_expression : public expression
 {
 public:
   eq_expression(const expression *const l, const expression *const r);
@@ -239,7 +237,7 @@ private:
   const expression *const right;
 };
 
-class DLL_PUBLIC neq_expression : public expression
+class neq_expression : public expression
 {
 public:
   neq_expression(const expression *const l, const expression *const r);
@@ -253,7 +251,7 @@ private:
   const expression *const right;
 };
 
-class DLL_PUBLIC lt_expression : public expression
+class lt_expression : public expression
 {
 public:
   lt_expression(const expression *const l, const expression *const r);
@@ -267,7 +265,7 @@ private:
   const expression *const right;
 };
 
-class DLL_PUBLIC leq_expression : public expression
+class leq_expression : public expression
 {
 public:
   leq_expression(const expression *const l, const expression *const r);
@@ -281,7 +279,7 @@ private:
   const expression *const right;
 };
 
-class DLL_PUBLIC geq_expression : public expression
+class geq_expression : public expression
 {
 public:
   geq_expression(const expression *const l, const expression *const r);
@@ -295,7 +293,7 @@ private:
   const expression *const right;
 };
 
-class DLL_PUBLIC gt_expression : public expression
+class gt_expression : public expression
 {
 public:
   gt_expression(const expression *const l, const expression *const r);
@@ -309,7 +307,7 @@ private:
   const expression *const right;
 };
 
-class DLL_PUBLIC implication_expression : public expression
+class implication_expression : public expression
 {
 public:
   implication_expression(const expression *const l, const expression *const r);
@@ -323,7 +321,7 @@ private:
   const expression *const right;
 };
 
-class DLL_PUBLIC disjunction_expression : public expression
+class disjunction_expression : public expression
 {
 public:
   disjunction_expression(const std::vector<expression *> &es);
@@ -336,7 +334,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC conjunction_expression : public expression
+class conjunction_expression : public expression
 {
 public:
   conjunction_expression(const std::vector<expression *> &es);
@@ -349,7 +347,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC exct_one_expression : public expression
+class exct_one_expression : public expression
 {
 public:
   exct_one_expression(const std::vector<expression *> &es);
@@ -362,7 +360,7 @@ private:
   const std::vector<expression *> expressions;
 };
 
-class DLL_PUBLIC not_expression : public expression
+class not_expression : public expression
 {
 public:
   not_expression(const expression *const e);
