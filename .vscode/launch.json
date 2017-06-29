@@ -37,7 +37,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "%PATH%;${workspaceRoot}/build/smt-lib;${workspaceRoot}/build/core-lib;${workspaceRoot}/build/cg-lib"
+                    "value": "%PATH%;C:/Program Files/Java/jdk1.8.0_131/lib"
                 }
             ],
             "externalConsole": true,
