@@ -63,6 +63,7 @@ token *lexer::next()
                 case '\n':
                     end_line++;
                     end_pos = 0;
+                    return next();
                 case EOF:
                     return mk_token(symbol::EOF_Symbol);
                 }
