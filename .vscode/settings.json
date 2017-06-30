@@ -73,6 +73,8 @@
         "cctype": "cpp",
         "clocale": "cpp",
         "cwctype": "cpp",
-        "cmakeccompilerid.c": "cpp"
+        "cmakeccompilerid.c": "cpp",
+        "atomic": "cpp",
+        "future": "cpp"
     }
 }
