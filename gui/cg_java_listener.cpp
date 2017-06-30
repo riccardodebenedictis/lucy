@@ -19,7 +19,6 @@ cg_java_listener::cg_java_listener(cg::causal_graph &graph) : causal_graph_liste
     jclass cls = env->FindClass("CausalGraph");
     jmethodID cstr = env->GetMethodID(cls, "<init>", "()V");
     cg_object = env->NewObject(cls, cstr);
-    env->CallVoidMethod(cg_object, env->GetMethodID(cls, "init", "()V"));
     f_created = env->GetMethodID(cls, "flaw_created", "(J)V");
     f_state_changed = env->GetMethodID(cls, "flaw_state_changed", "(J)V");
     f_cost_changed = env->GetMethodID(cls, "flaw_cost_changed", "(J)V");
@@ -27,15 +26,9 @@ cg_java_listener::cg_java_listener(cg::causal_graph &graph) : causal_graph_liste
 
 cg_java_listener::~cg_java_listener() { jvm->DestroyJavaVM(); }
 
-void cg_java_listener::attach() { jvm->AttachCurrentThread((void **)&env, NULL); }
-void cg_java_listener::detach() { jvm->DetachCurrentThread(); }
-
-void cg_java_listener::flaw_created(const cg::flaw &f)
-{
-    env->CallVoidMethod(cg_object, f_created, reinterpret_cast<jlong>(&f));
-}
-void cg_java_listener::flaw_state_changed(const cg::flaw &f) {}
-void cg_java_listener::flaw_cost_changed(const cg::flaw &f) {}
+void cg_java_listener::flaw_created(const cg::flaw &f) { env->CallVoidMethod(cg_object, f_created, reinterpret_cast<jlong>(&f)); }
+void cg_java_listener::flaw_state_changed(const cg::flaw &f) { env->CallVoidMethod(cg_object, f_state_changed, reinterpret_cast<jlong>(&f)); }
+void cg_java_listener::flaw_cost_changed(const cg::flaw &f) { env->CallVoidMethod(cg_object, f_cost_changed, reinterpret_cast<jlong>(&f)); }
 void cg_java_listener::current_flaw(const cg::flaw &f) {}
 
 void cg_java_listener::resolver_created(const cg::resolver &r) {}

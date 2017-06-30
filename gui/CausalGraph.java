@@ -12,11 +12,8 @@ public class CausalGraph extends Display {
     CausalGraph() {
         // initialize display and data
         super(new Visualization());
-    }
-
-    public void init() {
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     JFrame frame = new JFrame();
@@ -33,10 +30,10 @@ public class CausalGraph extends Display {
     }
 
     public void flaw_state_changed(final long f_id) {
-        System.out.println("a new flaw has been created..");
+        System.out.println("a flaw state has changed..");
     }
 
     public void flaw_cost_changed(final long f_id) {
-        System.out.println("a new flaw has been created..");
+        System.out.println("a flaw cost has changed..");
     }
 }

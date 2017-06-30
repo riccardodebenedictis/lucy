@@ -13,9 +13,6 @@ public:
   cg_java_listener(const cg_java_listener &orig) = delete;
   virtual ~cg_java_listener();
 
-  void attach();
-  void detach();
-
 private:
   void flaw_created(const cg::flaw &f) override;
   void flaw_state_changed(const cg::flaw &f) override;
