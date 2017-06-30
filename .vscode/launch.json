@@ -22,6 +22,15 @@
                     "ignoreFailures": true
                 },
                 {
+                    "text": "set target-async 1"
+                },
+                {
+                    "text": "set pagination off"
+                },
+                {
+                    "text": "set non-stop on"
+                },
+                {
                     "description": "Skip SIGSEGV",
                     "text": "handle SIGSEGV nostop noprint pass",
                     "ignoreFailures": true
