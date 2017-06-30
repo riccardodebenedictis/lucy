@@ -27,6 +27,9 @@ cg_java_listener::cg_java_listener(cg::causal_graph &graph) : causal_graph_liste
 
 cg_java_listener::~cg_java_listener() { jvm->DestroyJavaVM(); }
 
+void cg_java_listener::attach() { jvm->AttachCurrentThread((void **)&env, NULL); }
+void cg_java_listener::detach() { jvm->DetachCurrentThread(); }
+
 void cg_java_listener::flaw_created(const cg::flaw &f)
 {
     env->CallVoidMethod(cg_object, f_created, reinterpret_cast<jlong>(&f));

@@ -8,20 +8,15 @@
 
 using namespace smt;
 
-bool parse_problem(cg::causal_graph &g, const std::vector<std::string> &prob_names)
+bool solve_problem(cg::causal_graph &g, const std::vector<std::string> &prob_names)
 {
     std::cout << "parsing input files.." << std::endl;
-    if (g.read(prob_names))
-        return true;
-    else
+    if (!g.read(prob_names))
     {
         std::cout << "the input problem is inconsistent.." << std::endl;
         return false;
     }
-}
 
-bool solve_problem(cg::causal_graph &g)
-{
     std::cout << "solving the problem.." << std::endl;
     if (g.solve())
     {
@@ -33,6 +28,16 @@ bool solve_problem(cg::causal_graph &g)
         return false;
     }
 }
+
+#ifndef NDEBUG
+bool solve_problem_with_gui(cg::causal_graph &g, gui::cg_java_listener &gl, const std::vector<std::string> &prob_names)
+{
+    gl.attach();
+    bool slv = solve_problem(g, prob_names);
+    gl.detach();
+    return slv;
+}
+#endif
 
 int main(int argc, char *argv[], char *envp[])
 {
@@ -52,20 +57,7 @@ int main(int argc, char *argv[], char *envp[])
 
 #ifndef NDEBUG
     gui::cg_java_listener gl(g);
-#endif
-
-#ifndef NDEBUG
-    std::future<bool> prs_ftr = std::async(std::launch::async, parse_problem, std::ref(g), std::ref(prob_names));
-    bool prs = prs_ftr.get();
-#else
-    bool prs = parse_problem(prob_names);
-#endif
-
-    if (!prs) // the input problem is inconsistent..
-        return 1;
-
-#ifndef NDEBUG
-    std::future<bool> slv_ftr = std::async(std::launch::async, solve_problem, std::ref(g));
+    std::future<bool> slv_ftr = std::async(std::launch::async, solve_problem_with_gui, std::ref(g), std::ref(gl), std::ref(prob_names));
     bool slv = slv_ftr.get();
 #else
     bool slv = solve_problem();
