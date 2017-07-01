@@ -29,8 +29,13 @@ private:
   JavaVM *jvm;               // denotes a Java VM..
   JNIEnv *env;               // pointer to native method interface..
   jobject cg_object;         // the Java object..
-  jmethodID f_created;       // a new flaw method..
-  jmethodID f_state_changed; // flaw state changed method..
-  jmethodID f_cost_changed;  // a flaw cost changed method..
+  jmethodID f_created;       // the new flaw method..
+  jmethodID f_state_changed; // the flaw state changed method..
+  jmethodID f_cost_changed;  // the flaw cost changed method..
+  jmethodID c_flaw;          // the current flow changed method..
+  jmethodID r_created;       // the new resolver method..
+  jmethodID r_state_changed; // the resolver state changed method..
+  jmethodID c_resolver;      // the current resolver changed method..
+  jmethodID c_link_added;    // the causal link added method..
 };
 }
