@@ -26,7 +26,7 @@ cg_java_listener::cg_java_listener(cg::causal_graph &graph) : causal_graph_liste
     f_state_changed = env->GetMethodID(cls, "flaw_state_changed", "(JI)V");
     f_cost_changed = env->GetMethodID(cls, "flaw_cost_changed", "(JD)V");
     c_flaw = env->GetMethodID(cls, "current_flaw", "(J)V");
-    r_created = env->GetMethodID(cls, "resolver_created", "(JJLjava/lang/String;DI)V");
+    r_created = env->GetMethodID(cls, "resolver_created", "(JJLjava/lang/String;I)V");
     r_state_changed = env->GetMethodID(cls, "resolver_state_changed", "(JI)V");
     c_resolver = env->GetMethodID(cls, "current_resolver", "(J)V");
     c_link_added = env->GetMethodID(cls, "causal_link_added", "(JJ)V");
