@@ -18,8 +18,8 @@ static const var TRUE = 1;
 
 enum lbool
 {
-    True,
     False,
+    True,
     Undefined
 };
 
