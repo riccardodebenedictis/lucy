@@ -1,6 +1,9 @@
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -62,6 +65,8 @@ public class CausalGraph extends Display {
     private final VisualGraph vg;
     private final Map<Long, Node> flaws = new HashMap<>();
     private final Map<Long, Node> resolvers = new HashMap<>();
+    private final Map<Long, Collection<Long>> causes = new HashMap<>();
+    private final Map<Long, Collection<Long>> preconditions = new HashMap<>();
 
     CausalGraph() {
         // initialize display and data
@@ -144,6 +149,59 @@ public class CausalGraph extends Display {
         addControlListener(new DragControl());
         addControlListener(new ZoomToFitControl());
         addControlListener(new WheelZoomControl());
+        addControlListener(new ControlAdapter() {
+            @Override
+            public void itemEntered(VisualItem vi, MouseEvent me) {
+                Display d = (Display) me.getSource();
+                if (vi.getSourceTuple() instanceof Node) {
+                    Node nodeData = (Node) vi.getSourceTuple();
+                    String t_text = "";
+                    switch ((String) nodeData.get(NODE_TYPE)) {
+                    case "flaw":
+                        t_text += "in-plan";
+                        break;
+                    case "resolver":
+                        t_text += "chosen";
+                        break;
+                    }
+                    t_text += ": ";
+                    switch ((int) nodeData.get(NODE_STATE)) {
+                    case 0:
+                        t_text += "False";
+                        break;
+                    case 1:
+                        t_text += "True";
+                        break;
+                    case 2:
+                        t_text += "Undefined";
+                        break;
+                    default:
+                        break;
+                    }
+                    t_text += ", cost: " + (-(Double) nodeData.get(NODE_COST));
+                    d.setToolTipText(t_text);
+                }
+            }
+
+            @Override
+            public void itemExited(VisualItem vi, MouseEvent me) {
+                Display d = (Display) me.getSource();
+                d.setToolTipText(null);
+            }
+
+            @Override
+            public void itemClicked(VisualItem vi, MouseEvent me) {
+                if (vi.getSourceTuple() instanceof Node) {
+                    Node nodeData = (Node) vi.getSourceTuple();
+                    switch ((String) nodeData.get(NODE_TYPE)) {
+                    case "flaw":
+                        break;
+                    case "resolver":
+                        break;
+                    }
+                }
+            }
+        });
 
         // set things running
         m_vis.run("layout");
@@ -170,6 +228,7 @@ public class CausalGraph extends Display {
             assert !flaws.containsKey(f_id) : "the flaw already exists..";
             assert Arrays.stream(cause).allMatch(c -> resolvers.containsKey(c)) : "the flaw's cause does not exist: "
                     + Arrays.toString(cause) + resolvers;
+            causes.put(f_id, new ArrayList<>());
             Node flaw_node = g.addNode();
             flaw_node.set(VisualItem.LABEL, label);
             flaw_node.set(NODE_TYPE, "flaw");
@@ -177,7 +236,11 @@ public class CausalGraph extends Display {
             flaw_node.set(NODE_STATE, state);
             flaws.put(f_id, flaw_node);
             for (long c : cause) {
+                causes.get(f_id).add(c);
+                preconditions.get(c).add(f_id);
                 g.addEdge(flaw_node, resolvers.get(c));
+                resolvers.get(c).set(NODE_COST, preconditions.get(c).stream()
+                        .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).max().getAsDouble());
             }
         }
     }
@@ -195,6 +258,10 @@ public class CausalGraph extends Display {
             assert flaws.containsKey(f_id) : "the flaw does not exist..";
             Node flaw_node = flaws.get(f_id);
             flaw_node.set(NODE_COST, -cost);
+            for (long c : causes.get(f_id)) {
+                resolvers.get(c).set(NODE_COST, preconditions.get(c).stream()
+                        .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).max().getAsDouble());
+            }
         }
     }
 
@@ -206,10 +273,11 @@ public class CausalGraph extends Display {
         synchronized (m_vis) {
             assert !resolvers.containsKey(r_id) : "the resolver already exists..";
             assert flaws.containsKey(f_id) : "the resolver's solved flaw does not exist..";
+            preconditions.put(r_id, new ArrayList<>());
             Node resolver_node = g.addNode();
             resolver_node.set(VisualItem.LABEL, label);
             resolver_node.set(NODE_TYPE, "resolver");
-            resolver_node.set(NODE_COST, Double.NEGATIVE_INFINITY);
+            resolver_node.set(NODE_COST, -0d);
             resolver_node.set(NODE_STATE, state);
             resolvers.put(r_id, resolver_node);
             g.addEdge(resolver_node, flaws.get(f_id));
@@ -233,6 +301,8 @@ public class CausalGraph extends Display {
             assert flaws.containsKey(f_id) : "the flaw does not exist..";
             assert resolvers.containsKey(r_id) : "the resolver does not exist..";
             g.addEdge(flaws.get(f_id), resolvers.get(r_id));
+            resolvers.get(r_id).set(NODE_COST, preconditions.get(r_id).stream()
+                    .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).max().getAsDouble());
         }
     }
 
