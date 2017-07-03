@@ -254,7 +254,7 @@ public class CausalGraph extends Display {
                 Edge c_edge = g.addEdge(flaw_node, resolvers.get(c));
                 c_edge.set(EDGE_STATE, resolvers.get(c).get(NODE_STATE));
                 resolvers.get(c).set(NODE_COST, preconditions.get(c).stream()
-                        .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).max().getAsDouble());
+                        .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).min().getAsDouble());
             }
         }
     }
@@ -274,7 +274,7 @@ public class CausalGraph extends Display {
             flaw_node.set(NODE_COST, -cost);
             for (long c : causes.get(f_id)) {
                 resolvers.get(c).set(NODE_COST, preconditions.get(c).stream()
-                        .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).max().getAsDouble());
+                        .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).min().getAsDouble());
             }
         }
     }
@@ -356,7 +356,7 @@ public class CausalGraph extends Display {
             causes.get(f_id).add(r_id);
             preconditions.get(r_id).add(f_id);
             resolvers.get(r_id).set(NODE_COST, preconditions.get(r_id).stream()
-                    .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).max().getAsDouble());
+                    .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).min().getAsDouble());
         }
     }
 
