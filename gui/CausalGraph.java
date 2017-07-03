@@ -1,10 +1,9 @@
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
-
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -169,7 +168,8 @@ public class CausalGraph extends Display {
             final int state) {
         synchronized (m_vis) {
             assert !flaws.containsKey(f_id) : "the flaw already exists..";
-            assert Stream.of(cause).allMatch(c -> resolvers.containsKey(c)) : "the flaw's cause does not exist..";
+            assert Arrays.stream(cause).allMatch(c -> resolvers.containsKey(c)) : "the flaw's cause does not exist: "
+                    + Arrays.toString(cause) + resolvers;
             Node flaw_node = g.addNode();
             flaw_node.set(VisualItem.LABEL, label);
             flaw_node.set(NODE_TYPE, "flaw");
