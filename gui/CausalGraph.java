@@ -30,6 +30,7 @@ import prefuse.controls.DragControl;
 import prefuse.controls.PanControl;
 import prefuse.controls.WheelZoomControl;
 import prefuse.controls.ZoomToFitControl;
+import prefuse.data.Edge;
 import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.data.Schema;
@@ -55,6 +56,7 @@ public class CausalGraph extends Display {
     private static final String NODE_TYPE = "node_type";
     private static final String NODE_COST = "node_cost";
     private static final String NODE_STATE = "node_state";
+    private static final String EDGE_STATE = "edge_state";
     private static final String EDGE_DECORATORS = "edgeDeco";
     private static final String NODE_DECORATORS = "nodeDeco";
     private static final Schema DECORATOR_SCHEMA = PrefuseLib.getVisualItemSchema();
@@ -81,6 +83,7 @@ public class CausalGraph extends Display {
         g.getNodeTable().addColumn(NODE_COST, Double.class);
         g.getNodeTable().addColumn(NODE_STATE, Integer.class);
         g.getEdgeTable().addColumn(VisualItem.LABEL, String.class);
+        g.getEdgeTable().addColumn(EDGE_STATE, Integer.class);
 
         // add visual data groups
         vg = m_vis.addGraph(GRAPH, g);
@@ -124,8 +127,13 @@ public class CausalGraph extends Display {
         nStroke.add(NODE_STATE + " == " + 1, StrokeLib.getStroke(0.5f));
         nStroke.add(NODE_STATE + " == " + 2, StrokeLib.getStroke(1, StrokeLib.DASHES));
 
-        ColorAction eStroke = new ColorAction(EDGES, VisualItem.STROKECOLOR);
-        eStroke.setDefaultColor(ColorLib.gray(100));
+        ColorAction eStrokeColor = new ColorAction(EDGES, VisualItem.STROKECOLOR);
+        eStrokeColor.setDefaultColor(ColorLib.gray(100));
+
+        StrokeAction eStroke = new StrokeAction(EDGES, StrokeLib.getStroke(5));
+        eStroke.add(EDGE_STATE + " == " + 0, StrokeLib.getStroke(0.1f, StrokeLib.DOTS));
+        eStroke.add(EDGE_STATE + " == " + 1, StrokeLib.getStroke(0.5f));
+        eStroke.add(EDGE_STATE + " == " + 2, StrokeLib.getStroke(1, StrokeLib.DASHES));
 
         ColorAction eFill = new ColorAction(EDGES, VisualItem.FILLCOLOR);
         eFill.setDefaultColor(ColorLib.gray(100));
@@ -134,9 +142,10 @@ public class CausalGraph extends Display {
         ActionList colors = new ActionList();
         colors.add(nFill);
         colors.add(nStrokeColor);
+        colors.add(nStroke);
+        colors.add(eStrokeColor);
         colors.add(eStroke);
         colors.add(eFill);
-        colors.add(nStroke);
 
         // now create the main layout routine
         ActionList layout = new ActionList(Activity.INFINITY);
@@ -242,7 +251,8 @@ public class CausalGraph extends Display {
             for (long c : cause) {
                 causes.get(f_id).add(c);
                 preconditions.get(c).add(f_id);
-                g.addEdge(flaw_node, resolvers.get(c));
+                Edge c_edge = g.addEdge(flaw_node, resolvers.get(c));
+                c_edge.set(EDGE_STATE, resolvers.get(c).get(NODE_STATE));
                 resolvers.get(c).set(NODE_COST, preconditions.get(c).stream()
                         .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).max().getAsDouble());
             }
@@ -300,7 +310,8 @@ public class CausalGraph extends Display {
             resolver_node.set(NODE_COST, -0d);
             resolver_node.set(NODE_STATE, state);
             resolvers.put(r_id, resolver_node);
-            g.addEdge(resolver_node, flaws.get(f_id));
+            Edge c_edge = g.addEdge(resolver_node, flaws.get(f_id));
+            c_edge.set(EDGE_STATE, state);
         }
     }
 
@@ -309,6 +320,10 @@ public class CausalGraph extends Display {
             assert resolvers.containsKey(r_id) : "the resolver does not exist..";
             Node resolver_node = resolvers.get(r_id);
             resolver_node.set(NODE_STATE, state);
+            Iterator<Edge> c_edges = resolver_node.edges();
+            while (c_edges.hasNext()) {
+                c_edges.next().set(EDGE_STATE, state);
+            }
         }
     }
 
@@ -336,7 +351,10 @@ public class CausalGraph extends Display {
         synchronized (m_vis) {
             assert flaws.containsKey(f_id) : "the flaw does not exist..";
             assert resolvers.containsKey(r_id) : "the resolver does not exist..";
-            g.addEdge(flaws.get(f_id), resolvers.get(r_id));
+            Edge c_edge = g.addEdge(flaws.get(f_id), resolvers.get(r_id));
+            c_edge.set(EDGE_STATE, resolvers.get(r_id).get(NODE_STATE));
+            causes.get(f_id).add(r_id);
+            preconditions.get(r_id).add(f_id);
             resolvers.get(r_id).set(NODE_COST, preconditions.get(r_id).stream()
                     .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).max().getAsDouble());
         }
