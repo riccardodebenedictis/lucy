@@ -7,6 +7,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -67,6 +70,7 @@ public class CausalGraph extends Display {
     private final Map<Long, Node> resolvers = new HashMap<>();
     private final Map<Long, Collection<Long>> causes = new HashMap<>();
     private final Map<Long, Collection<Long>> preconditions = new HashMap<>();
+    private static final Executor EXECUTOR = Executors.newCachedThreadPool();
 
     CausalGraph() {
         // initialize display and data
@@ -266,7 +270,23 @@ public class CausalGraph extends Display {
     }
 
     public void current_flaw(final long f_id) {
-        System.out.println("a flaw cost has changed..");
+        EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (m_vis) {
+                    assert flaws.containsKey(f_id) : "the flaw does not exist..";
+                    if (!m_vis.getVisualItem(NODES, flaws.get(f_id)).isHighlighted())
+                        m_vis.getVisualItem(NODES, flaws.get(f_id)).setHighlighted(true);
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(10);
+                } catch (Exception e) {
+                }
+                synchronized (m_vis) {
+                    m_vis.getVisualItem(NODES, flaws.get(f_id)).setHighlighted(false);
+                }
+            }
+        });
     }
 
     public void resolver_created(final long r_id, final long f_id, final String label, final int state) {
@@ -293,7 +313,23 @@ public class CausalGraph extends Display {
     }
 
     public void current_resolver(final long r_id) {
-        System.out.println("a resolver cost has changed..");
+        EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (m_vis) {
+                    assert resolvers.containsKey(r_id) : "the resolver does not exist..";
+                    if (!m_vis.getVisualItem(NODES, resolvers.get(r_id)).isHighlighted())
+                        m_vis.getVisualItem(NODES, resolvers.get(r_id)).setHighlighted(true);
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(10);
+                } catch (Exception e) {
+                }
+                synchronized (m_vis) {
+                    m_vis.getVisualItem(NODES, resolvers.get(r_id)).setHighlighted(false);
+                }
+            }
+        });
     }
 
     public void causal_link_added(final long f_id, final long r_id) {

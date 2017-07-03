@@ -9,6 +9,9 @@
 #include "propositional_state.h"
 #include "propositional_agent.h"
 #include <algorithm>
+#ifndef NDEBUG
+#include <iostream>
+#endif
 #include <cassert>
 
 namespace cg
@@ -79,6 +82,9 @@ main_loop:
         // we build the planning graph..
         try
         {
+#ifndef NDEBUG
+            std::cout << "building the planning graph.." << std::endl;
+#endif
             build();
         }
         catch (const unsolvable_exception &)
@@ -86,6 +92,10 @@ main_loop:
             return false;
         }
     }
+
+#ifndef NDEBUG
+    std::cout << "searching.." << std::endl;
+#endif
 
     // we create a new graph var..
     graph_var = core::sat.new_var();
@@ -100,6 +110,9 @@ main_loop:
         assert(f_next->cost < std::numeric_limits<double>::infinity());
         if (f_next->has_subgoals())
         {
+#ifndef NDEBUG
+            std::cout << "checking for inconsistencies.." << std::endl;
+#endif
             // we run out of inconsistencies, thus, we renew them..
             if (has_inconsistencies())
             {
@@ -138,6 +151,9 @@ main_loop:
                 // we have exhausted the search within the graph: we extend the graph..
                 try
                 {
+#ifndef NDEBUG
+                    std::cout << "adding a layer the planning graph.." << std::endl;
+#endif
                     add_layer();
                 }
                 catch (const unsolvable_exception &)
