@@ -14,8 +14,9 @@ cg_java_listener::cg_java_listener(cg::causal_graph &graph) : causal_graph_liste
 #else
     options[0].optionString = (char *)"-Djava.class.path=./lucy_gui.jar:./prefuse.jar";
 #endif
+    options[1].optionString = (char *)"-ea";
     vm_args.version = JNI_VERSION_1_8;
-    vm_args.nOptions = 1;
+    vm_args.nOptions = 2;
     vm_args.options = options;
     vm_args.ignoreUnrecognized = false;
     JNI_CreateJavaVM(&jvm, (void **)&env, &vm_args);

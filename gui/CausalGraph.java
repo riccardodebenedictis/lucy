@@ -153,10 +153,11 @@ public class CausalGraph extends Display {
                 @Override
                 public void run() {
                     JFrame frame = new JFrame("Causal graph");
-                    frame.setSize(new Dimension(600, 400));
-                    frame.pack();
-                    frame.setVisible(true);
+                    frame.setSize(new Dimension(640, 480));
+                    frame.setLocationRelativeTo(null);
+                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     frame.add(CausalGraph.this);
+                    frame.setVisible(true);
                 }
             });
         } catch (Exception e) {
