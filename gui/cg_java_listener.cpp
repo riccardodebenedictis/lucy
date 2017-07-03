@@ -41,7 +41,7 @@ void cg_java_listener::flaw_created(const cg::flaw &f)
     jlong *cause = env->GetLongArrayElements(causes_array, NULL);
     for (size_t i = 0; i < causes.size(); i++)
         cause[i] = reinterpret_cast<jlong>(causes[i]);
-    env->ReleaseLongArrayElements(causes_array, cause, NULL);
+    env->ReleaseLongArrayElements(causes_array, cause, 0);
 
     env->CallVoidMethod(cg_object, f_created, reinterpret_cast<jlong>(&f), causes_array, f.get_label(), f.get_cost(), graph.core::sat.value(f.get_in_plan()));
 }
