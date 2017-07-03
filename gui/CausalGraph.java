@@ -4,6 +4,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -166,8 +167,9 @@ public class CausalGraph extends Display {
 
     public void flaw_created(final long f_id, final long[] cause, final String label, final double cost,
             final int state) {
-        assert !flaws.containsKey(f_id);
         synchronized (m_vis) {
+            assert !flaws.containsKey(f_id) : "the flaw already exists..";
+            assert Stream.of(cause).allMatch(c -> resolvers.containsKey(c)) : "the flaw's cause does not exist..";
             Node flaw_node = g.addNode();
             flaw_node.set(VisualItem.LABEL, label);
             flaw_node.set(NODE_TYPE, "flaw");
@@ -175,23 +177,22 @@ public class CausalGraph extends Display {
             flaw_node.set(NODE_STATE, state);
             flaws.put(f_id, flaw_node);
             for (long c : cause) {
-                assert resolvers.containsKey(c);
                 g.addEdge(flaw_node, resolvers.get(c));
             }
         }
     }
 
     public void flaw_state_changed(final long f_id, final int state) {
-        assert flaws.containsKey(f_id);
         synchronized (m_vis) {
+            assert flaws.containsKey(f_id) : "the flaw does not exist..";
             Node flaw_node = flaws.get(f_id);
             flaw_node.set(NODE_STATE, state);
         }
     }
 
     public void flaw_cost_changed(final long f_id, final double cost) {
-        assert flaws.containsKey(f_id);
         synchronized (m_vis) {
+            assert flaws.containsKey(f_id) : "the flaw does not exist..";
             Node flaw_node = flaws.get(f_id);
             flaw_node.set(NODE_COST, -cost);
         }
@@ -202,9 +203,9 @@ public class CausalGraph extends Display {
     }
 
     public void resolver_created(final long r_id, final long f_id, final String label, final int state) {
-        assert !resolvers.containsKey(r_id);
-        assert flaws.containsKey(f_id);
         synchronized (m_vis) {
+            assert !resolvers.containsKey(r_id) : "the resolver already exists..";
+            assert flaws.containsKey(f_id) : "the resolver's solved flaw does not exist..";
             Node resolver_node = g.addNode();
             resolver_node.set(VisualItem.LABEL, label);
             resolver_node.set(NODE_TYPE, "resolver");
@@ -216,8 +217,8 @@ public class CausalGraph extends Display {
     }
 
     public void resolver_state_changed(final long r_id, final int state) {
-        assert resolvers.containsKey(r_id);
         synchronized (m_vis) {
+            assert resolvers.containsKey(r_id) : "the resolver does not exist..";
             Node resolver_node = resolvers.get(r_id);
             resolver_node.set(NODE_STATE, state);
         }
@@ -228,7 +229,11 @@ public class CausalGraph extends Display {
     }
 
     public void causal_link_added(final long f_id, final long r_id) {
-        System.out.println("a new causal link has been created..");
+        synchronized (m_vis) {
+            assert flaws.containsKey(f_id) : "the flaw does not exist..";
+            assert resolvers.containsKey(r_id) : "the resolver does not exist..";
+            g.addEdge(flaws.get(f_id), resolvers.get(r_id));
+        }
     }
 
     /**
