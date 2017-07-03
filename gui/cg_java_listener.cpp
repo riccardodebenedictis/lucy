@@ -43,13 +43,13 @@ void cg_java_listener::flaw_created(const cg::flaw &f)
         cause[i] = reinterpret_cast<jlong>(causes[i]);
     env->ReleaseLongArrayElements(causes_array, cause, 0);
 
-    env->CallVoidMethod(cg_object, f_created, reinterpret_cast<jlong>(&f), causes_array, f.get_label(), f.get_cost(), graph.core::sat.value(f.get_in_plan()));
+    env->CallVoidMethod(cg_object, f_created, reinterpret_cast<jlong>(&f), causes_array, env->NewStringUTF(f.get_label().c_str()), f.get_cost(), graph.core::sat.value(f.get_in_plan()));
 }
 void cg_java_listener::flaw_state_changed(const cg::flaw &f) { env->CallVoidMethod(cg_object, f_state_changed, reinterpret_cast<jlong>(&f), graph.core::sat.value(f.get_in_plan())); }
 void cg_java_listener::flaw_cost_changed(const cg::flaw &f) { env->CallVoidMethod(cg_object, f_cost_changed, reinterpret_cast<jlong>(&f), f.get_cost()); }
 void cg_java_listener::current_flaw(const cg::flaw &f) { env->CallVoidMethod(cg_object, c_flaw, reinterpret_cast<jlong>(&f)); }
 
-void cg_java_listener::resolver_created(const cg::resolver &r) { env->CallVoidMethod(cg_object, r_created, reinterpret_cast<jlong>(&r), reinterpret_cast<jlong>(&r.get_effect()), r.get_label(), graph.core::sat.value(r.get_chosen())); }
+void cg_java_listener::resolver_created(const cg::resolver &r) { env->CallVoidMethod(cg_object, r_created, reinterpret_cast<jlong>(&r), reinterpret_cast<jlong>(&r.get_effect()), env->NewStringUTF(r.get_label().c_str()), graph.core::sat.value(r.get_chosen())); }
 void cg_java_listener::resolver_state_changed(const cg::resolver &r) { env->CallVoidMethod(cg_object, r_state_changed, reinterpret_cast<jlong>(&r), graph.core::sat.value(r.get_chosen())); }
 void cg_java_listener::current_resolver(const cg::resolver &r) { env->CallVoidMethod(cg_object, c_resolver, reinterpret_cast<jlong>(&r)); }
 
