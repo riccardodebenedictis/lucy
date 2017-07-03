@@ -83,10 +83,12 @@ void flaw::expand()
         // there is no way for solving this flaw..
         if (!graph.core::sat.new_clause({lit(in_plan, false)}))
             throw unsolvable_exception();
+        break;
     case 1:
         // there is a unique way for solving this flaw: this is a trivial flaw..
         if (!graph.core::sat.new_clause({lit(in_plan, false), lit(resolvers.front()->chosen, true)}))
             throw unsolvable_exception();
+        break;
     default:
         // we need to take a decision for solving this flaw..
         std::vector<lit> r_chs;
