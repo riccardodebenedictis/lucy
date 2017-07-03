@@ -7,7 +7,7 @@
 namespace cg
 {
 
-flaw::flaw(causal_graph &graph, bool disjunctive) : graph(graph), exclusive(exclusive), supports(graph.resolvers.begin(), graph.resolvers.end())
+flaw::flaw(causal_graph &graph, const bool &exclusive) : graph(graph), exclusive(exclusive), supports(graph.resolvers.begin(), graph.resolvers.end())
 {
     // the cuases for this flaw is the current resolvers of the causal graph..
     for (const auto &r : graph.resolvers)

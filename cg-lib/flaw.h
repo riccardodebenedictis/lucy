@@ -17,7 +17,7 @@ class flaw
   friend class resolver;
 
 public:
-  flaw(causal_graph &graph, bool disjunctive = false);
+  flaw(causal_graph &graph, const bool &exclusive = false);
   flaw(const flaw &orig) = delete;
   virtual ~flaw();
 
