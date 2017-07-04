@@ -311,13 +311,13 @@ void causal_graph::push()
 
 void causal_graph::pop()
 {
-    // we erase new flaws..
-    for (const auto &f : trail.back().new_flaws)
-        flaws.erase(f);
-
     // we reintroduce the solved flaw..
     for (const auto &f : trail.back().solved_flaws)
         flaws.insert(f);
+
+    // we erase new flaws..
+    for (const auto &f : trail.back().new_flaws)
+        flaws.erase(f);
 
     assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return core::sat.value(f->in_plan) == True; }));
 
