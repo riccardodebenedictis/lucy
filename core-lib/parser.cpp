@@ -50,6 +50,7 @@ compilation_unit *parser::parse(std::istream &is)
         case symbol::REAL:
         case symbol::STRING:
         case symbol::LBRACE:
+        case symbol::BANG:
         case symbol::FACT:
         case symbol::GOAL:
             ss.push_back(_statement());
@@ -962,15 +963,15 @@ expression *parser::_expression(const size_t &pr)
     }
     case symbol::PLUS:
         tk = next();
-        e = new plus_expression(e);
+        e = new plus_expression(_expression(4));
         break;
     case symbol::MINUS:
         tk = next();
-        e = new minus_expression(e);
+        e = new minus_expression(_expression(4));
         break;
     case symbol::BANG:
         tk = next();
-        e = new not_expression(e);
+        e = new not_expression(_expression(4));
         break;
     case symbol::LBRACKET:
     {
