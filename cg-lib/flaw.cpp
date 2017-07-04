@@ -17,7 +17,11 @@ flaw::flaw(causal_graph &graph, const bool &exclusive) : graph(graph), exclusive
     }
 }
 
-flaw::~flaw() {}
+flaw::~flaw()
+{
+    for (const auto &r : supports)
+        delete r;
+}
 
 std::string flaw::get_label() const
 {

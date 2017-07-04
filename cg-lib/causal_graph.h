@@ -80,8 +80,8 @@ private:
   std::list<resolver *> resolvers;
   // the current flaws..
   std::unordered_set<flaw *> flaws;
-  // the in_plan variables (boolean variable to flaw) of the flaws..
-  std::unordered_map<var, flaw *> in_plan;
+  // the in_plan variables (boolean variable to flaws) of the flaws..
+  std::unordered_map<var, std::vector<flaw *>> in_plan;
   // the chosen variables (boolean variable to resolver) of the resolvers..
   std::unordered_map<var, resolver *> chosen;
   // this variable represents the validity of the current graph..

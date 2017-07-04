@@ -289,7 +289,7 @@ public class CausalGraph extends Display {
                         m_vis.getVisualItem(NODES, flaws.get(f_id)).setHighlighted(true);
                 }
                 try {
-                    TimeUnit.SECONDS.sleep(10);
+                    TimeUnit.SECONDS.sleep(5);
                 } catch (Exception e) {
                 }
                 synchronized (m_vis) {
@@ -337,7 +337,7 @@ public class CausalGraph extends Display {
                         m_vis.getVisualItem(NODES, resolvers.get(r_id)).setHighlighted(true);
                 }
                 try {
-                    TimeUnit.SECONDS.sleep(10);
+                    TimeUnit.SECONDS.sleep(5);
                 } catch (Exception e) {
                 }
                 synchronized (m_vis) {

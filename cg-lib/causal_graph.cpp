@@ -29,8 +29,9 @@ causal_graph::causal_graph() : core(), theory(core::sat)
 
 causal_graph::~causal_graph()
 {
-    for (const auto &f : in_plan)
-        delete f.second;
+    for (const auto &fs : in_plan)
+        for (const auto &f : fs.second)
+            delete f;
 }
 
 expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
@@ -40,7 +41,7 @@ expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &al
     enum_expr c_e = core::new_enum(tp, allowed_vals);
     if (allowed_vals.size() > 1)
     {
-        // we creaste a new enum flaw..
+        // we create a new enum flaw..
         enum_flaw *ef = new enum_flaw(*this, *c_e);
         new_flaw(*ef);
     }
@@ -49,25 +50,43 @@ expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &al
 
 void causal_graph::new_fact(atom &atm)
 {
-    // we creaste a new atom flaw..
+    // we create a new atom flaw representing a fact..
     atom_flaw *af = new atom_flaw(*this, atm, true);
     reason.insert({&atm, af});
     new_flaw(*af);
+
+    // we link the state of the atom to the state of the flaw..
+    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *active), false), lit(af->in_plan, true)}))
+        throw unsolvable_exception();
+    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *unified), false), lit(af->in_plan, true)}))
+        throw unsolvable_exception();
+    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *inactive), false), lit(af->in_plan, false)}))
+        throw unsolvable_exception();
+
     core::new_fact(atm);
 }
 
 void causal_graph::new_goal(atom &atm)
 {
-    // we creaste a new atom flaw..
+    // we create a new atom flaw representing a goal..
     atom_flaw *af = new atom_flaw(*this, atm, false);
     reason.insert({&atm, af});
     new_flaw(*af);
+
+    // we link the state of the atom to the state of the flaw..
+    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *active), false), lit(af->in_plan, true)}))
+        throw unsolvable_exception();
+    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *unified), false), lit(af->in_plan, true)}))
+        throw unsolvable_exception();
+    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *inactive), false), lit(af->in_plan, false)}))
+        throw unsolvable_exception();
+
     core::new_goal(atm);
 }
 
 void causal_graph::new_disjunction(context &ctx, const disjunction &disj)
 {
-    // we creaste a new disjunction flaw..
+    // we create a new disjunction flaw..
     disjunction_flaw *df = new disjunction_flaw(*this, ctx, disj);
     new_flaw(*df);
 }
@@ -82,9 +101,6 @@ main_loop:
         // we build the planning graph..
         try
         {
-#ifndef NDEBUG
-            std::cout << "building the planning graph.." << std::endl;
-#endif
             build();
         }
         catch (const unsolvable_exception &)
@@ -110,9 +126,6 @@ main_loop:
         assert(f_next->cost < std::numeric_limits<double>::infinity());
         if (f_next->has_subgoals())
         {
-#ifndef NDEBUG
-            std::cout << "checking for inconsistencies.." << std::endl;
-#endif
             // we run out of inconsistencies, thus, we renew them..
             if (has_inconsistencies())
             {
@@ -151,9 +164,6 @@ main_loop:
                 // we have exhausted the search within the graph: we extend the graph..
                 try
                 {
-#ifndef NDEBUG
-                    std::cout << "adding a layer the planning graph.." << std::endl;
-#endif
                     add_layer();
                 }
                 catch (const unsolvable_exception &)
@@ -201,7 +211,7 @@ void causal_graph::new_flaw(flaw &f)
     else
     {
         // we listen for the flaw to become in_plan..
-        in_plan.insert({f.in_plan, &f});
+        in_plan[f.in_plan].push_back(&f);
         bind(f.in_plan);
     }
 
@@ -232,25 +242,34 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    if (in_plan.find(p.v) != in_plan.end())
+    if (in_plan.find(p.v) != in_plan.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
     {
-        // a decision has been taken about the presence of this flaw within the current partial solution..
-        flaw *f = in_plan.at(p.v);
         if (p.sign)
         {
-            // a flaw has been added to the current partial solution..
-            flaws.insert(f);
-            if (!trail.empty())
-                trail.back().new_flaws.insert(f);
+            // these flaws have been added to the current partial solution..
+            for (const auto &f : in_plan.at(p.v))
+            {
+                flaws.insert(f);
+                if (!trail.empty())
+                    trail.back().new_flaws.insert(f);
+                // we notify the listeners that the state of the flaw has changed..
+                for (const auto &l : listeners)
+                    l->flaw_state_changed(*f);
+            }
         }
-        else // a flaw has been removed from the current partial solution..
-            set_cost(*f, std::numeric_limits<double>::infinity());
-
-        // we notify the listeners that the state of a flaw has changed..
-        for (const auto &l : listeners)
-            l->flaw_state_changed(*f);
+        else
+        {
+            // these flaws have been removed from the current partial solution..
+            for (const auto &f : in_plan.at(p.v))
+            {
+                set_cost(*f, std::numeric_limits<double>::infinity());
+                // we notify the listeners that the state of the flaw has changed..
+                for (const auto &l : listeners)
+                    l->flaw_state_changed(*f);
+            }
+        }
     }
-    else
+    else // a decision has been taken about the presence of a resolver within the current partial solution..
     {
         flaw_costs_q.push(&chosen.at(p.v)->effect);
         propagate_costs();
@@ -320,6 +339,9 @@ void causal_graph::pop()
 
 void causal_graph::build()
 {
+#ifndef NDEBUG
+    std::cout << "building the planning graph.." << std::endl;
+#endif
     assert(core::sat.root_level());
     assert(!flaw_q.empty());
 
@@ -362,6 +384,9 @@ void causal_graph::build()
 
 void causal_graph::add_layer()
 {
+#ifndef NDEBUG
+    std::cout << "adding a layer the planning graph.." << std::endl;
+#endif
     assert(core::sat.root_level());
 
     std::vector<flaw *> fs;
@@ -480,6 +505,9 @@ void causal_graph::propagate_costs()
 
 bool causal_graph::has_inconsistencies()
 {
+#ifndef NDEBUG
+    std::cout << "checking for inconsistencies.." << std::endl;
+#endif
     std::vector<flaw *> incs;
     std::queue<type *> q;
     for (const auto &t : get_types())
