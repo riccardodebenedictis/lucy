@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/build/lucy",
             "args": [
-                "${workspaceRoot}/examples/blocks_4.rddl",
+                "${workspaceRoot}/examples/example_0.rddl",
                 "output.json"
             ],
             "stopAtEntry": false,
