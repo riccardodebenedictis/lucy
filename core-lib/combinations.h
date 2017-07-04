@@ -8,7 +8,7 @@ namespace lucy
 {
 
 template <typename T>
-std::vector<std::vector<T>> combinations(const std::vector<T> &v, int n)
+std::vector<std::vector<T>> combinations(const std::vector<T> &v, const size_t &n)
 {
     assert(v.size() >= n);
     std::vector<std::vector<T>> combs;
