@@ -27,12 +27,7 @@ causal_graph::causal_graph() : core(), theory(core::sat)
     types.insert({PROPOSITIONAL_AGENT_NAME, new propositional_agent(*this)});
 }
 
-causal_graph::~causal_graph()
-{
-    for (const auto &fs : in_plan)
-        for (const auto &f : fs.second)
-            delete f;
-}
+causal_graph::~causal_graph() {}
 
 expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
 {
