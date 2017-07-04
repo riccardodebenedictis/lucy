@@ -1057,148 +1057,153 @@ expression *parser::_expression(const size_t &pr)
         error("expected either '(' or '+' or '-' or '!' or '[' or 'new' or a literal or an identifier..");
     }
 
-    std::unordered_set<symbol> la_set({symbol::PLUS, symbol::MINUS, symbol::STAR, symbol::SLASH, symbol::LT, symbol::LTEQ, symbol::EQEQ, symbol::GTEQ, symbol::GT, symbol::BANGEQ, symbol::IMPLICATION, symbol::BAR, symbol::AMP, symbol::CARET});
-    while (la_set.find(tk->sym) != la_set.end())
+    while (
+        ((tk->sym == symbol::EQEQ || tk->sym == symbol::BANGEQ) && 0 >= pr) ||
+        ((tk->sym == symbol::LT || tk->sym == symbol::LTEQ || tk->sym == symbol::GTEQ || tk->sym == symbol::GT || tk->sym == symbol::IMPLICATION || tk->sym == symbol::BAR || tk->sym == symbol::AMP || tk->sym == symbol::CARET) && 1 >= pr) ||
+        ((tk->sym == symbol::PLUS || tk->sym == symbol::MINUS) && 2 >= pr) ||
+        ((tk->sym == symbol::STAR || tk->sym == symbol::SLASH) && 3 >= pr))
     {
-        if (0 >= pr)
+        switch (tk->sym)
         {
-            switch (tk->sym)
-            {
-            case symbol::EQEQ:
-                tk = next();
-                return new eq_expression(e, _expression(1));
-            case symbol::BANGEQ:
-                tk = next();
-                return new neq_expression(e, _expression(1));
-            }
+        case symbol::EQEQ:
+            assert(0 >= pr);
+            tk = next();
+            e = new eq_expression(e, _expression(1));
+            break;
+        case symbol::BANGEQ:
+            assert(0 >= pr);
+            tk = next();
+            e = new neq_expression(e, _expression(1));
+            break;
+        case symbol::LT:
+        {
+            assert(1 >= pr);
+            tk = next();
+            expression *l = e;
+            expression *r = _expression(2);
+            e = new lt_expression(l, r);
+            break;
         }
-        if (1 >= pr)
+        case symbol::LTEQ:
         {
-            switch (tk->sym)
-            {
-            case symbol::LT:
-            {
-                tk = next();
-                expression *l = e;
-                expression *r = _expression(2);
-
-                return new lt_expression(l, r);
-            }
-            case symbol::LTEQ:
-            {
-                tk = next();
-                expression *l = e;
-                expression *r = _expression(2);
-
-                return new leq_expression(l, r);
-            }
-            case symbol::GTEQ:
-            {
-                tk = next();
-                expression *l = e;
-                expression *r = _expression(2);
-
-                return new geq_expression(l, r);
-            }
-            case symbol::GT:
-            {
-                tk = next();
-                expression *l = e;
-                expression *r = _expression(2);
-
-                return new gt_expression(l, r);
-            }
-            case symbol::IMPLICATION:
-            {
-                tk = next();
-                expression *l = e;
-                expression *r = _expression(2);
-
-                return new implication_expression(l, r);
-            }
-            case symbol::BAR:
-            {
-                std::vector<expression *> xprs;
-                xprs.push_back(e);
-
-                while (match(symbol::BAR))
-                    xprs.push_back(_expression(2));
-
-                return new disjunction_expression(xprs);
-            }
-            case symbol::AMP:
-            {
-                std::vector<expression *> xprs;
-                xprs.push_back(e);
-
-                while (match(symbol::BAR))
-                    xprs.push_back(_expression(2));
-
-                return new conjunction_expression(xprs);
-            }
-            case symbol::CARET:
-            {
-                std::vector<expression *> xprs;
-                xprs.push_back(e);
-
-                while (match(symbol::BAR))
-                    xprs.push_back(_expression(2));
-
-                return new exct_one_expression(xprs);
-            }
-            }
+            assert(1 >= pr);
+            tk = next();
+            expression *l = e;
+            expression *r = _expression(2);
+            e = new leq_expression(l, r);
+            break;
         }
-        if (2 >= pr)
+        case symbol::GTEQ:
         {
-            switch (tk->sym)
-            {
-            case symbol::PLUS:
-            {
-                std::vector<expression *> xprs;
-                xprs.push_back(e);
-
-                while (match(symbol::PLUS))
-                    xprs.push_back(_expression(3));
-
-                return new addition_expression(xprs);
-            }
-            case symbol::MINUS:
-            {
-                std::vector<expression *> xprs;
-                xprs.push_back(e);
-
-                while (match(symbol::MINUS))
-                    xprs.push_back(_expression(3));
-
-                return new subtraction_expression(xprs);
-            }
-            }
+            assert(1 >= pr);
+            tk = next();
+            expression *l = e;
+            expression *r = _expression(2);
+            e = new geq_expression(l, r);
+            break;
         }
-        if (3 >= pr)
+        case symbol::GT:
         {
-            switch (tk->sym)
-            {
-            case symbol::STAR:
-            {
-                std::vector<expression *> xprs;
-                xprs.push_back(e);
+            assert(1 >= pr);
+            tk = next();
+            expression *l = e;
+            expression *r = _expression(2);
+            e = new gt_expression(l, r);
+            break;
+        }
+        case symbol::IMPLICATION:
+        {
+            assert(1 >= pr);
+            tk = next();
+            expression *l = e;
+            expression *r = _expression(2);
+            e = new implication_expression(l, r);
+            break;
+        }
+        case symbol::BAR:
+        {
+            assert(1 >= pr);
+            std::vector<expression *> xprs;
+            xprs.push_back(e);
 
-                while (match(symbol::STAR))
-                    xprs.push_back(_expression(4));
+            while (match(symbol::BAR))
+                xprs.push_back(_expression(2));
 
-                return new multiplication_expression(xprs);
-            }
-            case symbol::SLASH:
-            {
-                std::vector<expression *> xprs;
-                xprs.push_back(e);
+            e = new disjunction_expression(xprs);
+            break;
+        }
+        case symbol::AMP:
+        {
+            assert(1 >= pr);
+            std::vector<expression *> xprs;
+            xprs.push_back(e);
 
-                while (match(symbol::SLASH))
-                    xprs.push_back(_expression(4));
+            while (match(symbol::BAR))
+                xprs.push_back(_expression(2));
 
-                return new division_expression(xprs);
-            }
-            }
+            e = new conjunction_expression(xprs);
+            break;
+        }
+        case symbol::CARET:
+        {
+            assert(1 >= pr);
+            std::vector<expression *> xprs;
+            xprs.push_back(e);
+
+            while (match(symbol::BAR))
+                xprs.push_back(_expression(2));
+
+            e = new exct_one_expression(xprs);
+            break;
+        }
+        case symbol::PLUS:
+        {
+            assert(2 >= pr);
+            std::vector<expression *> xprs;
+            xprs.push_back(e);
+
+            while (match(symbol::PLUS))
+                xprs.push_back(_expression(3));
+
+            e = new addition_expression(xprs);
+            break;
+        }
+        case symbol::MINUS:
+        {
+            assert(2 >= pr);
+            std::vector<expression *> xprs;
+            xprs.push_back(e);
+
+            while (match(symbol::MINUS))
+                xprs.push_back(_expression(3));
+
+            e = new subtraction_expression(xprs);
+            break;
+        }
+        case symbol::STAR:
+        {
+            assert(3 >= pr);
+            std::vector<expression *> xprs;
+            xprs.push_back(e);
+
+            while (match(symbol::STAR))
+                xprs.push_back(_expression(4));
+
+            e = new multiplication_expression(xprs);
+            break;
+        }
+        case symbol::SLASH:
+        {
+            assert(3 >= pr);
+            std::vector<expression *> xprs;
+            xprs.push_back(e);
+
+            while (match(symbol::SLASH))
+                xprs.push_back(_expression(4));
+
+            e = new division_expression(xprs);
+            break;
+        }
         }
     }
 
