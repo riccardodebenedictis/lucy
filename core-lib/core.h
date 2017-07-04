@@ -113,10 +113,10 @@ public:
 
   expr get(const std::string &name) const override;
 
-  lbool bool_value(const bool_expr &var) const noexcept;
-  interval arith_bounds(const arith_expr &var) const noexcept;
-  double arith_value(const arith_expr &var) const noexcept;
-  std::unordered_set<set_item *> enum_value(const enum_expr &var) const noexcept;
+  lbool bool_value(const bool_expr &x) const noexcept;
+  interval arith_bounds(const arith_expr &x) const noexcept;
+  double arith_value(const arith_expr &x) const noexcept;
+  std::unordered_set<set_item *> enum_value(const enum_expr &x) const noexcept;
 
   virtual bool solve() = 0;
 
@@ -126,24 +126,21 @@ protected:
   virtual void new_disjunction(context &ctx, const disjunction &disj) = 0;
 
 protected:
-  void set_var(var v)
+  void set_var(const var &v)
   {
     tmp_var = ctr_var;
     ctr_var = v;
   }
 
-  void restore_var()
-  {
-    ctr_var = tmp_var;
-  }
+  void restore_var() { ctr_var = tmp_var; }
 
 public:
-  std::string to_string();
+  std::string to_string() const;
 
 private:
-  std::string to_string(item *i);
-  std::string to_string(atom *i);
-  std::string to_string(std::unordered_map<std::string, expr> items);
+  std::string to_string(const item *const i) const;
+  std::string to_string(const atom *const i) const;
+  std::string to_string(const std::unordered_map<std::string, expr> &items) const;
 
 private:
   parser prs;

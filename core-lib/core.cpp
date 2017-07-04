@@ -333,13 +333,13 @@ expr core::get(const std::string &name) const
     throw std::out_of_range(name);
 }
 
-lbool core::bool_value(const bool_expr &var) const noexcept { return sat.value(var->l); }
+lbool core::bool_value(const bool_expr &x) const noexcept { return sat.value(x->l); }
 
-interval core::arith_bounds(const arith_expr &var) const noexcept { return la_th.bounds(var->l); }
+interval core::arith_bounds(const arith_expr &x) const noexcept { return la_th.bounds(x->l); }
 
-double core::arith_value(const arith_expr &var) const noexcept { return la_th.value(var->l); }
+double core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
 
-std::unordered_set<set_item *> core::enum_value(const enum_expr &var) const noexcept { return set_th.value(var->ev); }
+std::unordered_set<set_item *> core::enum_value(const enum_expr &x) const noexcept { return set_th.value(x->ev); }
 
 void core::new_fact(atom &atm)
 {
@@ -373,10 +373,10 @@ void core::new_goal(atom &atm)
     }
 }
 
-std::string core::to_string(std::unordered_map<std::string, expr> c_items)
+std::string core::to_string(const std::unordered_map<std::string, expr> &c_items) const
 {
     std::string iss;
-    for (std::unordered_map<std::string, expr>::iterator is_it = c_items.begin(); is_it != c_items.end(); ++is_it)
+    for (std::unordered_map<std::string, expr>::const_iterator is_it = c_items.begin(); is_it != c_items.end(); ++is_it)
     {
         if (is_it != c_items.begin())
             iss += ", ";
@@ -422,15 +422,13 @@ std::string core::to_string(std::unordered_map<std::string, expr> c_items)
             iss += " ] }";
         }
         else
-        {
             iss += "\"" + std::to_string(reinterpret_cast<uintptr_t>(&*is_it->second)) + "\"";
-        }
         iss += " }";
     }
     return iss;
 }
 
-std::string core::to_string(item *i)
+std::string core::to_string(const item *const i) const
 {
     std::string is;
     is += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(i)) + "\", \"type\" : \"" + i->tp.name + "\"";
@@ -441,7 +439,7 @@ std::string core::to_string(item *i)
     return is;
 }
 
-std::string core::to_string(atom *a)
+std::string core::to_string(const atom *const a) const
 {
     std::string as;
     as += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(a)) + "\", \"predicate\" : \"" + a->tp.name + "\", \"state\" : [";
@@ -465,7 +463,7 @@ std::string core::to_string(atom *a)
     return as;
 }
 
-std::string core::to_string()
+std::string core::to_string() const
 {
     std::set<item *> all_items;
     std::set<atom *> all_atoms;
