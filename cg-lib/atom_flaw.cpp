@@ -13,6 +13,7 @@ atom_flaw::~atom_flaw() {}
 void atom_flaw::compute_resolvers()
 {
     bool solved = false;
+    // the state of the atom associated to this flaw..
     std::unordered_set<set_item *> a_state = graph.set_th.value(atm.state);
     assert(!a_state.empty());
     if (a_state.find(graph.unified) != a_state.end())
@@ -22,11 +23,13 @@ void atom_flaw::compute_resolvers()
             if (&*i == &atm)
                 continue;
 
+            // this is the atom we are checking for unification..
             atom *c_a = static_cast<atom *>(&*i);
 
             if (!graph.reason.at(c_a)->is_expanded())
                 continue;
 
+            // the state of the atom we are checking for unification..
             std::unordered_set<set_item *> c_state = graph.set_th.value(c_a->state);
             assert(!c_state.empty());
 
@@ -39,41 +42,39 @@ void atom_flaw::compute_resolvers()
             std::queue<flaw *> q;
             q.push(graph.reason.at(&atm));
             q.push(graph.reason.at(c_a));
+            bool is_cyclic = false;
             while (!q.empty())
             {
                 assert(graph.core::sat.value(q.front()->get_in_plan()) != False);
                 if (seen.find(q.front()) != seen.end()) // we do not allow cyclic causality..
+                {
+                    is_cyclic = true; // we have already seen this flaw, hence, unification would introduce cyclic causality..
                     break;
+                }
 
                 seen.insert(q.front());
                 for (const auto &cause : q.front()->get_causes())
                 {
                     assert(graph.core::sat.value(cause->get_chosen()) != False);
-                    if (graph.core::sat.value(cause->get_chosen()) != True)
-                    {
+                    if (graph.core::sat.value(cause->get_chosen()) != True) // there is no reason for adding this literal to the unification literals..
                         unif_lits.push_back(lit(cause->get_chosen(), true));
-                        q.push(&cause->get_effect());
-                    }
+                    q.push(&cause->get_effect()); // yet we enqueue the effect in order to check for cyclic causality..
                 }
                 q.pop();
             }
 
-            if (!q.empty()) // we have cyclic causality..
+            if (is_cyclic) // we have cyclic causality..
                 continue;
 
-            if (a_state.size() > 1)
-            {
-                assert(graph.core::sat.value(graph.set_th.allows(atm.state, *graph.unified)) != False);
-                unif_lits.push_back(lit(graph.set_th.allows(atm.state, *graph.unified), true));
-            }
-            if (c_state.size() > 1)
-            {
-                assert(graph.core::sat.value(graph.set_th.allows(c_a->state, *graph.active)) != False);
-                unif_lits.push_back(lit(graph.set_th.allows(c_a->state, *graph.active), true));
-            }
+            if (a_state.size() > 1)                                                             // if the state can be either 'unified' or something else..
+                unif_lits.push_back(lit(graph.set_th.allows(atm.state, *graph.unified), true)); // we force the state to be 'unified'..
+            if (c_state.size() > 1)                                                             // if the state can be either 'active' or something else..
+                unif_lits.push_back(lit(graph.set_th.allows(c_a->state, *graph.active), true)); // we force the state to be 'active'..
+
+            // the equality propositional variable..
             var eq_v = atm.eq(*c_a);
 
-            if (graph.core::sat.value(eq_v) == False)
+            if (graph.core::sat.value(eq_v) == False) // the two atoms cannot unify..
                 continue;
 
             if (graph.core::sat.value(eq_v) != True)
