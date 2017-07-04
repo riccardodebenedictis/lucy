@@ -29,7 +29,7 @@ public:
 private:
   void new_fact(atom &atm) override;
   void new_goal(atom &atm) override;
-  void new_disjunction(context &ctx, const disjunction &disj) override;
+  void new_disjunction(context &d_ctx, const disjunction &disj) override;
 
 public:
   bool solve() override;

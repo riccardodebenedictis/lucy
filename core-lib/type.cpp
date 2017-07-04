@@ -106,15 +106,15 @@ constructor &type::get_constructor(const std::vector<const type *> &ts) const
     throw std::out_of_range(name);
 }
 
-field &type::get_field(const std::string &name) const
+field &type::get_field(const std::string &f_name) const
 {
-    if (fields.find(name) != fields.end())
-        return *fields.at(name);
+    if (fields.find(f_name) != fields.end())
+        return *fields.at(f_name);
 
     // if not here, check any enclosing scope
     try
     {
-        return scp.get_field(name);
+        return scp.get_field(f_name);
     }
     catch (const std::out_of_range &)
     {
@@ -123,7 +123,7 @@ field &type::get_field(const std::string &name) const
         {
             try
             {
-                return st->get_field(name);
+                return st->get_field(f_name);
             }
             catch (const std::out_of_range &)
             {
@@ -132,15 +132,15 @@ field &type::get_field(const std::string &name) const
     }
 
     // not found
-    throw std::out_of_range(name);
+    throw std::out_of_range(f_name);
 }
 
-method &type::get_method(const std::string &name, const std::vector<const type *> &ts) const
+method &type::get_method(const std::string &m_name, const std::vector<const type *> &ts) const
 {
-    if (methods.find(name) != methods.end())
+    if (methods.find(m_name) != methods.end())
     {
         bool found = false;
-        for (const auto &mthd : methods.at(name))
+        for (const auto &mthd : methods.at(m_name))
         {
             if (mthd->args.size() == ts.size())
             {
@@ -162,7 +162,7 @@ method &type::get_method(const std::string &name, const std::vector<const type *
     // if not here, check any enclosing scope
     try
     {
-        return scp.get_method(name, ts);
+        return scp.get_method(m_name, ts);
     }
     catch (const std::out_of_range &)
     {
@@ -171,7 +171,7 @@ method &type::get_method(const std::string &name, const std::vector<const type *
         {
             try
             {
-                return st->get_method(name, ts);
+                return st->get_method(m_name, ts);
             }
             catch (const std::out_of_range &)
             {
@@ -180,18 +180,18 @@ method &type::get_method(const std::string &name, const std::vector<const type *
     }
 
     // not found
-    throw std::out_of_range(name);
+    throw std::out_of_range(m_name);
 }
 
-predicate &type::get_predicate(const std::string &name) const
+predicate &type::get_predicate(const std::string &p_name) const
 {
-    if (predicates.find(name) != predicates.end())
-        return *predicates.at(name);
+    if (predicates.find(p_name) != predicates.end())
+        return *predicates.at(p_name);
 
     // if not here, check any enclosing scope
     try
     {
-        return scp.get_predicate(name);
+        return scp.get_predicate(p_name);
     }
     catch (const std::out_of_range &)
     {
@@ -200,7 +200,7 @@ predicate &type::get_predicate(const std::string &name) const
         {
             try
             {
-                return st->get_predicate(name);
+                return st->get_predicate(p_name);
             }
             catch (const std::out_of_range &)
             {
@@ -209,18 +209,18 @@ predicate &type::get_predicate(const std::string &name) const
     }
 
     // not found
-    throw std::out_of_range(name);
+    throw std::out_of_range(p_name);
 }
 
-type &type::get_type(const std::string &name) const
+type &type::get_type(const std::string &t_name) const
 {
-    if (types.find(name) != types.end())
-        return *types.at(name);
+    if (types.find(t_name) != types.end())
+        return *types.at(t_name);
 
     // if not here, check any enclosing scope
     try
     {
-        return scp.get_type(name);
+        return scp.get_type(t_name);
     }
     catch (const std::out_of_range &)
     {
@@ -229,7 +229,7 @@ type &type::get_type(const std::string &name) const
         {
             try
             {
-                return st->get_type(name);
+                return st->get_type(t_name);
             }
             catch (const std::out_of_range &)
             {
@@ -238,7 +238,7 @@ type &type::get_type(const std::string &name) const
     }
 
     // not found
-    throw std::out_of_range(name);
+    throw std::out_of_range(t_name);
 }
 
 void type::set_var(var ctr_var) { cr.set_var(ctr_var); }

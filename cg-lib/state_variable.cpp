@@ -25,7 +25,7 @@ std::vector<flaw *> state_variable::get_flaws()
     else
     {
         // we collect atoms for each state variable..
-        std::unordered_map<item *, std::vector<atom *>> instances;
+        std::unordered_map<item *, std::vector<atom *>> sv_instances;
         for (const auto &atm : atoms)
         {
             // we filter out those which are not strictly active..
@@ -36,16 +36,16 @@ std::vector<flaw *> state_variable::get_flaws()
                 {
                     for (const auto &val : graph.set_th.value(enum_scope->ev))
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
-                            instances[static_cast<item *>(val)].push_back(atm.first);
+                            sv_instances[static_cast<item *>(val)].push_back(atm.first);
                 }
                 else
                 {
-                    instances[static_cast<item *>(&*c_scope)].push_back(atm.first);
+                    sv_instances[static_cast<item *>(&*c_scope)].push_back(atm.first);
                 }
             }
         }
 
-        for (const auto &sv : instances)
+        for (const auto &sv : sv_instances)
         {
             // for each pulse, the atoms starting at that pulse..
             std::map<double, std::set<atom *>> starting_atoms;

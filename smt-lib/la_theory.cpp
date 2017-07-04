@@ -346,8 +346,8 @@ void la_theory::pivot(var x_i, var x_j)
     expr.vars.insert({x_i, 1 / c});
 
     std::vector<row *> rows;
-    for (const auto &c : t_watches[x_j])
-        rows.push_back(c);
+    for (const auto &c_rw : t_watches[x_j])
+        rows.push_back(c_rw);
     for (const auto &r : rows)
     {
         for (const auto &term : r->l.vars)

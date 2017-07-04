@@ -41,17 +41,17 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
     {
         if (il_idx < init_list.size() && init_list[il_idx].first.compare(st->name) == 0) // explicit supertype constructor invocation..
         {
-            std::vector<expr> exprs;
+            std::vector<expr> c_exprs;
             std::vector<const type *> par_types;
             for (const auto &ex : init_list[il_idx].second)
             {
                 expr c_expr = ex->evaluate(*this, ctx);
-                exprs.push_back(c_expr);
+                c_exprs.push_back(c_expr);
                 par_types.push_back(&c_expr->tp);
             }
 
             // we assume that the constructor exists..
-            st->get_constructor(par_types).invoke(itm, exprs);
+            st->get_constructor(par_types).invoke(itm, c_exprs);
             il_idx++;
         }
         else // implicit supertype (default) constructor invocation..

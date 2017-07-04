@@ -32,24 +32,16 @@ core::~core()
 
     // we delete the types..
     for (const auto &t : types)
-    {
         delete t.second;
-    }
 
     // we delete the methods..
     for (const auto &ms : methods)
-    {
         for (const auto &m : ms.second)
-        {
             delete m;
-        }
-    }
 
     // we delete the compilation units..
     for (const auto &cu : cus)
-    {
         delete cu;
-    }
 
     // we delete the atom states..
     delete active;
@@ -63,10 +55,10 @@ bool core::read(const std::string &script)
     ast::compilation_unit *cu = prs.parse(ss);
     cus.push_back(cu);
 
-    context ctx(this);
+    context c_ctx(this);
     cu->declare(*this);
     cu->refine(*this);
-    cu->execute(*this, ctx);
+    cu->execute(*this, c_ctx);
 
     return sat.check();
 }
@@ -91,13 +83,13 @@ bool core::read(const std::vector<std::string> &files)
         }
     }
 
-    context ctx(this);
+    context c_ctx(this);
     for (const auto &cu : c_cus)
         cu->declare(*this);
     for (const auto &cu : c_cus)
         cu->refine(*this);
     for (const auto &cu : c_cus)
-        cu->execute(*this, ctx);
+        cu->execute(*this, c_ctx);
 
     return sat.check();
 }
@@ -381,12 +373,12 @@ void core::new_goal(atom &atm)
     }
 }
 
-std::string core::to_string(std::unordered_map<std::string, expr> items)
+std::string core::to_string(std::unordered_map<std::string, expr> c_items)
 {
     std::string iss;
-    for (std::unordered_map<std::string, expr>::iterator is_it = items.begin(); is_it != items.end(); ++is_it)
+    for (std::unordered_map<std::string, expr>::iterator is_it = c_items.begin(); is_it != c_items.end(); ++is_it)
     {
-        if (is_it != items.begin())
+        if (is_it != c_items.begin())
             iss += ", ";
         iss += "{ \"name\" : \"" + is_it->first + "\", \"type\" : \"" + is_it->second->tp.name + "\", \"value\" : ";
         if (bool_item *bi = dynamic_cast<bool_item *>(&*is_it->second))

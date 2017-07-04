@@ -50,9 +50,9 @@ public:
   constructor &get_constructor(const std::vector<const type *> &ts) const;
   std::vector<constructor *> get_constructors() const noexcept { return constructors; }
 
-  field &get_field(const std::string &name) const override;
+  field &get_field(const std::string &f_name) const override;
 
-  method &get_method(const std::string &name, const std::vector<const type *> &ts) const override;
+  method &get_method(const std::string &m_name, const std::vector<const type *> &ts) const override;
   std::vector<method *> get_methods() const noexcept override
   {
     std::vector<method *> c_methods;
@@ -63,10 +63,10 @@ public:
     return c_methods;
   }
 
-  predicate &get_predicate(const std::string &name) const override;
+  predicate &get_predicate(const std::string &p_name) const override;
   std::unordered_map<std::string, predicate *> get_predicates() const noexcept override { return predicates; }
 
-  type &get_type(const std::string &name) const override;
+  type &get_type(const std::string &t_name) const override;
   std::unordered_map<std::string, type *> get_types() const noexcept override { return types; }
 
 protected:

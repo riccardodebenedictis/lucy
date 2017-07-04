@@ -104,8 +104,8 @@ private:
 
     std::string get_label() const override
     {
-      enum_expr scp = a.get(f_name);
-      return f_name + " (e" + std::to_string(scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
+      enum_expr c_scp = a.get(f_name);
+      return f_name + " (e" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }
 
   private:

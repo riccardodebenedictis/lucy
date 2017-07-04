@@ -213,15 +213,15 @@ class_declaration::~class_declaration()
 void class_declaration::declare(scope &scp) const
 {
     // A new type has been declared..
-    type *t = new type(scp.get_core(), scp, name);
+    type *tp = new type(scp.get_core(), scp, name);
 
     if (core *c = dynamic_cast<core *>(&scp))
-        c->types.insert({name, t});
+        c->types.insert({name, tp});
     else if (type *t = dynamic_cast<type *>(&scp))
-        t->types.insert({name, t});
+        t->types.insert({name, tp});
 
-    for (const auto &tp : types)
-        tp->declare(*t);
+    for (const auto &c_tp : types)
+        c_tp->declare(*tp);
 }
 void class_declaration::refine(scope &scp) const
 {

@@ -79,10 +79,10 @@ void causal_graph::new_goal(atom &atm)
     core::new_goal(atm);
 }
 
-void causal_graph::new_disjunction(context &ctx, const disjunction &disj)
+void causal_graph::new_disjunction(context &d_ctx, const disjunction &disj)
 {
     // we create a new disjunction flaw..
-    disjunction_flaw *df = new disjunction_flaw(*this, ctx, disj);
+    disjunction_flaw *df = new disjunction_flaw(*this, d_ctx, disj);
     new_flaw(*df);
 }
 
