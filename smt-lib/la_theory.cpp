@@ -29,18 +29,14 @@ var la_theory::new_leq(const lin &left, const lin &right)
     lin expr = left - right;
     std::vector<var> vars;
     for (const auto &term : expr.vars)
-    {
         vars.push_back(term.first);
-    }
     for (const auto &v : vars)
-    {
         if (tableau.find(v) != tableau.end())
         {
             double c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
-    }
 
     double c_right = -expr.known_term;
     expr.known_term = 0;
@@ -70,18 +66,14 @@ var la_theory::new_geq(const lin &left, const lin &right)
     lin expr = left - right;
     std::vector<var> vars;
     for (const auto &term : expr.vars)
-    {
         vars.push_back(term.first);
-    }
     for (const auto &v : vars)
-    {
         if (tableau.find(v) != tableau.end())
         {
             double c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
-    }
 
     double c_right = -expr.known_term;
     expr.known_term = 0;

@@ -88,10 +88,11 @@ var sat_core::new_conj(const std::vector<lit> &ls)
     std::sort(c_lits.begin(), c_lits.end(), [](const lit &l0, const lit &l1) { return l0.v > l1.v; });
     std::string s_expr;
     for (std::vector<lit>::const_iterator it = c_lits.begin(); it != c_lits.end(); ++it)
-        if (it == c_lits.begin())
-            s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
-        else
-            s_expr += (" & " + it->sign ? "b" : "!b") + std::to_string(it->v);
+    {
+        if (it != c_lits.begin())
+            s_expr += " & ";
+        s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
+    }
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
     else
@@ -120,10 +121,11 @@ var sat_core::new_disj(const std::vector<lit> &ls)
     std::sort(c_lits.begin(), c_lits.end(), [](const lit &l0, const lit &l1) { return l0.v > l1.v; });
     std::string s_expr;
     for (std::vector<lit>::const_iterator it = c_lits.begin(); it != c_lits.end(); ++it)
-        if (it == c_lits.begin())
-            s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
-        else
-            s_expr += (" | " + it->sign ? "b" : "!b") + std::to_string(it->v);
+    {
+        if (it != c_lits.begin())
+            s_expr += " | ";
+        s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
+    }
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
     else
@@ -152,10 +154,11 @@ var sat_core::new_exct_one(const std::vector<lit> &ls)
     std::sort(c_lits.begin(), c_lits.end(), [](const lit &l0, const lit &l1) { return l0.v > l1.v; });
     std::string s_expr;
     for (std::vector<lit>::const_iterator it = c_lits.begin(); it != c_lits.end(); ++it)
-        if (it == c_lits.begin())
-            s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
-        else
-            s_expr += (" ^ " + it->sign ? "b" : "!b") + std::to_string(it->v);
+    {
+        if (it != c_lits.begin())
+            s_expr += " ^ ";
+        s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
+    }
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
     else
