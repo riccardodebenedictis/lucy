@@ -141,7 +141,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     // we make room for the first literal..
-    cnfl.push_back(lit(FALSE, true));
+    cnfl.push_back(lit(FALSE_var, true));
     if (l.vars.at(v) > 0)
     {
         double lb = 0;
@@ -289,7 +289,7 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     // we make room for the first literal..
-    cnfl.push_back(lit(FALSE, true));
+    cnfl.push_back(lit(FALSE_var, true));
     if (l.vars.at(v) > 0)
     {
         double ub = 0;

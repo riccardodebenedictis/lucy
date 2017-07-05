@@ -15,7 +15,7 @@ item::~item() {}
 var item::eq(item &i) noexcept
 {
 	if (this == &i)
-		return TRUE;
+		return TRUE_var;
 	else if (enum_item *ei = dynamic_cast<enum_item *>(&i))
 		return ei->eq(*this);
 	else
@@ -34,7 +34,7 @@ var item::eq(item &i) noexcept
 		}
 
 		if (eqs.empty())
-			return TRUE;
+			return TRUE_var;
 		else if (eqs.size() == 1)
 			return eqs.begin()->v;
 		else
@@ -72,11 +72,11 @@ bool_item::~bool_item() {}
 var bool_item::eq(item &i) noexcept
 {
 	if (this == &i)
-		return TRUE;
+		return TRUE_var;
 	else if (bool_item *be = dynamic_cast<bool_item *>(&i))
 		return cr.sat.new_eq(l, be->l);
 	else
-		return FALSE;
+		return FALSE_var;
 }
 
 bool bool_item::equates(const item &i) const noexcept
@@ -99,11 +99,11 @@ arith_item::~arith_item() {}
 var arith_item::eq(item &i) noexcept
 {
 	if (this == &i)
-		return TRUE;
+		return TRUE_var;
 	else if (arith_item *ae = dynamic_cast<arith_item *>(&i))
 		return cr.sat.new_conj({lit(cr.la_th.new_leq(l, ae->l), true), lit(cr.la_th.new_geq(l, ae->l), true)});
 	else
-		return FALSE;
+		return FALSE_var;
 }
 
 bool arith_item::equates(const item &i) const noexcept
@@ -126,11 +126,11 @@ string_item::~string_item() {}
 var string_item::eq(item &i) noexcept
 {
 	if (this == &i)
-		return TRUE;
+		return TRUE_var;
 	else if (string_item *se = dynamic_cast<string_item *>(&i))
-		return l.compare(se->l) == 0 ? TRUE : FALSE;
+		return l.compare(se->l) == 0 ? TRUE_var : FALSE_var;
 	else
-		return FALSE;
+		return FALSE_var;
 }
 
 bool string_item::equates(const item &i) const noexcept
@@ -186,7 +186,7 @@ expr enum_item::get(const std::string &name) const
 var enum_item::eq(item &i) noexcept
 {
 	if (this == &i)
-		return TRUE;
+		return TRUE_var;
 	else if (enum_item *ee = dynamic_cast<enum_item *>(&i))
 		return cr.set_th.eq(ev, ee->ev);
 	else

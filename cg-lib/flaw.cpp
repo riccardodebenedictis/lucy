@@ -54,7 +54,7 @@ void flaw::init()
     {
     case 0:
         // the flaw is necessarily in_plan..
-        in_plan = smt::TRUE;
+        in_plan = TRUE_var;
         break;
     case 1:
         // the flaw is in_plan if its cause is in_plan..

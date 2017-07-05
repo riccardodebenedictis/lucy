@@ -157,7 +157,7 @@ public:
 
 private:
   var tmp_var;
-  var ctr_var = smt::TRUE;
+  var ctr_var = TRUE_var;
 
 protected:
   std::unordered_map<std::string, std::vector<method *>> methods;

@@ -9,54 +9,54 @@ namespace lucy
 
 enum symbol
 {
-  BOOL,          // 'bool'
-  INT,           // 'int'
-  REAL,          // 'real'
-  STRING,        // 'string'
-  TYPEDEF,       // 'typedef'
-  ENUM,          // 'enum'
-  CLASS,         // 'class'
-  GOAL,          // 'goal'
-  FACT,          // 'fact'
-  PREDICATE,     // 'predicate'
-  NEW,           // 'new'
-  OR,            // 'or'
-  THIS,          // 'this'
-  VOID,          // 'void'
-  TRUE,          // 'true'
-  FALSE,         // 'false'
-  RETURN,        // 'return'
-  DOT,           // '.'
-  COMMA,         // ','
-  COLON,         // ':'
-  SEMICOLON,     // ';'
-  LPAREN,        // '('
-  RPAREN,        // ')'
-  LBRACKET,      // '['
-  RBRACKET,      // ']'
-  LBRACE,        // '{'
-  RBRACE,        // '}'
-  PLUS,          // '+'
-  MINUS,         // '-'
-  STAR,          // '*'
-  SLASH,         // '/'
-  AMP,           // '&'
-  BAR,           // '|'
-  EQ,            // '='
-  GT,            // '>'
-  LT,            // '<'
-  BANG,          // '!'
-  EQEQ,          // '=='
-  LTEQ,          // '<='
-  GTEQ,          // '>='
-  BANGEQ,        // '!='
-  IMPLICATION,   // '->'
-  CARET,         // '^'
-  ID,            // ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
-  IntLiteral,    // [0-9]+
-  RealLiteral,   // [0-9]+ '.' [0-9]+)? | '.' [0-9]+
-  StringLiteral, // '" . . ."'
-  EOF_Symbol
+  BOOL_ID,          // 'bool'
+  INT_ID,           // 'int'
+  REAL_ID,          // 'real'
+  STRING_ID,        // 'string'
+  TYPEDEF_ID,       // 'typedef'
+  ENUM_ID,          // 'enum'
+  CLASS_ID,         // 'class'
+  GOAL_ID,          // 'goal'
+  FACT_ID,          // 'fact'
+  PREDICATE_ID,     // 'predicate'
+  NEW_ID,           // 'new'
+  OR_ID,            // 'or'
+  THIS_ID,          // 'this'
+  VOID_ID,          // 'void'
+  TRUE_ID,          // 'true'
+  FALSE_ID,         // 'false'
+  RETURN_ID,        // 'return'
+  DOT_ID,           // '.'
+  COMMA_ID,         // ','
+  COLON_ID,         // ':'
+  SEMICOLON_ID,     // ';'
+  LPAREN_ID,        // '('
+  RPAREN_ID,        // ')'
+  LBRACKET_ID,      // '['
+  RBRACKET_ID,      // ']'
+  LBRACE_ID,        // '{'
+  RBRACE_ID,        // '}'
+  PLUS_ID,          // '+'
+  MINUS_ID,         // '-'
+  STAR_ID,          // '*'
+  SLASH_ID,         // '/'
+  AMP_ID,           // '&'
+  BAR_ID,           // '|'
+  EQ_ID,            // '='
+  GT_ID,            // '>'
+  LT_ID,            // '<'
+  BANG_ID,          // '!'
+  EQEQ_ID,          // '=='
+  LTEQ_ID,          // '<='
+  GTEQ_ID,          // '>='
+  BANGEQ_ID,        // '!='
+  IMPLICATION_ID,   // '->'
+  CARET_ID,         // '^'
+  ID_ID,            // ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+  IntLiteral_ID,    // [0-9]+
+  RealLiteral_ID,   // [0-9]+ '.' [0-9]+)? | '.' [0-9]+
+  StringLiteral_ID, // '" . . ."'
+  EOF_ID
 };
 
 class token
@@ -76,7 +76,7 @@ public:
 class id_token : public token
 {
 public:
-  id_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const std::string &id) : token(symbol::ID, start_line, start_pos, end_line, end_pos), id(id) {}
+  id_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const std::string &id) : token(ID_ID, start_line, start_pos, end_line, end_pos), id(id) {}
   virtual ~id_token() {}
 
 public:
@@ -86,7 +86,7 @@ public:
 class int_token : public token
 {
 public:
-  int_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const long &val) : token(symbol::IntLiteral, start_line, start_pos, end_line, end_pos), val(val) {}
+  int_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const long &val) : token(IntLiteral_ID, start_line, start_pos, end_line, end_pos), val(val) {}
   virtual ~int_token() {}
 
 public:
@@ -96,7 +96,7 @@ public:
 class real_token : public token
 {
 public:
-  real_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const double &val) : token(symbol::RealLiteral, start_line, start_pos, end_line, end_pos), val(val) {}
+  real_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const double &val) : token(RealLiteral_ID, start_line, start_pos, end_line, end_pos), val(val) {}
   virtual ~real_token() {}
 
 public:
@@ -106,7 +106,7 @@ public:
 class string_token : public token
 {
 public:
-  string_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const std::string &str) : token(symbol::StringLiteral, start_line, start_pos, end_line, end_pos), str(str) {}
+  string_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const std::string &str) : token(StringLiteral_ID, start_line, start_pos, end_line, end_pos), str(str) {}
   virtual ~string_token() {}
 
 public:

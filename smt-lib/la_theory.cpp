@@ -47,9 +47,9 @@ var la_theory::new_leq(const lin &left, const lin &right)
     interval i = bounds(expr);
 
     if (i <= c_right) // the constraint is already satisfied..
-        return TRUE;
+        return TRUE_var;
     else if (i > c_right) // the constraint is unsatisfable..
-        return FALSE;
+        return FALSE_var;
 
     var slack = mk_slack(expr);
     std::string s_assertion = "x" + std::to_string(slack) + " <= " + std::to_string(c_right);
@@ -88,9 +88,9 @@ var la_theory::new_geq(const lin &left, const lin &right)
     interval i = bounds(expr);
 
     if (i >= c_right) // the constraint is already satisfied..
-        return TRUE;
+        return TRUE_var;
     else if (i < c_right) // the constraint is unsatisfable..
-        return FALSE;
+        return FALSE_var;
 
     var slack = mk_slack(expr);
     std::string s_assertion = "x" + std::to_string(slack) + " >= " + std::to_string(c_right);

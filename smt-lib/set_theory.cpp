@@ -17,7 +17,7 @@ var set_theory::new_var(const std::unordered_set<set_item *> &items)
     var id = assigns.size();
     assigns.push_back(std::unordered_map<set_item *, var>());
     if (items.size() == 1)
-        assigns.back().insert({*items.begin(), TRUE});
+        assigns.back().insert({*items.begin(), TRUE_var});
     else
     {
         std::vector<lit> lits;
@@ -41,13 +41,13 @@ var set_theory::allows(const var &left, set_item &right) const
     if (assigns[left].find(&right) != assigns[left].end())
         return assigns[left].at(&right);
     else
-        return FALSE;
+        return FALSE_var;
 }
 
 var set_theory::eq(const var &left, const var &right)
 {
     if (left == right)
-        return TRUE;
+        return TRUE_var;
 
     if (left > right)
         return eq(right, left);
@@ -58,7 +58,7 @@ var set_theory::eq(const var &left, const var &right)
             intersection.insert(v.first);
 
     if (intersection.empty())
-        return FALSE;
+        return FALSE_var;
 
     std::string s_expr = "e" + std::to_string(left) + " == " + "e" + std::to_string(right);
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..

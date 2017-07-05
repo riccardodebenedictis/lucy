@@ -65,7 +65,7 @@ token *lexer::next()
                     end_pos = 0;
                     return next();
                 case EOF:
-                    return mk_token(symbol::EOF_Symbol);
+                    return mk_token(EOF_ID);
                 }
             }
         case '*': // in multi-line comment
@@ -93,55 +93,55 @@ token *lexer::next()
         }
         is.unget();
         end_pos--;
-        return mk_token(symbol::SLASH);
+        return mk_token(SLASH_ID);
     case '=':
         end_pos++;
         ch = is.get();
         if (ch == '=')
         {
             end_pos++;
-            return mk_token(symbol::EQEQ);
+            return mk_token(EQEQ_ID);
         }
         is.unget();
-        return mk_token(symbol::EQ);
+        return mk_token(EQ_ID);
     case '>':
         end_pos++;
         ch = is.get();
         if (ch == '=')
         {
             end_pos++;
-            return mk_token(symbol::GTEQ);
+            return mk_token(GTEQ_ID);
         }
         is.unget();
-        return mk_token(symbol::GT);
+        return mk_token(GT_ID);
     case '<':
         end_pos++;
         ch = is.get();
         if (ch == '=')
         {
             end_pos++;
-            return mk_token(symbol::LTEQ);
+            return mk_token(LTEQ_ID);
         }
         is.unget();
-        return mk_token(symbol::LT);
+        return mk_token(LT_ID);
     case '+':
         end_pos++;
-        return mk_token(symbol::PLUS);
+        return mk_token(PLUS_ID);
     case '-':
         end_pos++;
-        return mk_token(symbol::MINUS);
+        return mk_token(MINUS_ID);
     case '|':
         end_pos++;
-        return mk_token(symbol::BAR);
+        return mk_token(BAR_ID);
     case '&':
         end_pos++;
-        return mk_token(symbol::AMP);
+        return mk_token(AMP_ID);
     case '^':
         end_pos++;
-        return mk_token(symbol::CARET);
+        return mk_token(CARET_ID);
     case '!':
         end_pos++;
-        return mk_token(symbol::BANG);
+        return mk_token(BANG_ID);
     case '.':
         end_pos++;
         ch = is.get();
@@ -179,34 +179,34 @@ token *lexer::next()
         }
         is.unget();
         end_pos--;
-        return mk_token(symbol::DOT);
+        return mk_token(DOT_ID);
     case ',':
         end_pos++;
-        return mk_token(symbol::COMMA);
+        return mk_token(COMMA_ID);
     case ';':
         end_pos++;
-        return mk_token(symbol::SEMICOLON);
+        return mk_token(SEMICOLON_ID);
     case ':':
         end_pos++;
-        return mk_token(symbol::COLON);
+        return mk_token(COLON_ID);
     case '(':
         end_pos++;
-        return mk_token(symbol::LPAREN);
+        return mk_token(LPAREN_ID);
     case ')':
         end_pos++;
-        return mk_token(symbol::RPAREN);
+        return mk_token(RPAREN_ID);
     case '[':
         end_pos++;
-        return mk_token(symbol::LBRACKET);
+        return mk_token(LBRACKET_ID);
     case ']':
         end_pos++;
-        return mk_token(symbol::RBRACKET);
+        return mk_token(RBRACKET_ID);
     case '{':
         end_pos++;
-        return mk_token(symbol::LBRACE);
+        return mk_token(LBRACE_ID);
     case '}':
         end_pos++;
-        return mk_token(symbol::RBRACE);
+        return mk_token(RBRACE_ID);
     case '0': // in a number literal..
     case '1':
     case '2':
@@ -291,7 +291,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::BOOL);
+            return mk_token(BOOL_ID);
         }
         else
         {
@@ -340,7 +340,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::CLASS);
+            return mk_token(CLASS_ID);
         }
         else
         {
@@ -381,7 +381,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::ENUM);
+            return mk_token(ENUM_ID);
         }
         else
         {
@@ -420,7 +420,7 @@ token *lexer::next()
             if (!is_id_part(ch))
             {
                 is.unget();
-                return mk_token(symbol::FACT);
+                return mk_token(FACT_ID);
             }
             else
             {
@@ -450,7 +450,7 @@ token *lexer::next()
             if (!is_id_part(ch))
             {
                 is.unget();
-                return mk_token(symbol::FALSE);
+                return mk_token(FALSE_ID);
             }
             else
             {
@@ -494,7 +494,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::GOAL);
+            return mk_token(GOAL_ID);
         }
         else
         {
@@ -527,7 +527,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::INT);
+            return mk_token(INT_ID);
         }
         else
         {
@@ -560,7 +560,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::NEW);
+            return mk_token(NEW_ID);
         }
         else
         {
@@ -585,7 +585,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::OR);
+            return mk_token(OR_ID);
         }
         else
         {
@@ -666,7 +666,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::PREDICATE);
+            return mk_token(PREDICATE_ID);
         }
         else
         {
@@ -705,7 +705,7 @@ token *lexer::next()
             if (!is_id_part(ch))
             {
                 is.unget();
-                return mk_token(symbol::REAL);
+                return mk_token(REAL_ID);
             }
             else
             {
@@ -743,7 +743,7 @@ token *lexer::next()
             if (!is_id_part(ch))
             {
                 is.unget();
-                return mk_token(symbol::RETURN);
+                return mk_token(RETURN_ID);
             }
             else
             {
@@ -803,7 +803,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::STRING);
+            return mk_token(STRING_ID);
         }
         else
         {
@@ -842,7 +842,7 @@ token *lexer::next()
             if (!is_id_part(ch))
             {
                 is.unget();
-                return mk_token(symbol::TRUE);
+                return mk_token(TRUE_ID);
             }
             else
             {
@@ -896,7 +896,7 @@ token *lexer::next()
             if (!is_id_part(ch))
             {
                 is.unget();
-                return mk_token(symbol::TYPEDEF);
+                return mk_token(TYPEDEF_ID);
             }
             else
             {
@@ -940,7 +940,7 @@ token *lexer::next()
         if (!is_id_part(ch))
         {
             is.unget();
-            return mk_token(symbol::VOID);
+            return mk_token(VOID_ID);
         }
         else
         {
@@ -1010,7 +1010,7 @@ token *lexer::next()
         end_pos = 0;
         return finish_whitespaces();
     case EOF:
-        return mk_token(symbol::EOF_Symbol);
+        return mk_token(EOF_ID);
     default:
         error("invalid token..");
         return nullptr;
@@ -1060,7 +1060,7 @@ token *lexer::finish_whitespaces()
             end_pos = 0;
             break;
         case EOF:
-            return mk_token(symbol::EOF_Symbol);
+            return mk_token(EOF_ID);
         default:
             is.unget();
             return next();

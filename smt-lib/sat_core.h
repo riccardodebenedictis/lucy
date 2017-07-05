@@ -13,8 +13,8 @@ class clause;
 class theory;
 class sat_value_listener;
 
-static const var FALSE = 0;
-static const var TRUE = 1;
+static const var FALSE_var = 0;
+static const var TRUE_var = 1;
 
 enum lbool
 {

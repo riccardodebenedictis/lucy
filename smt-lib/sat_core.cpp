@@ -12,12 +12,12 @@ sat_core::sat_core()
 {
     var c_false = new_var();
     var c_true = new_var();
-    assert(c_false == FALSE);
-    assert(c_true == TRUE);
-    assigns[FALSE] = False;
-    assigns[TRUE] = True;
-    level[FALSE] = 0;
-    level[TRUE] = 0;
+    assert(c_false == FALSE_var);
+    assert(c_true == TRUE_var);
+    assigns[FALSE_var] = False;
+    assigns[TRUE_var] = True;
+    level[FALSE_var] = 0;
+    level[TRUE_var] = 0;
 }
 
 sat_core::~sat_core()
@@ -59,7 +59,7 @@ var sat_core::new_eq(const lit &left, const lit &right)
 {
     assert(root_level());
     if (left == right)
-        return TRUE;
+        return TRUE_var;
     if (left.v > right.v)
         return new_eq(right, left);
     std::string s_expr = (left.sign ? "b" : "!b") + std::to_string(left.v) + " == " + (right.sign ? "b" : "!b") + std::to_string(right.v);
@@ -298,7 +298,7 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
 {
     std::set<var> seen;
     int counter = 0;
-    lit p = lit(FALSE, 0);
+    lit p = lit(FALSE_var, 0);
     std::vector<lit> p_reason = cnfl;
     out_learnt.push_back(lit(0, false));
     out_btlevel = 0;
