@@ -16,9 +16,7 @@ class sat_value_listener
     virtual ~sat_value_listener()
     {
         for (const auto &v : sat_vars)
-        {
             sat.forget(v, this);
-        }
     }
 
   protected:

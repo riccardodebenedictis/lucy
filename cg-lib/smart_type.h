@@ -39,7 +39,6 @@ public:
     while (!q.empty())
     {
       for (const auto &f : q.front()->get_fields())
-      {
         if (!f.second->synthetic)
         {
           item *i = &*atm.get(f.first);
@@ -51,7 +50,7 @@ public:
           else if (enum_item *ee = dynamic_cast<enum_item *>(i))
             listen_set(ee->ev);
         }
-      }
+
       for (const auto &st : q.front()->get_supertypes())
         q.push(st);
       q.pop();

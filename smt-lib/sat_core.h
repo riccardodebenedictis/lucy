@@ -42,10 +42,7 @@ class sat_core
     var new_disj(const std::vector<lit> &ls);
     var new_exct_one(const std::vector<lit> &ls);
 
-    bool eq(const lit &left, const lit &right)
-    {
-        return new_clause({!left, right}) && new_clause({left, !right});
-    }
+    bool eq(const lit &left, const lit &right) { return new_clause({!left, right}) && new_clause({left, !right}); }
 
     bool exct_one(const std::vector<lit> &lits)
     {

@@ -13,20 +13,9 @@ public:
   lit(var v, bool sign);
   virtual ~lit();
 
-  lit operator!() const
-  {
-    return lit(v, !sign);
-  }
-
-  bool operator==(const lit &rhs) const
-  {
-    return v == rhs.v && sign == rhs.sign;
-  }
-
-  bool operator!=(const lit &rhs) const
-  {
-    return !operator==(rhs);
-  }
+  lit operator!() const { return lit(v, !sign); }
+  bool operator==(const lit &rhs) const { return v == rhs.v && sign == rhs.sign; }
+  bool operator!=(const lit &rhs) const { return !operator==(rhs); }
 
   std::string to_string() const;
 

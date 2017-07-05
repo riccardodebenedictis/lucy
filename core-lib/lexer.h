@@ -143,13 +143,9 @@ private:
   {
     token *tk = nullptr;
     if (str.find('.') == str.npos)
-    {
       tk = new int_token(start_line, start_pos, end_line, end_pos, std::stol(str));
-    }
     else
-    {
       tk = new real_token(start_line, start_pos, end_line, end_pos, std::stod(str));
-    }
     start_line = end_line;
     start_pos = end_pos;
     return tk;
