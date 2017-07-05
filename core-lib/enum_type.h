@@ -8,9 +8,14 @@ namespace lucy
 
 class item;
 
+namespace ast
+{
+class enum_declaration;
+}
+
 class enum_type : public type
 {
-  friend class type_refinement_listener;
+  friend class ast::enum_declaration;
 
 public:
   enum_type(core &cr, scope &scp, std::string name);

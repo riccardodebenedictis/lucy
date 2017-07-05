@@ -13,12 +13,25 @@ class constructor;
 class context;
 class atom;
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC type : public scope
+namespace ast
 {
-  friend class type_declaration_listener;
-  friend class type_refinement_listener;
+class typedef_declaration;
+class enum_declaration;
+class class_declaration;
+class constructor_declaration;
+class method_declaration;
+class predicate_declaration;
+}
+
+class type : public scope
+{
   friend class core;
+  friend class ast::typedef_declaration;
+  friend class ast::enum_declaration;
+  friend class ast::class_declaration;
+  friend class ast::constructor_declaration;
+  friend class ast::method_declaration;
+  friend class ast::predicate_declaration;
 
 public:
   type(core &cr, scope &scp, const std::string &name, bool primitive = false);
@@ -37,36 +50,33 @@ public:
   constructor &get_constructor(const std::vector<const type *> &ts) const;
   std::vector<constructor *> get_constructors() const noexcept { return constructors; }
 
-  field &get_field(const std::string &name) const override;
+  field &get_field(const std::string &f_name) const override;
 
-  method &get_method(const std::string &name, const std::vector<const type *> &ts) const override;
+  method &get_method(const std::string &m_name, const std::vector<const type *> &ts) const override;
   std::vector<method *> get_methods() const noexcept override
   {
     std::vector<method *> c_methods;
     for (const auto &ms : methods)
-    {
       c_methods.insert(c_methods.begin(), ms.second.begin(), ms.second.end());
-    }
     return c_methods;
   }
 
-  predicate &get_predicate(const std::string &name) const override;
+  predicate &get_predicate(const std::string &p_name) const override;
   std::unordered_map<std::string, predicate *> get_predicates() const noexcept override { return predicates; }
 
-  type &get_type(const std::string &name) const override;
+  type &get_type(const std::string &t_name) const override;
   std::unordered_map<std::string, type *> get_types() const noexcept override { return types; }
 
 protected:
   static void inherit(predicate &base, predicate &derived);
 
-  virtual void new_predicate(predicate &p) {}
-
   void set_var(var ctr_var);
   void restore_var();
 
 private:
-  virtual bool new_fact(atom &a) { return true; }
-  virtual bool new_goal(atom &a) { return true; }
+  virtual void new_predicate(predicate &p) {}
+  virtual void new_fact(atom &a) {}
+  virtual void new_goal(atom &a) {}
 
 public:
   const std::string name;
@@ -81,7 +91,7 @@ protected:
   std::vector<expr> instances;
 };
 
-class DLL_PUBLIC bool_type : public type
+class bool_type : public type
 {
 public:
   bool_type(core &cr);
@@ -91,7 +101,7 @@ public:
   expr new_instance(context &ctx) override;
 };
 
-class DLL_PUBLIC int_type : public type
+class int_type : public type
 {
 public:
   int_type(core &cr);
@@ -101,7 +111,7 @@ public:
   expr new_instance(context &ctx) override;
 };
 
-class DLL_PUBLIC real_type : public type
+class real_type : public type
 {
 public:
   real_type(core &cr);
@@ -111,7 +121,7 @@ public:
   expr new_instance(context &ctx) override;
 };
 
-class DLL_PUBLIC string_type : public type
+class string_type : public type
 {
 public:
   string_type(core &cr);

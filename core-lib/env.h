@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "context.h"
 #include <unordered_map>
 #include <string>
@@ -10,13 +9,25 @@ namespace lucy
 
 class core;
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC env
+namespace ast
+{
+class assignment_statement;
+class local_field_statement;
+class formula_statement;
+class return_statement;
+}
+
+class env
 {
   friend class context;
   friend class scope;
-  friend class statement_visitor;
-  friend class expression_visitor;
+  friend class method;
+  friend class predicate;
+  friend class constructor;
+  friend class ast::assignment_statement;
+  friend class ast::local_field_statement;
+  friend class ast::formula_statement;
+  friend class ast::return_statement;
 
 public:
   env(core &cr, const context ctx);
@@ -29,8 +40,6 @@ public:
 
   virtual expr get(const std::string &name) const;
   std::unordered_map<std::string, expr> get_items() const noexcept { return items; }
-
-  bool is_instantiated(const std::string &name) const { return items.find(name) != items.end(); }
 
 private:
   unsigned ref_count;

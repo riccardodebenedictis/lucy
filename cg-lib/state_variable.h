@@ -21,22 +21,15 @@ private:
   std::vector<flaw *> get_flaws() override;
 
   void new_predicate(predicate &pred) override;
-  bool new_fact(atom &atm) override;
-  bool new_goal(atom &atm) override;
+  void new_fact(atom &atm) override;
+  void new_goal(atom &atm) override;
 
   class sv_constructor : public constructor
   {
   public:
-    sv_constructor(state_variable &sv) : constructor(sv.graph, sv, {}) {}
+    sv_constructor(state_variable &sv) : constructor(sv.graph, sv, {}, {}, {}) {}
     sv_constructor(sv_constructor &&) = delete;
-
     virtual ~sv_constructor() {}
-
-  private:
-    bool invoke(item &i, const std::vector<expr> &exprs) override
-    {
-      return true;
-    }
   };
 
   class sv_atom_listener : public atom_listener
@@ -81,10 +74,10 @@ private:
     virtual ~sv_resolver();
 
   private:
-    bool apply() override;
+    void apply() override;
 
   private:
-    const smt::lit to_do;
+    const lit to_do;
   };
 
   class order_resolver : public sv_resolver
@@ -111,8 +104,8 @@ private:
     std::string get_label() const override
     {
       // this should be an enumerative expression (or the resolver should not have been created)..
-      enum_expr scp = a.get("scope");
-      return "scope (e" + std::to_string(scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
+      enum_expr c_scp = a.get("scope");
+      return "scope (e" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }
 
   private:

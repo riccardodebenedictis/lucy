@@ -1,12 +1,11 @@
 #pragma once
 
-#include "visibility.h"
 #include "la_theory.h"
 
 namespace smt
 {
 
-class DLL_PUBLIC la_value_listener
+class la_value_listener
 {
     friend class la_theory;
 
@@ -17,9 +16,7 @@ class DLL_PUBLIC la_value_listener
     virtual ~la_value_listener()
     {
         for (const auto &v : la_vars)
-        {
             th.forget(v, this);
-        }
     }
 
   protected:

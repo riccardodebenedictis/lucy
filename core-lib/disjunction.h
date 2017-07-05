@@ -1,27 +1,46 @@
 #pragma once
 
 #include "scope.h"
+#include "la_theory.h"
+
+using namespace smt;
 
 namespace lucy
 {
 
-class conjunction;
-
-class DLL_PUBLIC disjunction : public scope
+namespace ast
 {
-  friend class type_refinement_listener;
+class statement;
+}
 
+class context;
+
+class conjunction : public scope
+{
 public:
-  disjunction(core &cr, scope &scp);
+  conjunction(core &cr, scope &scp, const lin &cst, const std::vector<const ast::statement *> &stmnts);
+  conjunction(const conjunction &that) = delete;
+  virtual ~conjunction();
+
+  lin get_cost() const { return cost; }
+
+  void apply(context &ctx) const;
+
+private:
+  const lin cost;
+  const std::vector<const ast::statement *> statements;
+};
+
+class disjunction : public scope
+{
+public:
+  disjunction(core &cr, scope &scp, const std::vector<const conjunction *> &conjs);
   disjunction(const disjunction &orig) = delete;
   virtual ~disjunction();
 
-  std::vector<conjunction *> get_conjunctions() const
-  {
-    return conjunctions;
-  }
+  const std::vector<const conjunction *> get_conjunctions() const { return conjunctions; }
 
 private:
-  std::vector<conjunction *> conjunctions;
+  const std::vector<const conjunction *> conjunctions;
 };
 }

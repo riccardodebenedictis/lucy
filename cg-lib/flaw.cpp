@@ -1,11 +1,13 @@
 #include "flaw.h"
 #include "resolver.h"
 #include "causal_graph.h"
+#include <algorithm>
+#include <cassert>
 
 namespace cg
 {
 
-flaw::flaw(causal_graph &graph, bool disjunctive) : graph(graph), exclusive(exclusive), supports(graph.resolvers.begin(), graph.resolvers.end())
+flaw::flaw(causal_graph &graph, const bool &exclusive) : graph(graph), exclusive(exclusive), supports(graph.resolvers.begin(), graph.resolvers.end())
 {
     // the cuases for this flaw is the current resolvers of the causal graph..
     for (const auto &r : graph.resolvers)
@@ -52,7 +54,7 @@ void flaw::init()
     {
     case 0:
         // the flaw is necessarily in_plan..
-        in_plan = TRUE;
+        in_plan = TRUE_var;
         break;
     case 1:
         // the flaw is in_plan if its cause is in_plan..
@@ -65,7 +67,7 @@ void flaw::init()
     initialized = true;
 }
 
-bool flaw::expand()
+void flaw::expand()
 {
     assert(initialized);
     assert(!expanded);
@@ -79,18 +81,21 @@ bool flaw::expand()
     {
     case 0:
         // there is no way for solving this flaw..
-        return graph.core::sat.new_clause({lit(in_plan, false)});
+        if (!graph.core::sat.new_clause({lit(in_plan, false)}))
+            throw unsolvable_exception();
+        break;
     case 1:
         // there is a unique way for solving this flaw: this is a trivial flaw..
-        return graph.core::sat.new_clause({lit(in_plan, false), lit(resolvers.front()->chosen, true)});
+        if (!graph.core::sat.new_clause({lit(in_plan, false), lit(resolvers.front()->chosen, true)}))
+            throw unsolvable_exception();
+        break;
     default:
         // we need to take a decision for solving this flaw..
-        std::vector<smt::lit> r_chs;
+        std::vector<lit> r_chs;
         for (const auto &r : resolvers)
-        {
-            r_chs.push_back(smt::lit(r->chosen, true));
-        }
-        return graph.core::sat.new_clause({lit(in_plan, false), lit(exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs), true)});
+            r_chs.push_back(lit(r->chosen, true));
+        if (!graph.core::sat.new_clause({lit(in_plan, false), lit(exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs), true)}))
+            throw unsolvable_exception();
     }
 }
 

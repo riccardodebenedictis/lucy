@@ -10,18 +10,18 @@ class sat_core;
 
 class clause
 {
-    friend class sat_core;
+  friend class sat_core;
 
-  private:
-    clause(sat_core &s, const std::vector<lit> &lits);
-    clause(const clause &orig) = delete;
-    ~clause();
+private:
+  clause(sat_core &s, const std::vector<lit> &lits);
+  clause(const clause &orig) = delete;
+  ~clause();
 
-    bool propagate(const lit &p);
-    std::string to_string() const;
+  bool propagate(const lit &p);
+  std::string to_string() const;
 
-  private:
-    sat_core &s;
-    std::vector<lit> lits;
+private:
+  sat_core &s;
+  std::vector<lit> lits;
 };
 }

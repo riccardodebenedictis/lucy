@@ -5,7 +5,7 @@
 namespace smt
 {
 
-class DLL_PUBLIC sat_value_listener
+class sat_value_listener
 {
     friend class sat_core;
 
@@ -16,9 +16,7 @@ class DLL_PUBLIC sat_value_listener
     virtual ~sat_value_listener()
     {
         for (const auto &v : sat_vars)
-        {
             sat.forget(v, this);
-        }
     }
 
   protected:

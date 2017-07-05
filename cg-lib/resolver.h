@@ -20,9 +20,9 @@ public:
   resolver(const resolver &orig) = delete;
   virtual ~resolver();
 
-  virtual bool apply() = 0;
+  virtual void apply() = 0;
 
-  smt::var get_chosen() const { return chosen; }
+  var get_chosen() const { return chosen; }
   flaw &get_effect() const { return effect; }
   std::vector<flaw *> get_preconditions() const { return preconditions; }
   double get_cost() const;

@@ -11,7 +11,7 @@ class causal_graph;
 class flaw;
 class resolver;
 
-class DLL_PUBLIC causal_graph_listener
+class causal_graph_listener
 {
   friend class causal_graph;
 

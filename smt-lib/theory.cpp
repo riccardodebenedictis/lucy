@@ -10,9 +10,7 @@ theory::theory(sat_core &sat) : sat(sat) { sat.add_theory(*this); }
 theory::~theory()
 {
     for (const auto &lo : listening_on)
-    {
         sat.unbind(lo, *this);
-    }
     listening_on.clear();
     sat.remove_theory(*this);
 }
@@ -33,8 +31,5 @@ void theory::unbind(var var)
     sat.unbind(var, *this);
 }
 
-void theory::record(const std::vector<lit> &cls)
-{
-    sat.record(cls);
-}
+void theory::record(const std::vector<lit> &cls) { sat.record(cls); }
 }

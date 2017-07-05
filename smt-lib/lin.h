@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include <map>
 
 namespace smt
@@ -8,8 +7,7 @@ namespace smt
 
 typedef size_t var;
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC lin
+class lin
 {
 public:
   lin();

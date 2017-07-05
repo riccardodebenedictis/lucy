@@ -25,24 +25,15 @@ private:
   std::vector<flaw *> get_flaws() override;
 
   void new_predicate(predicate &pred) override;
-  bool new_fact(atom &atm) override;
-  bool new_goal(atom &atm) override;
+  void new_fact(atom &atm) override;
+  void new_goal(atom &atm) override;
 
   class rr_constructor : public constructor
   {
   public:
-    rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}) {}
+    rr_constructor(reusable_resource &rr);
     rr_constructor(rr_constructor &&) = delete;
-
-    virtual ~rr_constructor() {}
-
-  private:
-    bool invoke(item &i, const std::vector<expr> &exprs) override
-    {
-      assert(exprs.size() == 1);
-      set(i, REUSABLE_RESOURCE_CAPACITY, exprs[0]);
-      return true;
-    }
+    virtual ~rr_constructor();
   };
 
   class use_predicate : public predicate
@@ -50,11 +41,7 @@ private:
   public:
     use_predicate(reusable_resource &rr);
     use_predicate(use_predicate &&) = delete;
-
     virtual ~use_predicate();
-
-  private:
-    bool apply_rule(atom &a) const override;
   };
 
   class rr_atom_listener : public atom_listener
@@ -99,7 +86,7 @@ private:
     virtual ~rr_resolver();
 
   private:
-    bool apply() override;
+    void apply() override;
 
   private:
     const lit to_do;
@@ -129,8 +116,8 @@ private:
     std::string get_label() const override
     {
       // this should be an enumerative expression (or the resolver should not have been created)..
-      enum_expr scp = a.get("scope");
-      return "scope (e" + std::to_string(scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
+      enum_expr c_scp = a.get("scope");
+      return "scope (e" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }
 
   private:

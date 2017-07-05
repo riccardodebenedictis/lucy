@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/build/lucy",
             "args": [
-                "${workspaceRoot}/examples/blocks_3.rddl",
+                "${workspaceRoot}/examples/example_0.rddl",
                 "output.json"
             ],
             "stopAtEntry": false,
@@ -20,6 +20,20 @@
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
+                },
+                {
+                    "text": "set target-async 1"
+                },
+                {
+                    "text": "set pagination off"
+                },
+                {
+                    "text": "set non-stop on"
+                },
+                {
+                    "description": "Skip SIGSEGV",
+                    "text": "handle SIGSEGV nostop noprint pass",
+                    "ignoreFailures": true
                 }
             ]
         },
@@ -29,7 +43,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/build/lucy.exe",
             "args": [
-                "${workspaceRoot}/examples/blocks_2.rddl",
+                "${workspaceRoot}/examples/blocks_5.rddl",
                 "output.json"
             ],
             "stopAtEntry": false,
@@ -37,7 +51,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "%PATH%;${workspaceRoot}/build/smt-lib;${workspaceRoot}/build/core-lib;${workspaceRoot}/build/cg-lib;C:/Program Files (x86)/LIBANTLR4/lib"
+                    "value": "%PATH%;C:/Program Files/Java/jre1.8.0_131/bin/server"
                 }
             ],
             "externalConsole": true,

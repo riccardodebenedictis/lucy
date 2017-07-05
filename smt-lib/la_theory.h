@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "theory.h"
 #include "lin.h"
 #include "interval.h"
@@ -14,7 +13,7 @@ class la_value_listener;
 class assertion;
 class row;
 
-class DLL_PUBLIC la_theory : public theory
+class la_theory : public theory
 {
   friend class la_value_listener;
   friend class assertion;
@@ -36,9 +35,7 @@ public:
   {
     interval b(l.known_term);
     for (const auto &term : l.vars)
-    {
       b += bounds(term.first) * term.second;
-    }
     return b;
   }
 
@@ -50,9 +47,7 @@ public:
   {
     double v(l.known_term);
     for (const auto &term : l.vars)
-    {
       v += value(term.first) * term.second;
-    }
     return v;
   }
 

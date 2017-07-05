@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "lit.h"
 #include <vector>
 #include <queue>
@@ -14,18 +13,17 @@ class clause;
 class theory;
 class sat_value_listener;
 
-static const var FALSE = 0;
-static const var TRUE = 1;
+static const var FALSE_var = 0;
+static const var TRUE_var = 1;
 
 enum lbool
 {
-    True,
     False,
+    True,
     Undefined
 };
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC sat_core
+class sat_core
 {
     friend class clause;
     friend class theory;
@@ -44,10 +42,7 @@ class DLL_PUBLIC sat_core
     var new_disj(const std::vector<lit> &ls);
     var new_exct_one(const std::vector<lit> &ls);
 
-    bool eq(const lit &left, const lit &right)
-    {
-        return new_clause({!left, right}) && new_clause({left, !right});
-    }
+    bool eq(const lit &left, const lit &right) { return new_clause({!left, right}) && new_clause({left, !right}); }
 
     bool exct_one(const std::vector<lit> &lits)
     {

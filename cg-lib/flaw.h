@@ -17,13 +17,13 @@ class flaw
   friend class resolver;
 
 public:
-  flaw(causal_graph &graph, bool disjunctive = false);
+  flaw(causal_graph &graph, const bool &exclusive = false);
   flaw(const flaw &orig) = delete;
   virtual ~flaw();
 
   bool is_expanded() const { return expanded; }
   bool is_initialized() const { return initialized; }
-  smt::var get_in_plan() const { return in_plan; }
+  var get_in_plan() const { return in_plan; }
   std::vector<resolver *> get_causes() const { return causes; }
   double get_cost() const { return cost; }
 
@@ -31,7 +31,7 @@ public:
 
 private:
   virtual void init();
-  bool expand();
+  void expand();
   virtual void compute_resolvers() = 0;
   bool has_subgoals();
 

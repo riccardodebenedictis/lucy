@@ -13,7 +13,7 @@ class causal_graph_listener;
 
 class resolver;
 
-class DLL_PUBLIC causal_graph : public core, public theory
+class causal_graph : public core, public theory
 {
   friend class flaw;
   friend class atom_flaw;
@@ -27,9 +27,9 @@ public:
   expr new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals) override;
 
 private:
-  bool new_fact(atom &atm) override;
-  bool new_goal(atom &atm) override;
-  void new_disjunction(context &ctx, disjunction &disj) override;
+  void new_fact(atom &atm) override;
+  void new_goal(atom &atm) override;
+  void new_disjunction(context &d_ctx, const disjunction &disj) override;
 
 public:
   bool solve() override;
@@ -44,8 +44,8 @@ private:
   void push() override;
   void pop() override;
 
-  bool build();
-  bool add_layer();
+  void build();
+  void add_layer();
   bool has_solution();
   bool is_deferrable(flaw &f);
   void set_cost(flaw &f, double cost);
@@ -80,8 +80,8 @@ private:
   std::list<resolver *> resolvers;
   // the current flaws..
   std::unordered_set<flaw *> flaws;
-  // the in_plan variables (boolean variable to flaw) of the flaws..
-  std::unordered_map<var, flaw *> in_plan;
+  // the in_plan variables (boolean variable to flaws) of the flaws..
+  std::unordered_map<var, std::vector<flaw *>> in_plan;
   // the chosen variables (boolean variable to resolver) of the resolvers..
   std::unordered_map<var, resolver *> chosen;
   // this variable represents the validity of the current graph..

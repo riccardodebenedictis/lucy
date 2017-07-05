@@ -7,12 +7,13 @@ namespace cg
 {
 
 atom_flaw::atom_flaw(causal_graph &graph, atom &atm, bool is_fact) : flaw(graph, true), atm(atm), is_fact(is_fact) {}
-
 atom_flaw::~atom_flaw() {}
 
 void atom_flaw::compute_resolvers()
 {
-    bool solved = false;
+    assert(graph.core::sat.value(get_in_plan()) != False);
+    bool unifiable = false; // becomes true if this flaw can be solved through unification..
+    // this is the state of the atom associated to this flaw..
     std::unordered_set<set_item *> a_state = graph.set_th.value(atm.state);
     assert(!a_state.empty());
     if (a_state.find(graph.unified) != a_state.end())
@@ -20,40 +21,59 @@ void atom_flaw::compute_resolvers()
         for (const auto &i : atm.tp.get_instances())
         {
             if (&*i == &atm)
-            {
                 continue;
-            }
 
+            // this is the atom we are checking for unification..
             atom *c_a = static_cast<atom *>(&*i);
-            if (!graph.reason.at(c_a)->is_expanded())
-            {
+            // this is the target flaw (i.e. the one we are checking for unification) and cannot be in the current flaw's causes' effects..
+            flaw *target = graph.reason.at(c_a);
+
+            if (!target->is_expanded())
                 continue;
-            }
+
+            // this is the state of the atom we are checking for unification..
             std::unordered_set<set_item *> c_state = graph.set_th.value(c_a->state);
             assert(!c_state.empty());
+
             if (c_state.find(graph.active) == c_state.end() || !atm.equates(*c_a))
-            {
                 continue;
-            }
+
             // atom c_a is a good candidate for unification..
             std::vector<lit> unif_lits;
             std::unordered_set<flaw *> seen;
             std::queue<flaw *> q;
-            q.push(graph.reason.at(&atm));
-            q.push(graph.reason.at(c_a));
+            assert(graph.core::sat.value(get_in_plan()) != False);
+            q.push(this);
+            bool is_cyclic = false; // becomes true if this unification candidate would introduce a cycle in the graph..
             while (!q.empty())
             {
-                assert(graph.core::sat.value(q.front()->get_in_plan()) != False);
-                if (seen.find(q.front()) != seen.end())
+                if (q.front() == target) // unification would introduce a cycle..
                 {
-                    // we do not allow cyclic causality..
+                    is_cyclic = true;
                     break;
                 }
+                assert(seen.find(q.front()) == seen.end());
                 seen.insert(q.front());
                 for (const auto &cause : q.front()->get_causes())
                 {
                     assert(graph.core::sat.value(cause->get_chosen()) != False);
                     if (graph.core::sat.value(cause->get_chosen()) != True)
+                        unif_lits.push_back(lit(cause->get_chosen(), true));
+                    q.push(&cause->get_effect()); // we push its effect for allowing the prevention of cyclic causality..
+                }
+                q.pop();
+            }
+            if (is_cyclic)
+                continue; // we skip this instance so as to prevent cyclic causality..
+
+            assert(seen.find(target) == seen.end());
+            q.push(target);
+            while (!q.empty())
+            {
+                for (const auto &cause : q.front()->get_causes())
+                {
+                    assert(graph.core::sat.value(cause->get_chosen()) != False);
+                    if (seen.find(&cause->get_effect()) == seen.end() && graph.core::sat.value(cause->get_chosen()) != True)
                     {
                         unif_lits.push_back(lit(cause->get_chosen(), true));
                         q.push(&cause->get_effect());
@@ -61,90 +81,68 @@ void atom_flaw::compute_resolvers()
                 }
                 q.pop();
             }
-            if (!q.empty())
-            {
-                continue;
-            }
-            if (a_state.size() > 1)
-            {
-                assert(graph.core::sat.value(graph.set_th.allows(atm.state, *graph.unified)) != False);
-                unif_lits.push_back(lit(graph.set_th.allows(atm.state, *graph.unified), true));
-            }
-            if (c_state.size() > 1)
-            {
-                assert(graph.core::sat.value(graph.set_th.allows(c_a->state, *graph.active)) != False);
-                unif_lits.push_back(lit(graph.set_th.allows(c_a->state, *graph.active), true));
-            }
+
+            if (a_state.size() > 1)                                                             // if the state can be either 'unified' or something else..
+                unif_lits.push_back(lit(graph.set_th.allows(atm.state, *graph.unified), true)); // we force the state to be 'unified' within the unification literals..
+            if (c_state.size() > 1)                                                             // if the state can be either 'active' or something else..
+                unif_lits.push_back(lit(graph.set_th.allows(c_a->state, *graph.active), true)); // we force the state to be 'active' within the unification literals..
+
+            // the equality propositional variable..
             var eq_v = atm.eq(*c_a);
-            if (graph.core::sat.value(eq_v) == False)
-            {
+
+            if (graph.core::sat.value(eq_v) == False) // the two atoms cannot unify, hence, we skip this instance..
                 continue;
-            }
+
             if (graph.core::sat.value(eq_v) != True)
-            {
                 unif_lits.push_back(lit(atm.eq(*c_a), true));
-            }
+
             if (unif_lits.empty() || graph.core::sat.check(unif_lits))
             {
                 // unification is actually possible!
                 unify_atom *u_res = new unify_atom(graph, *this, atm, *c_a, unif_lits);
                 add_resolver(*u_res);
-                graph.new_causal_link(*graph.reason.at(c_a), *u_res);
-                graph.set_cost(*this, graph.reason.at(c_a)->get_cost());
+                graph.new_causal_link(*target, *u_res);
+                graph.set_cost(*this, target->get_cost());
                 // making this resolver false might make the heuristic blind..
                 graph.chosen.insert({u_res->get_chosen(), u_res});
                 graph.bind(u_res->get_chosen());
-                solved = true;
+                unifiable = true;
             }
         }
     }
-    if (!solved)
+    if (!unifiable)
     {
         // we remove unification from atom state..
-        bool not_unify = graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *graph.unified), false)});
-        assert(not_unify);
+        if (!graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *graph.unified), false)}))
+            throw unsolvable_exception();
     }
+
     if (is_fact)
-    {
         add_resolver(*new add_fact(graph, *this, atm));
-    }
     else
-    {
         add_resolver(*new expand_goal(graph, *this, atm));
-    }
 }
 
 atom_flaw::add_fact::add_fact(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(0), atm_flaw), atm(atm) {}
-
 atom_flaw::add_fact::~add_fact() {}
 
-bool atom_flaw::add_fact::apply()
-{
-    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)});
-}
+void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)}); }
 
 atom_flaw::expand_goal::expand_goal(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(1), atm_flaw), atm(atm) {}
-
 atom_flaw::expand_goal::~expand_goal() {}
 
-bool atom_flaw::expand_goal::apply()
+void atom_flaw::expand_goal::apply()
 {
-    return graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)}) && static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
+    graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)});
+    static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
 }
 
 atom_flaw::unify_atom::unify_atom(causal_graph &graph, atom_flaw &atm_flaw, atom &atm, atom &with, const std::vector<lit> &unif_lits) : resolver(graph, lin(0), atm_flaw), atm(atm), with(with), unif_lits(unif_lits) {}
-
 atom_flaw::unify_atom::~unify_atom() {}
 
-bool atom_flaw::unify_atom::apply()
+void atom_flaw::unify_atom::apply()
 {
     for (const auto &v : unif_lits)
-    {
-        if (!graph.core::sat.new_clause({lit(chosen, false), v}))
-        {
-            return false;
-        }
-    }
-    return true;
+        graph.core::sat.new_clause({lit(chosen, false), v});
 }
 }

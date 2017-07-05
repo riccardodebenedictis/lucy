@@ -1,26 +1,30 @@
 #pragma once
 
 #include "scope.h"
+#include "statement.h"
 
 namespace lucy
 {
 
 class context;
+class item;
 
 class method : public scope
 {
 	friend class type;
 	friend class core;
-	friend class expression_visitor;
 
   public:
-	method(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args, const type *const return_type = nullptr);
+	method(core &cr, scope &scp, const type *const return_type, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts);
 	method(const method &orig) = delete;
 	virtual ~method();
 
 	const std::vector<field *> get_args() const { return args; }
 
-	virtual bool invoke(context &ctx, const std::vector<expr> &exprs) = 0;
+	item *invoke(context &ctx, const std::vector<expr> &exprs);
+
+  public:
+	const type *const return_type;
 
   public:
 	const std::string name;
@@ -28,7 +32,7 @@ class method : public scope
   protected:
 	const std::vector<field *> args;
 
-  public:
-	const type *const return_type;
+  private:
+	const std::vector<ast::statement *> statements;
 };
 }

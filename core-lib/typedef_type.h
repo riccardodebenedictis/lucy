@@ -1,7 +1,7 @@
 #pragma once
 
 #include "type.h"
-#include "parser/ratioParser.h"
+#include "expression.h"
 
 namespace lucy
 {
@@ -9,14 +9,14 @@ namespace lucy
 class typedef_type : public type
 {
 public:
-  typedef_type(core &cr, scope &scp, std::string name, type &base_type, ratioParser::ExprContext &expr_c);
+  typedef_type(core &cr, scope &scp, const std::string &name, const type &base_type, const ast::expression *const e);
   typedef_type(const typedef_type &orig) = delete;
   virtual ~typedef_type();
 
   expr new_instance(context &ctx) override;
 
 private:
-  type &base_type;
-  ratioParser::ExprContext &expr_c;
+  const type &base_type;
+  const ast::expression *const xpr;
 };
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "lit.h"
 #include <vector>
 #include <set>
@@ -10,8 +9,7 @@ namespace smt
 
 class sat_core;
 
-#pragma warning(disable : 4251)
-class DLL_PUBLIC theory
+class theory
 {
   friend class sat_core;
 
@@ -29,27 +27,29 @@ protected:
 
 private:
   /**
-        * Asks the theory to perform propagation after the given literal has been assigned. Returns true if the propagation succeeds or false if an inconsistency is found. In case of inconsistency, the confl vector is filled with the conflicting constraint.
-        *
-        * @param p the literal that has been assigned.
-        * @param confl the vector of literals representing the conflicting constraint.
-        * @return true if propagation succeeds or false if an inconsistency is found.
-        */
+  * Asks the theory to perform propagation after the given literal has been assigned. Returns true if the propagation succeeds or false if an inconsistency is found. In case of inconsistency, the confl vector is filled with the conflicting constraint.
+  *
+  * @param p the literal that has been assigned.
+  * @param confl the vector of literals representing the conflicting constraint.
+  * @return true if propagation succeeds or false if an inconsistency is found.
+  */
   virtual bool propagate(const lit &p, std::vector<lit> &confl) = 0;
+
   /**
-        * Checks whether the theory is consistent with the given propositional assignments. Returns true if the theory is consistent or false if an inconsistency is found. In case of inconsistency, the confl vector is filled with the conflicting constraint.
-        *
-        * @return true if the theory is consistent or false if an inconsistency is found.
-        */
+  * Checks whether the theory is consistent with the given propositional assignments. Returns true if the theory is consistent or false if an inconsistency is found. In case of inconsistency, the confl vector is filled with the conflicting constraint.
+  *
+  * @return true if the theory is consistent or false if an inconsistency is found.
+  */
   virtual bool check(std::vector<lit> &confl) = 0;
+
   /**
-        * Notifies the theory that some information for subsequent backtracking might need to be stored.
-        */
+  * Notifies the theory that some information for subsequent backtracking might need to be stored.
+  */
   virtual void push() = 0;
 
   /**
-        * Notifies the theory that a backtracking step is required.
-        */
+  * Notifies the theory that a backtracking step is required.
+  */
   virtual void pop() = 0;
 
 protected:

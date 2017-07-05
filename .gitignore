@@ -4,7 +4,6 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/c_cpp_properties.json
-/core-lib/parser/.antlr
 /build
 /gui/nbproject/private/
 /gui/build/

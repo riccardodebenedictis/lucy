@@ -16,9 +16,7 @@ class set_value_listener
     virtual ~set_value_listener()
     {
         for (const auto &v : la_vars)
-        {
             th.forget(v, this);
-        }
     }
 
   protected:

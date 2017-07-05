@@ -2,28 +2,32 @@ cmake_minimum_required(VERSION 3.7)
 
 project ( lucy VERSION 0.1 LANGUAGES CXX )
 
+find_package( Java )
+find_package( JNI )
+
+if( Java_FOUND )
+  include( UseJava )
+  file( GLOB GUI_SOURCES "gui/*.java" )
+  set(CMAKE_JAVA_INCLUDE_PATH gui/lib/prefuse.jar)
+  add_jar( lucy_gui ${GUI_SOURCES} )
+  configure_file(gui/lib/prefuse.jar ${CMAKE_BINARY_DIR}/prefuse.jar COPYONLY)
+
+  file( GLOB SOURCES main.cpp "smt-lib/*.cpp" "core-lib/*.cpp" "cg-lib/*.cpp" "gui/*.cpp" )
+  include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib ${CMAKE_SOURCE_DIR}/gui ${JNI_INCLUDE_DIRS} )
+else()
+  file( GLOB SOURCES main.cpp "smt-lib/*.cpp" "core-lib/*.cpp" "cg-lib/*.cpp" )
+  include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
+endif()
+
+configure_file(cg-lib/init.rddl ${CMAKE_BINARY_DIR}/init.rddl COPYONLY)
+
+add_executable( lucy ${SOURCES} )
+
+if( Java_FOUND )
+  target_link_libraries( lucy ${JNI_LIBRARIES} )
+endif()
+
 enable_testing()
-
-add_subdirectory( smt-lib )
-add_subdirectory( core-lib )
-add_subdirectory( cg-lib )
-
-if( WIN32 )
-  include_directories( "C:/Program Files (x86)/LIBANTLR4/include/antlr4-runtime" )
-  link_directories( "C:/Program Files (x86)/LIBANTLR4/lib" )
-endif()
-
-if( UNIX )
-  include_directories( /usr/local/include/antlr4-runtime )
-  link_directories( /usr/local/lib )
-endif()
-
-include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib )
-
-add_executable( lucy main.cpp )
-
-target_link_libraries( lucy cg-lib core-lib smt-lib )
-
 add_test( NAME TestCG COMMAND lucy WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestCG0 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/example_0.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestCG1 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/example_1.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
@@ -35,9 +39,8 @@ add_test( NAME TestRR1 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/test_rr_1.rddl
 add_test( NAME TestBlocks2 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_2.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestBlocks3 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_3.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestBlocks4 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_4.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
-
-if( WIN32 )
-  set( PATH_STRING "$ENV{PATH};${CMAKE_BINARY_DIR}/smt-lib;${CMAKE_BINARY_DIR}/core-lib;${CMAKE_BINARY_DIR}/cg-lib;C:/Program Files (x86)/LIBANTLR4/lib" )
-  string( REPLACE ";" "\\;" PATH_STRING "${PATH_STRING}" )
-  set_tests_properties( TestCG TestCG0 TestCG1 TestSV0 TestSV1 TestSV2 TestRR0 TestRR1 TestBlocks2 TestBlocks3 TestBlocks4 PROPERTIES ENVIRONMENT "PATH=${PATH_STRING}" )
-endif()
+add_test( NAME TestBlocks5 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_5.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestBlocks6 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_6.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestBlocks7 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_7.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestBlocks8 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_8.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestBlocks9 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_9.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )

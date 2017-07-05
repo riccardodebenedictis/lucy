@@ -1,6 +1,9 @@
 #include "causal_graph.h"
-#include "causal_graph_listener.h"
+#ifndef NDEBUG
+#include "cg_java_listener.h"
+#endif
 #include <iostream>
+#include <fstream>
 
 using namespace smt;
 
@@ -12,38 +15,37 @@ int main(int argc, char *argv[], char *envp[])
 #endif
     std::cout << ".." << std::endl;
 
+    std::vector<std::string> prob_names;
+    for (int i = 1; i < argc - 1; i++)
+        prob_names.push_back(argv[i]);
+
+    std::string sol_name = argv[argc - 1];
+
     cg::causal_graph g;
 
 #ifndef NDEBUG
-    cg::causal_graph_listener gl(g);
+    gui::cg_java_listener gl(g);
 #endif
 
-    std::vector<std::string> file_names;
-    for (int i = 1; i < argc - 1; i++)
-    {
-        file_names.push_back(argv[i]);
-    }
-
     std::cout << "parsing input files.." << std::endl;
-    if (!g.read(file_names))
+    if (!g.read(prob_names))
     {
-        std::cerr << "the input problem is inconsistent.." << std::endl;
-        return -1;
+        std::cout << "the input problem is inconsistent.." << std::endl;
+        return 1;
     }
 
-    std::cout << "solving.." << std::endl;
+    std::cout << "solving the problem.." << std::endl;
     if (g.solve())
     {
-        std::cout << "we have found a solution!!" << std::endl;
+        std::cout << "hurray!! we have found a solution.." << std::endl;
         std::ofstream sol_file;
-        sol_file.open(argv[argc - 1]);
+        sol_file.open(sol_name);
         sol_file << g.to_string();
         sol_file.close();
         return 0;
     }
-    else
     {
-        std::cerr << "the problem is unsolvable.." << std::endl;
-        return -1;
+        std::cout << "the problem is unsolvable.." << std::endl;
+        return 1;
     }
 }

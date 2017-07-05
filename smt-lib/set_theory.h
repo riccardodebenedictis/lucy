@@ -1,6 +1,5 @@
 #pragma once
 
-#include "visibility.h"
 #include "theory.h"
 #include <unordered_set>
 #include <unordered_map>
@@ -11,7 +10,7 @@ namespace smt
 
 class set_value_listener;
 
-class DLL_PUBLIC set_item
+class set_item
 {
 public:
   set_item() {}
@@ -19,7 +18,7 @@ public:
   virtual ~set_item() {}
 };
 
-class DLL_PUBLIC set_theory : public theory
+class set_theory : public theory
 {
   friend class set_value_listener;
 
