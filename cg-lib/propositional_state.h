@@ -2,11 +2,13 @@
 
 #include "smart_type.h"
 #include "constructor.h"
+#include "predicate.h"
 #include "flaw.h"
 #include "resolver.h"
 
 #define PROPOSITIONAL_STATE_NAME "PropositionalState"
-#define POLARITY "polarity"
+#define PROPOSITIONAL_STATE_PREDICATE_NAME "Use"
+#define PROPOSITIONAL_STATE_POLARITY_NAME "polarity"
 
 namespace cg
 {
@@ -31,6 +33,14 @@ private:
     ps_constructor(propositional_state &ps) : constructor(ps.graph, ps, {}, {}, {}) {}
     ps_constructor(ps_constructor &&) = delete;
     virtual ~ps_constructor() {}
+  };
+
+  class ps_predicate : public predicate
+  {
+  public:
+    ps_predicate(propositional_state &rr);
+    ps_predicate(ps_predicate &&) = delete;
+    virtual ~ps_predicate();
   };
 
   class ps_atom_listener : public atom_listener

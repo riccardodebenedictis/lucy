@@ -7,15 +7,14 @@ namespace cg
 propositional_state::propositional_state(causal_graph &graph) : smart_type(graph, graph, PROPOSITIONAL_STATE_NAME)
 {
     constructors.push_back(new ps_constructor(*this));
+    predicates.insert({PROPOSITIONAL_STATE_PREDICATE_NAME, new ps_predicate(*this)});
 }
 
 propositional_state::~propositional_state()
 {
     // we clear the atom listeners..
     for (const auto &a : atoms)
-    {
         delete a.second;
-    }
 }
 
 std::vector<flaw *> propositional_state::get_flaws()
@@ -27,13 +26,13 @@ std::vector<flaw *> propositional_state::get_flaws()
         return flaws;
 }
 
-void propositional_state::new_predicate(predicate &pred) { inherit(static_cast<predicate &>(graph.get_predicate("IntervalPredicate")), pred); }
+void propositional_state::new_predicate(predicate &pred) { inherit(static_cast<predicate &>(get_predicate(PROPOSITIONAL_STATE_PREDICATE_NAME)), pred); }
 
 void propositional_state::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
     set_var(graph.set_th.allows(atm.state, *graph.active));
-    static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm);
+    static_cast<predicate &>(get_predicate(PROPOSITIONAL_STATE_PREDICATE_NAME)).apply_rule(atm);
     restore_var();
 
     atoms.push_back({&atm, new ps_atom_listener(*this, atm)});
@@ -45,6 +44,9 @@ void propositional_state::new_goal(atom &atm)
     atoms.push_back({&atm, new ps_atom_listener(*this, atm)});
     to_check.insert(&atm);
 }
+
+propositional_state::ps_predicate::ps_predicate(propositional_state &ps) : predicate(ps.graph, ps, PROPOSITIONAL_STATE_PREDICATE_NAME, {new field(ps.graph.get_type("bool"), PROPOSITIONAL_STATE_POLARITY_NAME)}, {}) { supertypes.push_back(&ps.graph.get_predicate("IntervalPredicate")); }
+propositional_state::ps_predicate::~ps_predicate() {}
 
 propositional_state::ps_atom_listener::ps_atom_listener(propositional_state &ps, atom &atm) : atom_listener(atm), ps(ps) {}
 propositional_state::ps_atom_listener::~ps_atom_listener() {}

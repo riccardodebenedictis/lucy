@@ -57,9 +57,7 @@ public:
   {
     std::vector<method *> c_methods;
     for (const auto &ms : methods)
-    {
       c_methods.insert(c_methods.begin(), ms.second.begin(), ms.second.end());
-    }
     return c_methods;
   }
 

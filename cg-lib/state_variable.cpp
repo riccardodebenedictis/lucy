@@ -5,10 +5,7 @@
 namespace cg
 {
 
-state_variable::state_variable(cg::causal_graph &g) : smart_type(g, g, STATE_VARIABLE_NAME)
-{
-    constructors.push_back(new sv_constructor(*this));
-}
+state_variable::state_variable(cg::causal_graph &g) : smart_type(g, g, STATE_VARIABLE_NAME) { constructors.push_back(new sv_constructor(*this)); }
 
 state_variable::~state_variable()
 {
