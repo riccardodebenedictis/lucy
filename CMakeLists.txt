@@ -41,3 +41,6 @@ add_test( NAME TestBlocks3 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_3.r
 add_test( NAME TestBlocks4 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_4.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestBlocks5 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_5.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestBlocks6 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_6.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestBlocks7 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_7.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestBlocks8 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_8.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestBlocks9 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks_9.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
