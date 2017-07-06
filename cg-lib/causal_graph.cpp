@@ -123,12 +123,7 @@ main_loop:
         {
             // we run out of inconsistencies, thus, we renew them..
             if (has_inconsistencies())
-            {
-                // we go back to root level..
-                while (!core::sat.root_level())
-                    core::sat.pop();
                 goto main_loop;
-            }
         }
 
         // this is the next resolver to be chosen..
@@ -186,12 +181,7 @@ main_loop:
 
     // we run out of flaws, we check for inconsistencies one last time..
     if (has_inconsistencies())
-    {
-        // we go back to root level..
-        while (!core::sat.root_level())
-            core::sat.pop();
         goto main_loop;
-    }
 
     // we have found a solution..
     return true;
@@ -521,11 +511,20 @@ bool causal_graph::has_inconsistencies()
         q.pop();
     }
 
-    // we initialize the new flaws..
-    for (const auto &f : incs)
-        new_flaw(*f);
+    if (!incs.empty())
+    {
+        // we go back to root level..
+        while (!core::sat.root_level())
+            core::sat.pop();
 
-    return !incs.empty();
+        // we initialize the new flaws..
+        for (const auto &f : incs)
+            new_flaw(*f);
+
+        return true;
+    }
+    else
+        return false;
 }
 
 flaw *causal_graph::select_flaw()
