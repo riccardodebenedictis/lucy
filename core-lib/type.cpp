@@ -86,22 +86,18 @@ constructor &type::get_constructor(const std::vector<const type *> &ts) const
     assert(std::none_of(ts.begin(), ts.end(), [](const type *t) { return t == nullptr; }));
     bool found = false;
     for (const auto &cnstr : constructors)
-    {
         if (cnstr->args.size() == ts.size())
         {
             found = true;
             for (unsigned int i = 0; i < ts.size(); i++)
-            {
                 if (!cnstr->args[i]->tp.is_assignable_from(*ts[i]))
                 {
                     found = false;
                     break;
                 }
-            }
             if (found)
                 return *cnstr;
         }
-    }
 
     throw std::out_of_range(name);
 }
@@ -141,22 +137,18 @@ method &type::get_method(const std::string &m_name, const std::vector<const type
     {
         bool found = false;
         for (const auto &mthd : methods.at(m_name))
-        {
             if (mthd->args.size() == ts.size())
             {
                 found = true;
                 for (unsigned int i = 0; i < ts.size(); i++)
-                {
                     if (!mthd->args[i]->tp.is_assignable_from(*ts[i]))
                     {
                         found = false;
                         break;
                     }
-                }
                 if (found)
                     return *mthd;
             }
-        }
     }
 
     // if not here, check any enclosing scope

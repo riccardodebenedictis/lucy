@@ -26,9 +26,7 @@ core::~core()
 {
     // we delete the predicates..
     for (const auto &p : predicates)
-    {
         delete p.second;
-    }
 
     // we delete the types..
     for (const auto &t : types)
@@ -124,9 +122,7 @@ expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_val
         bool_expr b = new_bool();
         std::vector<lit> eqs;
         for (const auto &v : allowed_vals)
-        {
             eqs.push_back(lit(sat.new_eq(b->l, dynamic_cast<bool_item *>(v)->l), true));
-        }
         bool nc = sat.new_clause(eqs);
         assert(nc);
         return b;
@@ -162,9 +158,7 @@ expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_val
         return r;
     }
     else
-    {
         return new enum_item(*this, t, set_th.new_var(vals));
-    }
 }
 
 bool_expr core::negate(bool_expr var) { return new bool_item(*this, !var->l); }
@@ -208,12 +202,10 @@ arith_expr core::sub(const std::vector<arith_expr> &exprs)
     assert(exprs.size() > 1);
     lin l;
     for (std::vector<arith_expr>::const_iterator it = exprs.begin(); it != exprs.end(); ++it)
-    {
         if (it == exprs.begin())
             l += (*it)->l;
         else
             l -= (*it)->l;
-    }
     return new arith_item(*this, *types.at(REAL_KEYWORD), l);
 }
 
@@ -223,13 +215,11 @@ arith_expr core::mult(const std::vector<arith_expr> &exprs)
     arith_expr ae = *std::find_if(exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); });
     lin l = ae->l;
     for (const auto &aex : exprs)
-    {
         if (aex != ae)
         {
             assert(la_th.bounds(aex->l).constant() && "non-linear expression..");
             l *= la_th.value(aex->l);
         }
-    }
     return new arith_item(*this, *types.at(REAL_KEYWORD), l);
 }
 
@@ -285,22 +275,18 @@ method &core::get_method(const std::string &name, const std::vector<const type *
     {
         bool found = false;
         for (const auto &mthd : methods.at(name))
-        {
             if (mthd->args.size() == ts.size())
             {
                 found = true;
                 for (size_t i = 0; i < ts.size(); i++)
-                {
                     if (!mthd->args[i]->tp.is_assignable_from(*ts[i]))
                     {
                         found = false;
                         break;
                     }
-                }
                 if (found)
                     return *mthd;
             }
-        }
     }
 
     // not found
