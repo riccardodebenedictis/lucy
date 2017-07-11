@@ -524,7 +524,7 @@ bool causal_graph::has_inconsistencies()
                 if (r->preconditions.empty())
                 {
                     // there are no requirements for this resolver..
-                    set_cost(*flaw_q.front(), std::min(flaw_q.front()->cost, la_th.value(r->cost)));
+                    set_cost(*f, std::min(f->cost, la_th.value(r->cost)));
                     // making this resolver false might make the heuristic blind..
                     chosen.insert({r->chosen, r});
                     bind(r->chosen);
@@ -532,6 +532,8 @@ bool causal_graph::has_inconsistencies()
                 resolvers.pop_front();
             }
         }
+
+        build();
 
         // we re-assume the current graph var to allow search within the current graph..
         bool a_gv = core::sat.assume(lit(graph_var, true));
