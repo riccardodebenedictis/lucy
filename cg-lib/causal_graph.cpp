@@ -117,6 +117,19 @@ void causal_graph::solve()
                     if (!core::sat.assume(lit(res->chosen, true)) || !core::sat.check())
                         throw unsolvable_exception();
 
+                    if (core::sat.root_level())
+                    {
+                        if (core::sat.value(graph_var) == False)
+                        {
+                            // we have exhausted the search within the graph: we extend the graph..
+                            add_layer();
+
+                            // we create a new graph var..
+                            graph_var = core::sat.new_var();
+                        }
+                        a_gv = core::sat.assume(lit(graph_var, true));
+                        assert(a_gv);
+                    }
                     res = nullptr;
                 }
             }
@@ -156,6 +169,20 @@ void causal_graph::solve()
                 record(look_elsewhere);
                 if (!core::sat.check())
                     throw unsolvable_exception();
+
+                if (core::sat.root_level())
+                {
+                    if (core::sat.value(graph_var) == False)
+                    {
+                        // we have exhausted the search within the graph: we extend the graph..
+                        add_layer();
+
+                        // we create a new graph var..
+                        graph_var = core::sat.new_var();
+                    }
+                    a_gv = core::sat.assume(lit(graph_var, true));
+                    assert(a_gv);
+                }
             }
         }
     }
