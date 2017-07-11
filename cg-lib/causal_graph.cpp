@@ -88,25 +88,8 @@ void causal_graph::new_disjunction(context &d_ctx, const disjunction &disj)
 
 bool causal_graph::solve()
 {
-main_loop:
-    res = nullptr;
-
-    if (!flaw_q.empty())
-    {
-        // we build the planning graph..
-        try
-        {
-            build();
-        }
-        catch (const unsolvable_exception &)
-        {
-            return false;
-        }
-    }
-
-#ifndef NDEBUG
-    std::cout << "searching.." << std::endl;
-#endif
+    // we build the planning graph..
+    build();
 
     // we create a new graph var..
     graph_var = core::sat.new_var();
@@ -114,30 +97,37 @@ main_loop:
     bool a_gv = core::sat.assume(lit(graph_var, true));
     assert(a_gv);
 
-    // this is the next flaw to be solved..
-    flaw *f_next = select_flaw();
-    while (f_next)
+    while (true)
     {
-        assert(f_next->cost < std::numeric_limits<double>::infinity());
-        if (f_next->has_subgoals())
+        if (has_solution())
         {
-            // we run out of inconsistencies, thus, we renew them..
-            if (has_inconsistencies())
-                goto main_loop;
+            // this is the next flaw to be solved..
+            flaw *f_next = select_flaw();
+
+            if (f_next)
+            {
+                assert(f_next->cost < std::numeric_limits<double>::infinity());
+                if (!f_next->has_subgoals() || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
+                {
+                    // this is the next resolver to be chosen..
+                    res = &select_resolver(*f_next);
+                    if (f_next->has_subgoals())
+                        resolvers.push_back(res);
+
+                    // we apply the resolver..
+                    if (!core::sat.assume(lit(res->chosen, true)) || !core::sat.check())
+                        throw unsolvable_exception();
+                }
+            }
+            else if (!has_inconsistencies()) // we run out of flaws, we check for inconsistencies one last time..
+                // we have found a solution..
+                return true;
         }
-
-        // this is the next resolver to be chosen..
-        resolver &r_next = select_resolver(*f_next);
-        res = &r_next;
-        if (f_next->has_subgoals())
-            resolvers.push_back(&r_next);
-
-        // we apply the resolver..
-        if (!core::sat.assume(lit(r_next.chosen, true)) || !core::sat.check())
-            return false;
-
-        while (!has_solution())
+        else
         {
+#ifndef NDEBUG
+            std::cout << "searching.." << std::endl;
+#endif
             // we search within the graph..
             std::vector<lit> look_elsewhere;
             for (std::vector<layer>::reverse_iterator trail_it = trail.rbegin(); trail_it != trail.rend(); ++trail_it)
@@ -152,14 +142,7 @@ main_loop:
             if (core::sat.root_level())
             {
                 // we have exhausted the search within the graph: we extend the graph..
-                try
-                {
-                    add_layer();
-                }
-                catch (const unsolvable_exception &)
-                {
-                    return false;
-                }
+                add_layer();
 
                 // we create a new graph var..
                 graph_var = core::sat.new_var();
@@ -171,20 +154,10 @@ main_loop:
             {
                 record(look_elsewhere);
                 if (!core::sat.check())
-                    return false;
+                    throw unsolvable_exception();
             }
         }
-
-        // we select a new flaw..
-        f_next = select_flaw();
     }
-
-    // we run out of flaws, we check for inconsistencies one last time..
-    if (has_inconsistencies())
-        goto main_loop;
-
-    // we have found a solution..
-    return true;
 }
 
 void causal_graph::new_flaw(flaw &f)
@@ -521,6 +494,8 @@ bool causal_graph::has_inconsistencies()
         for (const auto &f : incs)
             new_flaw(*f);
 
+        // we build the planning graph..
+        build();
         return true;
     }
     else
