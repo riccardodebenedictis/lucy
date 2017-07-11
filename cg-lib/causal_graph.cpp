@@ -19,8 +19,7 @@ namespace cg
 
 causal_graph::causal_graph() : core(), theory(core::sat)
 {
-    bool r = read(std::vector<std::string>({"init.rddl"}));
-    assert(r);
+    read(std::vector<std::string>({"init.rddl"}));
     types.insert({STATE_VARIABLE_NAME, new state_variable(*this)});
     types.insert({REUSABLE_RESOURCE_NAME, new reusable_resource(*this)});
     types.insert({PROPOSITIONAL_STATE_NAME, new propositional_state(*this)});
@@ -86,7 +85,7 @@ void causal_graph::new_disjunction(context &d_ctx, const disjunction &disj)
     new_flaw(*df);
 }
 
-bool causal_graph::solve()
+void causal_graph::solve()
 {
     // we build the planning graph..
     build();
@@ -117,11 +116,13 @@ bool causal_graph::solve()
                     // we apply the resolver..
                     if (!core::sat.assume(lit(res->chosen, true)) || !core::sat.check())
                         throw unsolvable_exception();
+
+                    res = nullptr;
                 }
             }
             else if (!has_inconsistencies()) // we run out of flaws, we check for inconsistencies one last time..
                 // we have found a solution..
-                return true;
+                return;
         }
         else
         {
@@ -276,8 +277,6 @@ void causal_graph::pop()
     // we erase the new flaws..
     for (const auto &f : trail.back().new_flaws)
         flaws.erase(f);
-
-    assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return core::sat.value(f->in_plan) == True; }));
 
     // we restore the flaw costs..
     for (const auto &c : trail.back().old_costs)
@@ -492,10 +491,51 @@ bool causal_graph::has_inconsistencies()
 
         // we initialize the new flaws..
         for (const auto &f : incs)
-            new_flaw(*f);
+        {
+            f->init();
+            if (core::sat.value(f->in_plan) == True) // we have a top-level (landmark) flaw..
+                flaws.insert(f);
+            else
+            {
+                // we listen for the flaw to become in_plan..
+                in_plan[f->in_plan].push_back(f);
+                bind(f->in_plan);
+            }
 
-        // we build the planning graph..
-        build();
+            // we notify the listeners that a new flaw has arised..
+            for (const auto &l : listeners)
+                l->new_flaw(*f);
+
+            // we expand the flaw..
+            f->expand();
+            if (!core::sat.check())
+                throw unsolvable_exception();
+
+            for (const auto &r : f->resolvers)
+            {
+                resolvers.push_front(r);
+                set_var(r->chosen);
+                r->apply();
+
+                if (!core::sat.check())
+                    throw unsolvable_exception();
+
+                restore_var();
+                if (r->preconditions.empty())
+                {
+                    // there are no requirements for this resolver..
+                    set_cost(*flaw_q.front(), std::min(flaw_q.front()->cost, la_th.value(r->cost)));
+                    // making this resolver false might make the heuristic blind..
+                    chosen.insert({r->chosen, r});
+                    bind(r->chosen);
+                }
+                resolvers.pop_front();
+            }
+        }
+
+        // we re-assume the current graph var to allow search within the current graph..
+        bool a_gv = core::sat.assume(lit(graph_var, true));
+        assert(a_gv);
         return true;
     }
     else
@@ -504,12 +544,11 @@ bool causal_graph::has_inconsistencies()
 
 flaw *causal_graph::select_flaw()
 {
+    assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return f->expanded && core::sat.value(f->in_plan) == True; }));
     // this is the next flaw to be solved (i.e., the most expensive one)..
     flaw *f_next = nullptr;
     for (auto it = flaws.begin(); it != flaws.end();)
     {
-        assert((*it)->expanded);
-        assert(core::sat.value((*it)->in_plan) == True);
         if (std::count_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != False; }) == 1)
         {
             // we have a trivial flaw..

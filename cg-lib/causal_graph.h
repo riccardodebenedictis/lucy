@@ -32,7 +32,7 @@ private:
   void new_disjunction(context &d_ctx, const disjunction &disj) override;
 
 public:
-  bool solve() override;
+  void solve() override;
 
 private:
   void new_flaw(flaw &f);
@@ -87,7 +87,7 @@ private:
   // this variable represents the validity of the current graph..
   var graph_var;
   // the current resolver (will be into the trail)..
-  resolver *res;
+  resolver *res = nullptr;
   // the list of resolvers in chronological order..
   std::vector<layer> trail;
   std::vector<causal_graph_listener *> listeners;

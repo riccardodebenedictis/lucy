@@ -47,7 +47,7 @@ core::~core()
     delete unified;
 }
 
-bool core::read(const std::string &script)
+void core::read(const std::string &script)
 {
     std::stringstream ss(script);
     ast::compilation_unit *cu = prs.parse(ss);
@@ -58,10 +58,11 @@ bool core::read(const std::string &script)
     cu->refine(*this);
     cu->execute(*this, c_ctx);
 
-    return sat.check();
+    if (!sat.check())
+        throw unsolvable_exception("the input problem is inconsistent");
 }
 
-bool core::read(const std::vector<std::string> &files)
+void core::read(const std::vector<std::string> &files)
 {
     std::vector<ast::compilation_unit *> c_cus;
     for (const auto &f : files)
@@ -75,10 +76,7 @@ bool core::read(const std::vector<std::string> &files)
             ifs.close();
         }
         else
-        {
-            std::cerr << "cannot find file " << f << ".." << std::endl;
-            return false;
-        }
+            throw std::invalid_argument("file not found: " + f);
     }
 
     context c_ctx(this);
@@ -89,7 +87,8 @@ bool core::read(const std::vector<std::string> &files)
     for (const auto &cu : c_cus)
         cu->execute(*this, c_ctx);
 
-    return sat.check();
+    if (!sat.check())
+        throw unsolvable_exception("the input problem is inconsistent");
 }
 
 bool_expr core::new_bool() { return new bool_item(*this, lit(sat.new_var(), true)); }

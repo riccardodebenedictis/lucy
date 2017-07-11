@@ -38,9 +38,12 @@ class disjunction_statement;
 class formula_statement;
 }
 
-class unsolvable_exception : public std::exception
+class unsolvable_exception : public std::runtime_error
 {
-  virtual const char *what() const throw() { return "the problem is unsolvable.."; }
+
+public:
+  unsolvable_exception() : runtime_error("the problem is unsolvable") {}
+  unsolvable_exception(const std::string &what_arg) : runtime_error(what_arg) {}
 };
 
 class core : public scope, public env
@@ -59,8 +62,8 @@ public:
   core(const core &orig) = delete;
   ~core();
 
-  bool read(const std::string &script);
-  bool read(const std::vector<std::string> &files);
+  void read(const std::string &script);
+  void read(const std::vector<std::string> &files);
 
   bool_expr new_bool();
   bool_expr new_bool(const bool &val);
@@ -118,7 +121,7 @@ public:
   double arith_value(const arith_expr &x) const noexcept;
   std::unordered_set<set_item *> enum_value(const enum_expr &x) const noexcept;
 
-  virtual bool solve() = 0;
+  virtual void solve() = 0;
 
 protected:
   virtual void new_fact(atom &atm);
