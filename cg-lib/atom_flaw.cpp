@@ -18,9 +18,25 @@ void atom_flaw::compute_resolvers()
     assert(!a_state.empty());
     if (a_state.find(graph.unified) != a_state.end())
     {
+        // we the ancestors of this flaw, so as to avoid cyclic causality..
+        std::unordered_set<flaw *> ancestors;
+        std::queue<flaw *> q;
+        q.push(this);
+        while (!q.empty())
+        {
+            if (ancestors.find(q.front()) == ancestors.end())
+            {
+                ancestors.insert(q.front());
+                for (const auto &supp : q.front()->get_supports())
+                    if (graph.core::sat.value(supp->get_chosen()) != False) // if false, the edge is broken..
+                        q.push(&supp->get_effect());                        // we push its effect..
+            }
+            q.pop();
+        }
+
         for (const auto &i : atm.tp.get_instances())
         {
-            if (&*i == &atm)
+            if (&*i == &atm) // the current atom cannot unify with itself..
                 continue;
 
             // this is the atom we are checking for unification..
@@ -29,6 +45,9 @@ void atom_flaw::compute_resolvers()
             flaw *target = graph.reason.at(c_a);
 
             if (!target->is_expanded())
+                continue;
+
+            if (ancestors.find(target) != ancestors.end()) // unifying with the target atom would introduce cyclic causality..
                 continue;
 
             // this is the state of the atom we are checking for unification..
@@ -40,26 +59,7 @@ void atom_flaw::compute_resolvers()
 
             // atom c_a is a good candidate for unification..
 
-            // we make sure unification does not introduce causal cycles..
-            std::unordered_set<flaw *> seen;
-            std::queue<flaw *> q;
-            q.push(this);
-            while (!q.empty())
-            {
-                if (q.front() == target) // unification would introduce a cycle..
-                    break;
-                assert(seen.find(q.front()) == seen.end());
-                seen.insert(q.front());
-                for (const auto &supp : q.front()->get_supports())
-                    if (graph.core::sat.value(supp->get_chosen()) != False) // if false, the edge is broken..
-                        q.push(&supp->get_effect());                        // we push its effect..
-                q.pop();
-            }
-            if (!q.empty()) // q.front() == target
-                continue;   // we skip this instance so as to prevent cyclic causality..
-
-            assert(seen.find(target) == seen.end());
-
+            // we build the unification literals..
             std::vector<lit> unif_lits;
             q.push(this);
             q.push(target);
