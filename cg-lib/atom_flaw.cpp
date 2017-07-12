@@ -39,46 +39,35 @@ void atom_flaw::compute_resolvers()
                 continue;
 
             // atom c_a is a good candidate for unification..
-            std::vector<lit> unif_lits;
+
+            // we make sure unification does not introduce causal cycles..
             std::unordered_set<flaw *> seen;
             std::queue<flaw *> q;
-            assert(graph.core::sat.value(get_in_plan()) != False);
             q.push(this);
-            bool is_cyclic = false; // becomes true if this unification candidate would introduce a cycle in the graph..
             while (!q.empty())
             {
                 if (q.front() == target) // unification would introduce a cycle..
-                {
-                    is_cyclic = true;
                     break;
-                }
                 assert(seen.find(q.front()) == seen.end());
                 seen.insert(q.front());
-                for (const auto &cause : q.front()->get_causes())
-                {
-                    assert(graph.core::sat.value(cause->get_chosen()) != False);
-                    if (graph.core::sat.value(cause->get_chosen()) != True)
-                        unif_lits.push_back(lit(cause->get_chosen(), true));
-                    q.push(&cause->get_effect()); // we push its effect for allowing the prevention of cyclic causality..
-                }
+                for (const auto &supp : q.front()->get_supports())
+                    if (graph.core::sat.value(supp->get_chosen()) != False) // if false, the edge is broken..
+                        q.push(&supp->get_effect());                        // we push its effect..
                 q.pop();
             }
-            if (is_cyclic)
-                continue; // we skip this instance so as to prevent cyclic causality..
+            if (!q.empty()) // q.front() == target
+                continue;   // we skip this instance so as to prevent cyclic causality..
 
             assert(seen.find(target) == seen.end());
+
+            std::vector<lit> unif_lits;
+            q.push(this);
             q.push(target);
             while (!q.empty())
             {
                 for (const auto &cause : q.front()->get_causes())
-                {
-                    assert(graph.core::sat.value(cause->get_chosen()) != False);
-                    if (seen.find(&cause->get_effect()) == seen.end() && graph.core::sat.value(cause->get_chosen()) != True)
-                    {
-                        unif_lits.push_back(lit(cause->get_chosen(), true));
-                        q.push(&cause->get_effect());
-                    }
-                }
+                    if (graph.core::sat.value(cause->get_chosen()) != True)
+                        unif_lits.push_back(lit(cause->get_chosen(), true)); // we push its effect..
                 q.pop();
             }
 
