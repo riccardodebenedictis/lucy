@@ -148,6 +148,7 @@ void causal_graph::solve()
                 if (trail_it->r)
                     look_elsewhere.push_back(lit(trail_it->r->chosen, false));
             look_elsewhere.push_back(lit(graph_var, false));
+            assert(std::all_of(look_elsewhere.begin(), look_elsewhere.end(), [&](const auto &l) { return core::sat.value(l) == False; }));
 
             // we backtrack..
             while (core::sat.value(look_elsewhere[0].v) != Undefined)
