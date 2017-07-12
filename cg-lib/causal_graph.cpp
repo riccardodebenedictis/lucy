@@ -328,7 +328,6 @@ void causal_graph::build()
     std::cout << "building the planning graph.." << std::endl;
 #endif
     assert(core::sat.root_level());
-    assert(!flaw_q.empty());
 
     while (!has_solution() && !flaw_q.empty())
     {
