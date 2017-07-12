@@ -41,11 +41,20 @@ var sat_core::new_var()
 bool sat_core::new_clause(const std::vector<lit> &lits)
 {
     assert(root_level());
-    if (std::any_of(lits.begin(), lits.end(), [&](const lit &p) { return value(p) == True; }))
-        return true;
 
     std::vector<lit> c_lits;
-    std::copy_if(lits.begin(), lits.end(), std::back_inserter(c_lits), [&](const lit &p) { return value(p) == Undefined; });
+    for (const auto &l : lits)
+        switch (value(l))
+        {
+        case True:
+            return true; // the clause is already satisfied..
+        case Undefined:
+            if (std::find_if(c_lits.begin(), c_lits.end(), [l](const auto &c_lit) { return c_lit == !l; }) != c_lits.end())
+                return true; // the clause represents a tautology..
+            else
+                c_lits.push_back(l);
+        }
+
     if (c_lits.empty())
         return false;
     else if (c_lits.size() == 1)
@@ -341,6 +350,7 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
 void sat_core::record(const std::vector<lit> &lits)
 {
     assert(value(lits[0]) == Undefined);
+    assert(std::count_if(lits.begin(), lits.end(), [&](const lit &p) { return value(p) == True; }) == 0);
     assert(std::count_if(lits.begin(), lits.end(), [&](const lit &p) { return value(p) == Undefined; }) == 1);
     assert(std::count_if(lits.begin(), lits.end(), [&](const lit &p) { return value(p) == False; }) == lits.size() - 1);
     if (lits.size() == 1)
