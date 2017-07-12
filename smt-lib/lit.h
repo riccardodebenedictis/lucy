@@ -14,6 +14,7 @@ public:
   virtual ~lit();
 
   lit operator!() const { return lit(v, !sign); }
+  bool operator<(const lit &rhs) const { return v < rhs.v && sign < rhs.sign; }
   bool operator==(const lit &rhs) const { return v == rhs.v && sign == rhs.sign; }
   bool operator!=(const lit &rhs) const { return !operator==(rhs); }
 
