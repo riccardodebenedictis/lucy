@@ -117,6 +117,7 @@ void causal_graph::solve()
                     if (!core::sat.assume(lit(res->chosen, true)) || !core::sat.check())
                         throw unsolvable_exception();
 
+                    res = nullptr;
                     if (core::sat.root_level())
                     {
                         if (core::sat.value(graph_var) == False)
@@ -130,7 +131,6 @@ void causal_graph::solve()
                         a_gv = core::sat.assume(lit(graph_var, true));
                         assert(a_gv);
                     }
-                    res = nullptr;
                 }
             }
             else if (!has_inconsistencies()) // we run out of flaws, we check for inconsistencies one last time..
