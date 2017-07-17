@@ -101,20 +101,19 @@ var la_theory::new_geq(const lin &left, const lin &right)
 var la_theory::mk_slack(const lin &l)
 {
     std::string s_expr = l.to_string();
-    var slack;
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
-        slack = exprs.at(s_expr);
+        return exprs.at(s_expr);
     else
     {
         // we need to create a new slack variable..
-        slack = new_var();
+        var slack = new_var();
         exprs.insert({s_expr, slack});
         // we set the initial value of the new slack variable..
         vals[slack] = value(l);
         // we add a new row into the tableau..
         tableau.insert({slack, new row(*this, slack, l)});
+        return slack;
     }
-    return slack;
 }
 
 bool la_theory::propagate(const lit &p, std::vector<lit> &cnfl)
