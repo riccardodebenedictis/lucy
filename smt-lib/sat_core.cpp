@@ -49,10 +49,21 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
         case True:
             return true; // the clause is already satisfied..
         case Undefined:
-            if (std::find_if(c_lits.begin(), c_lits.end(), [l](const auto &c_lit) { return c_lit == !l; }) != c_lits.end())
-                return true; // the clause represents a tautology..
-            else
+        {
+            bool found = false;
+            for (const auto &c_l : c_lits)
+            {
+                if (c_l == l)
+                {
+                    found = true;
+                    break;
+                }
+                else if (c_l == !l)
+                    return true; // the clause represents a tautology..
+            }
+            if (!found)
                 c_lits.push_back(l);
+        }
         }
 
     if (c_lits.empty())
