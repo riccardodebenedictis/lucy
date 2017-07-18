@@ -47,9 +47,7 @@ void flaw::init()
     // we create the in_plan variable..
     std::vector<lit> cs;
     for (const auto &c : causes)
-    {
         cs.push_back(lit(c->chosen, true));
-    }
     switch (cs.size())
     {
     case 0:

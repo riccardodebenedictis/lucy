@@ -154,11 +154,11 @@ bool la_theory::check(std::vector<lit> &cnfl)
                 for (auto &term : f_row->l.vars)
                 {
                     if (term.second > 0)
-                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(ub(term.first))), false));
+                        cnfl.push_back(!*assigns[la_theory::ub_index(term.first)].reason);
                     else if (term.second < 0)
-                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(lb(term.first))), false));
+                        cnfl.push_back(!*assigns[la_theory::lb_index(term.first)].reason);
                 }
-                cnfl.push_back(lit(s_asrts.at("x" + std::to_string(x_i) + " >= " + std::to_string(lb(x_i))), false));
+                cnfl.push_back(!*assigns[la_theory::lb_index(x_i)].reason);
                 return false;
             }
         }
@@ -173,11 +173,11 @@ bool la_theory::check(std::vector<lit> &cnfl)
                 for (auto &term : f_row->l.vars)
                 {
                     if (term.second > 0)
-                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " >= " + std::to_string(lb(term.first))), false));
+                        cnfl.push_back(!*assigns[la_theory::lb_index(term.first)].reason);
                     else if (term.second < 0)
-                        cnfl.push_back(lit(s_asrts.at("x" + std::to_string(term.first) + " <= " + std::to_string(ub(term.first))), false));
+                        cnfl.push_back(!*assigns[la_theory::ub_index(term.first)].reason);
                 }
-                cnfl.push_back(lit(s_asrts.at("x" + std::to_string(x_i) + " <= " + std::to_string(ub(x_i))), false));
+                cnfl.push_back(!*assigns[la_theory::ub_index(x_i)].reason);
                 return false;
             }
         }
