@@ -4,6 +4,10 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceRoot}",
+                "${workspaceRoot}/smt-lib",
+                "${workspaceRoot}/core-lib",
+                "${workspaceRoot}/cg-lib",
+                "${workspaceRoot}/gui",
                 "/usr/include",
                 "/usr/local/include"
             ],
@@ -23,6 +27,10 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceRoot}",
+                "${workspaceRoot}/smt-lib",
+                "${workspaceRoot}/core-lib",
+                "${workspaceRoot}/cg-lib",
+                "${workspaceRoot}/gui",
                 "/usr/include",
                 "/usr/local/include",
                 "/usr/lib/jvm/java-8-openjdk-amd64/include",
@@ -46,6 +54,10 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceRoot}",
+                "${workspaceRoot}/smt-lib",
+                "${workspaceRoot}/core-lib",
+                "${workspaceRoot}/cg-lib",
+                "${workspaceRoot}/gui",
                 "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.10.25017/include/*",
                 "C:/Program Files/Java/jdk1.8.0_131/include/*"
             ],
