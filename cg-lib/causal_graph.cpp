@@ -50,11 +50,7 @@ void causal_graph::new_fact(atom &atm)
     new_flaw(*af);
 
     // we link the state of the atom to the state of the flaw..
-    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *active), false), lit(af->in_plan, true)}))
-        throw unsolvable_exception();
-    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *unified), false), lit(af->in_plan, true)}))
-        throw unsolvable_exception();
-    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *inactive), false), lit(af->in_plan, false)}))
+    if (!core::sat.new_clause({lit(atm.state, false), lit(af->in_plan, true)}))
         throw unsolvable_exception();
 
     core::new_fact(atm);
@@ -68,11 +64,7 @@ void causal_graph::new_goal(atom &atm)
     new_flaw(*af);
 
     // we link the state of the atom to the state of the flaw..
-    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *active), false), lit(af->in_plan, true)}))
-        throw unsolvable_exception();
-    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *unified), false), lit(af->in_plan, true)}))
-        throw unsolvable_exception();
-    if (!core::sat.new_clause({lit(set_th.allows(atm.state, *inactive), false), lit(af->in_plan, false)}))
+    if (!core::sat.new_clause({lit(atm.state, false), lit(af->in_plan, true)}))
         throw unsolvable_exception();
 
     core::new_goal(atm);

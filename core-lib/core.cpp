@@ -14,7 +14,7 @@
 namespace lucy
 {
 
-core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat), active(new atom_state()), inactive(new atom_state()), unified(new atom_state())
+core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat)
 {
     types.insert({BOOL_KEYWORD, new bool_type(*this)});
     types.insert({INT_KEYWORD, new int_type(*this)});
@@ -40,11 +40,6 @@ core::~core()
     // we delete the compilation units..
     for (const auto &cu : cus)
         delete cu;
-
-    // we delete the atom states..
-    delete active;
-    delete inactive;
-    delete unified;
 }
 
 void core::read(const std::string &script)
@@ -427,20 +422,19 @@ std::string core::to_string(const item *const i) const
 std::string core::to_string(const atom *const a) const
 {
     std::string as;
-    as += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(a)) + "\", \"predicate\" : \"" + a->tp.name + "\", \"state\" : [";
-    std::unordered_set<set_item *> state_vals = set_th.value(a->state);
-    for (std::unordered_set<set_item *>::iterator vals_it = state_vals.begin(); vals_it != state_vals.end(); ++vals_it)
+    as += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(a)) + "\", \"predicate\" : \"" + a->tp.name + "\", \"state\" : ";
+    switch (sat.value(a->state))
     {
-        if (vals_it != state_vals.begin())
-            as += ", ";
-        if (*vals_it == active)
-            as += "\"Active\"";
-        else if (*vals_it == inactive)
-            as += "\"Inactive\"";
-        else if (*vals_it == unified)
-            as += "\"Unified\"";
+    case True:
+        as += "\"Active\"";
+        break;
+    case False:
+        as += "\"Unified\"";
+        break;
+    case Undefined:
+        as += "\"Inactive\"";
+        break;
     }
-    as += "]";
     std::unordered_map<std::string, expr> is = a->get_items();
     if (!is.empty())
         as += ", \"pars\" : [ " + to_string(is) + " ]";

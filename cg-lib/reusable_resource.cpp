@@ -28,7 +28,7 @@ std::vector<flaw *> reusable_resource::get_flaws()
         for (const auto &a : atoms)
         {
             // we filter out those which are not strictly active..
-            if (graph.core::sat.value(graph.set_th.allows(a.first->state, *graph.active)) == True)
+            if (graph.core::sat.value(a.first->state) == True)
             {
                 expr c_scope = a.first->get("scope");
                 if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
@@ -98,13 +98,9 @@ void reusable_resource::new_predicate(predicate &p) { throw std::logic_error("it
 void reusable_resource::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
-    set_var(graph.set_th.allows(atm.state, *graph.active));
+    set_var(atm.state);
     static_cast<predicate &>(get_predicate(REUSABLE_RESOURCE_USE_PREDICATE_NAME)).apply_rule(atm);
     restore_var();
-
-    // reusable resource facts cannot unify..
-    if (!graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *graph.unified), false)}))
-        throw unsolvable_exception();
 
     atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
     expr c_scope = atm.get("scope");

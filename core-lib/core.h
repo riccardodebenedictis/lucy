@@ -154,10 +154,6 @@ public:
   la_theory la_th;   // the linear arithmetic theory..
   set_theory set_th; // the set theory..
 
-  atom_state *const active;
-  atom_state *const inactive;
-  atom_state *const unified;
-
 private:
   var tmp_var;
   var ctr_var = TRUE_var;
@@ -166,15 +162,5 @@ protected:
   std::unordered_map<std::string, std::vector<method *>> methods;
   std::unordered_map<std::string, type *> types;
   std::unordered_map<std::string, predicate *> predicates;
-};
-
-class atom_state : public set_item
-{
-  friend class core;
-
-private:
-  atom_state() {}
-  atom_state(const atom_state &that) = delete;
-  virtual ~atom_state() {}
 };
 }

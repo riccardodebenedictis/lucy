@@ -26,7 +26,7 @@ std::vector<flaw *> state_variable::get_flaws()
         for (const auto &atm : atoms)
         {
             // we filter out those which are not strictly active..
-            if (graph.core::sat.value(graph.set_th.allows(atm.first->state, *graph.active)) == True)
+            if (graph.core::sat.value(atm.first->state) == True)
             {
                 expr c_scope = atm.first->get("scope");
                 if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
@@ -88,7 +88,7 @@ void state_variable::new_predicate(predicate &pred) { inherit(static_cast<predic
 void state_variable::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
-    set_var(graph.set_th.allows(atm.state, *graph.active));
+    set_var(atm.state);
     static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm);
     restore_var();
 

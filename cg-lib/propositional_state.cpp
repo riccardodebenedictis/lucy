@@ -31,7 +31,7 @@ void propositional_state::new_predicate(predicate &pred) { inherit(static_cast<p
 void propositional_state::new_fact(atom &atm)
 {
     // we apply interval-predicate if the fact becomes active..
-    set_var(graph.set_th.allows(atm.state, *graph.active));
+    set_var(atm.state);
     static_cast<predicate &>(get_predicate(PROPOSITIONAL_STATE_PREDICATE_NAME)).apply_rule(atm);
     restore_var();
 

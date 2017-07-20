@@ -12,13 +12,10 @@ atom_flaw::~atom_flaw() {}
 void atom_flaw::compute_resolvers()
 {
     assert(graph.core::sat.value(get_in_plan()) != False);
-    bool unifiable = false; // becomes true if this flaw can be solved through unification..
-    // this is the state of the atom associated to this flaw..
-    std::unordered_set<set_item *> a_state = graph.set_th.value(atm.state);
-    assert(!a_state.empty());
-    if (a_state.find(graph.unified) != a_state.end())
+    assert(graph.core::sat.value(atm.state) != False);
+    if (graph.core::sat.value(atm.state) == Undefined) // we check if the atom can unify..
     {
-        // we the ancestors of this flaw, so as to avoid cyclic causality..
+        // we collect the ancestors of this flaw, so as to avoid cyclic causality..
         std::unordered_set<flaw *> ancestors;
         std::queue<flaw *> q;
         q.push(this);
@@ -50,11 +47,7 @@ void atom_flaw::compute_resolvers()
             if (ancestors.find(target) != ancestors.end()) // unifying with the target atom would introduce cyclic causality..
                 continue;
 
-            // this is the state of the atom we are checking for unification..
-            std::unordered_set<set_item *> c_state = graph.set_th.value(c_a->state);
-            assert(!c_state.empty());
-
-            if (c_state.find(graph.active) == c_state.end() || !atm.equates(*c_a))
+            if (graph.core::sat.value(c_a->state) != True || !atm.equates(*c_a))
                 continue;
 
             // atom c_a is a good candidate for unification..
@@ -71,10 +64,8 @@ void atom_flaw::compute_resolvers()
                 q.pop();
             }
 
-            if (a_state.size() > 1)                                                             // if the state can be either 'unified' or something else..
-                unif_lits.push_back(lit(graph.set_th.allows(atm.state, *graph.unified), true)); // we force the state to be 'unified' within the unification literals..
-            if (c_state.size() > 1)                                                             // if the state can be either 'active' or something else..
-                unif_lits.push_back(lit(graph.set_th.allows(c_a->state, *graph.active), true)); // we force the state to be 'active' within the unification literals..
+            unif_lits.push_back(lit(atm.state, false)); // we force the state of this atom to be 'unified' within the unification literals..
+            unif_lits.push_back(lit(c_a->state, true)); // we force the state of the target atom to be 'active' within the unification literals..
 
             // the equality propositional variable..
             var eq_v = atm.eq(*c_a);
@@ -95,15 +86,8 @@ void atom_flaw::compute_resolvers()
                 // making this resolver false might make the heuristic blind..
                 graph.chosen.insert({u_res->get_chosen(), u_res});
                 graph.bind(u_res->get_chosen());
-                unifiable = true;
             }
         }
-    }
-    if (!unifiable)
-    {
-        // we remove unification from atom state..
-        if (!graph.core::sat.new_clause({lit(graph.set_th.allows(atm.state, *graph.unified), false)}))
-            throw unsolvable_exception();
     }
 
     if (is_fact)
@@ -115,14 +99,14 @@ void atom_flaw::compute_resolvers()
 atom_flaw::add_fact::add_fact(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(0), atm_flaw), atm(atm) {}
 atom_flaw::add_fact::~add_fact() {}
 
-void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)}); }
+void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(chosen, false), lit(atm.state, true)}); }
 
 atom_flaw::expand_goal::expand_goal(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(1), atm_flaw), atm(atm) {}
 atom_flaw::expand_goal::~expand_goal() {}
 
 void atom_flaw::expand_goal::apply()
 {
-    graph.core::sat.new_clause({lit(chosen, false), lit(graph.set_th.allows(atm.state, *graph.active), true)});
+    graph.core::sat.new_clause({lit(chosen, false), lit(atm.state, true)});
     static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
 }
 
