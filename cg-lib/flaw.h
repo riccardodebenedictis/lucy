@@ -22,7 +22,6 @@ public:
   virtual ~flaw();
 
   bool is_expanded() const { return expanded; }
-  bool is_initialized() const { return initialized; }
   var get_in_plan() const { return in_plan; }
   std::vector<resolver *> get_causes() const { return causes; }
   std::vector<resolver *> get_supports() const { return supports; }
@@ -44,7 +43,6 @@ protected:
 
 private:
   const bool exclusive;
-  bool initialized = false;
   bool expanded = false;
   var in_plan;
   // the resolvers for this flaw..

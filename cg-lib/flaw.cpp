@@ -41,7 +41,6 @@ std::string flaw::get_label() const
 
 void flaw::init()
 {
-    assert(!initialized);
     assert(!expanded);
 
     // we create the in_plan variable..
@@ -62,7 +61,6 @@ void flaw::init()
         // the flaw is in_plan if the conjunction of its causes is in_plan..
         in_plan = graph.core::sat.new_conj(cs);
     }
-    initialized = true;
 }
 
 void flaw::expand()
