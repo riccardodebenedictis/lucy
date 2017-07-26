@@ -71,7 +71,7 @@ private:
   };
 
   // the reason for having introduced a flaw..
-  std::unordered_map<atom *, flaw *> reason;
+  std::unordered_map<atom *, atom_flaw *> reason;
   // the flaw queue..
   std::queue<flaw *> flaw_q;
   // the flaw costs queue (for flaw cost propagation)..
