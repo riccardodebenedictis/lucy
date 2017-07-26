@@ -185,14 +185,6 @@ void causal_graph::new_flaw(flaw &f)
 {
     f.init();
     flaw_q.push(&f);
-    if (core::sat.value(f.in_plan) == True) // we have a top-level (landmark) flaw..
-        flaws.insert(&f);
-    else
-    {
-        // we listen for the flaw to become in_plan..
-        in_plan[f.in_plan].push_back(&f);
-        bind(f.in_plan);
-    }
 
     // we notify the listeners that a new flaw has arised..
     for (const auto &l : listeners)
@@ -510,14 +502,6 @@ bool causal_graph::has_inconsistencies()
         for (const auto &f : incs)
         {
             f->init();
-            if (core::sat.value(f->in_plan) == True) // we have a top-level (landmark) flaw..
-                flaws.insert(f);
-            else
-            {
-                // we listen for the flaw to become in_plan..
-                in_plan[f->in_plan].push_back(f);
-                bind(f->in_plan);
-            }
 
             // we notify the listeners that a new flaw has arised..
             for (const auto &l : listeners)

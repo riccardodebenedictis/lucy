@@ -43,23 +43,28 @@ void flaw::init()
 {
     assert(!expanded);
 
-    // we create the in_plan variable..
-    std::vector<lit> cs;
-    for (const auto &c : causes)
-        cs.push_back(lit(c->chosen, true));
-    switch (cs.size())
-    {
-    case 0:
+    if (causes.empty())
         // the flaw is necessarily in_plan..
         in_plan = TRUE_var;
-        break;
-    case 1:
-        // the flaw is in_plan if its cause is in_plan..
-        in_plan = cs.begin()->v;
-        break;
-    default:
+    else
+    {
+        // we create a new variable..
+        std::vector<lit> cs;
+        for (const auto &c : causes)
+            cs.push_back(lit(c->chosen, true));
+
         // the flaw is in_plan if the conjunction of its causes is in_plan..
         in_plan = graph.core::sat.new_conj(cs);
+    }
+
+    if (graph.core::sat.value(in_plan) == True)
+        // we have a top-level (a landmark) flaw..
+        graph.flaws.insert(this);
+    else
+    {
+        // we listen for the flaw to become in_plan..
+        graph.in_plan[in_plan].push_back(this);
+        graph.bind(in_plan);
     }
 }
 
