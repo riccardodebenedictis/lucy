@@ -22,7 +22,7 @@ public:
 
   virtual void apply() = 0;
 
-  var get_chosen() const { return chosen; }
+  const var &get_chosen() const { return chosen; }
   flaw &get_effect() const { return effect; }
   std::vector<flaw *> get_preconditions() const { return preconditions; }
   double get_cost() const;
@@ -31,8 +31,8 @@ public:
 
 protected:
   causal_graph &graph;
-  var chosen;
-  lin cost;
+  const var chosen;
+  const lin cost;
   // the preconditions of this resolver..
   std::vector<flaw *> preconditions;
   // the flaw solved by this resolver..

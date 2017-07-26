@@ -16,8 +16,8 @@ void atom_flaw::compute_resolvers()
     if (graph.core::sat.value(atm.state) == Undefined) // we check if the atom can unify..
     {
         // we collect the ancestors of this flaw, so as to avoid cyclic causality..
-        std::unordered_set<flaw *> ancestors;
-        std::queue<flaw *> q;
+        std::unordered_set<const flaw *> ancestors;
+        std::queue<const flaw *> q;
         q.push(this);
         while (!q.empty())
         {
