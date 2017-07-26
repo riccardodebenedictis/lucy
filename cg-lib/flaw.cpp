@@ -65,7 +65,6 @@ void flaw::init()
 
 void flaw::expand()
 {
-    assert(initialized);
     assert(!expanded);
 
     // we compute the resolvers..

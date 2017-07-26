@@ -323,7 +323,6 @@ void causal_graph::build()
 
     while (!has_solution() && !flaw_q.empty())
     {
-        assert(flaw_q.front()->initialized);
         assert(!flaw_q.front()->expanded);
         if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
             flaw_q.push(flaw_q.front());
@@ -374,7 +373,6 @@ void causal_graph::add_layer()
 
     for (const auto &f : fs)
     {
-        assert(f->initialized);
         assert(!f->expanded);
         f->expand();
 
