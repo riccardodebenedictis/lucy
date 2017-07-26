@@ -233,7 +233,7 @@ type &type::get_type(const std::string &t_name) const
     throw std::out_of_range(t_name);
 }
 
-void type::set_var(var ctr_var) { cr.set_var(ctr_var); }
+void type::set_var(const var &v) { cr.set_var(v); }
 void type::restore_var() { cr.restore_var(); }
 
 void type::inherit(predicate &base, predicate &derived) { derived.supertypes.push_back(&base); }

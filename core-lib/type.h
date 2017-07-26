@@ -70,7 +70,7 @@ public:
 protected:
   static void inherit(predicate &base, predicate &derived);
 
-  void set_var(var ctr_var);
+  void set_var(const var &v);
   void restore_var();
 
 private:
