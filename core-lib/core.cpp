@@ -86,8 +86,8 @@ void core::read(const std::vector<std::string> &files)
         throw unsolvable_exception("the input problem is inconsistent");
 }
 
-bool_expr core::new_bool() { return new bool_item(*this, lit(sat.new_var(), true)); }
-bool_expr core::new_bool(const bool &val) { return new bool_item(*this, lit(val, true)); }
+bool_expr core::new_bool() { return new bool_item(*this, sat.new_var()); }
+bool_expr core::new_bool(const bool &val) { return new bool_item(*this, val); }
 
 arith_expr core::new_int()
 {
@@ -116,7 +116,7 @@ expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_val
         bool_expr b = new_bool();
         std::vector<lit> eqs;
         for (const auto &v : allowed_vals)
-            eqs.push_back(lit(sat.new_eq(b->l, dynamic_cast<bool_item *>(v)->l), true));
+            eqs.push_back(sat.new_eq(b->l, dynamic_cast<bool_item *>(v)->l));
         bool nc = sat.new_clause(eqs);
         assert(nc);
         return b;
@@ -129,8 +129,8 @@ expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_val
         {
             var leq_v = la_th.new_leq(i->l, dynamic_cast<arith_item *>(v)->l);
             var geq_v = la_th.new_geq(i->l, dynamic_cast<arith_item *>(v)->l);
-            var eq_v = sat.new_conj({lit(leq_v, true), lit(geq_v, true)});
-            eqs.push_back(lit(eq_v, true));
+            var eq_v = sat.new_conj({leq_v, geq_v});
+            eqs.push_back(eq_v);
         }
         bool nc = sat.new_clause(eqs);
         assert(nc);
@@ -144,8 +144,8 @@ expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_val
         {
             var leq_v = la_th.new_leq(r->l, dynamic_cast<arith_item *>(v)->l);
             var geq_v = la_th.new_geq(r->l, dynamic_cast<arith_item *>(v)->l);
-            var eq_v = sat.new_conj({lit(leq_v, true), lit(geq_v, true)});
-            eqs.push_back(lit(eq_v, true));
+            var eq_v = sat.new_conj({leq_v, geq_v});
+            eqs.push_back(eq_v);
         }
         bool nc = sat.new_clause(eqs);
         assert(nc);
@@ -156,14 +156,14 @@ expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_val
 }
 
 bool_expr core::negate(bool_expr var) { return new bool_item(*this, !var->l); }
-bool_expr core::eq(bool_expr left, bool_expr right) { return new bool_item(*this, lit(sat.new_eq(left->l, right->l), true)); }
+bool_expr core::eq(bool_expr left, bool_expr right) { return new bool_item(*this, sat.new_eq(left->l, right->l)); }
 
 bool_expr core::conj(const std::vector<bool_expr> &exprs)
 {
     std::vector<lit> lits;
     for (const auto &bex : exprs)
         lits.push_back(bex->l);
-    return new bool_item(*this, lit(sat.new_conj(lits), true));
+    return new bool_item(*this, sat.new_conj(lits));
 }
 
 bool_expr core::disj(const std::vector<bool_expr> &exprs)
@@ -171,7 +171,7 @@ bool_expr core::disj(const std::vector<bool_expr> &exprs)
     std::vector<lit> lits;
     for (const auto &bex : exprs)
         lits.push_back(bex->l);
-    return new bool_item(*this, lit(sat.new_disj(lits), true));
+    return new bool_item(*this, sat.new_disj(lits));
 }
 
 bool_expr core::exct_one(const std::vector<bool_expr> &exprs)
@@ -179,7 +179,7 @@ bool_expr core::exct_one(const std::vector<bool_expr> &exprs)
     std::vector<lit> lits;
     for (const auto &bex : exprs)
         lits.push_back(bex->l);
-    return new bool_item(*this, lit(sat.new_exct_one(lits), true));
+    return new bool_item(*this, sat.new_exct_one(lits));
 }
 
 arith_expr core::add(const std::vector<arith_expr> &exprs)
@@ -232,20 +232,20 @@ arith_expr core::minus(arith_expr ex) { return new arith_item(*this, *types.at(R
 bool_expr core::lt(arith_expr left, arith_expr right)
 {
     std::cerr << "[warning] replacing strict inequality (<) with non-strict inequality (<=).." << std::endl;
-    return new bool_item(*this, lit(la_th.new_leq(left->l, right->l), true));
+    return new bool_item(*this, la_th.new_leq(left->l, right->l));
 }
 
-bool_expr core::leq(arith_expr left, arith_expr right) { return new bool_item(*this, lit(la_th.new_leq(left->l, right->l), true)); }
-bool_expr core::eq(arith_expr left, arith_expr right) { return new bool_item(*this, lit(sat.new_conj({lit(la_th.new_leq(left->l, right->l), true), lit(la_th.new_geq(left->l, right->l), true)}), true)); }
-bool_expr core::geq(arith_expr left, arith_expr right) { return new bool_item(*this, lit(la_th.new_geq(left->l, right->l), true)); }
+bool_expr core::leq(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_leq(left->l, right->l)); }
+bool_expr core::eq(arith_expr left, arith_expr right) { return new bool_item(*this, sat.new_conj({la_th.new_leq(left->l, right->l), la_th.new_geq(left->l, right->l)})); }
+bool_expr core::geq(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_geq(left->l, right->l)); }
 
 bool_expr core::gt(arith_expr left, arith_expr right)
 {
     std::cerr << "[warning] replacing strict inequality (>) with non-strict inequality (>=).." << std::endl;
-    return new bool_item(*this, lit(la_th.new_geq(left->l, right->l), true));
+    return new bool_item(*this, la_th.new_geq(left->l, right->l));
 }
 
-bool_expr core::eq(expr left, expr right) { return new bool_item(*this, lit(left->eq(*right), true)); }
+bool_expr core::eq(expr left, expr right) { return new bool_item(*this, left->eq(*right)); }
 
 void core::assert_facts(const std::vector<lit> &facts)
 {

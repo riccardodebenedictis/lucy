@@ -51,7 +51,7 @@ void flaw::init()
         // we create a new variable..
         std::vector<lit> cs;
         for (const auto &c : causes)
-            cs.push_back(lit(c->chosen, true));
+            cs.push_back(c->chosen);
 
         // the flaw is in_plan if the conjunction of its causes is in_plan..
         in_plan = graph.core::sat.new_conj(cs);
@@ -77,24 +77,19 @@ void flaw::expand()
     expanded = true;
 
     // we add causal relations between the flaw and its resolvers (i.e., if the flaw is in_plan exactly one of its resolvers should be in plan)..
-    switch (resolvers.size())
+    if (resolvers.empty())
     {
-    case 0:
         // there is no way for solving this flaw..
         if (!graph.core::sat.new_clause({lit(in_plan, false)}))
             throw unsolvable_exception();
-        break;
-    case 1:
-        // there is a unique way for solving this flaw: this is a trivial flaw..
-        if (!graph.core::sat.new_clause({lit(in_plan, false), lit(resolvers.front()->chosen, true)}))
-            throw unsolvable_exception();
-        break;
-    default:
+    }
+    else
+    {
         // we need to take a decision for solving this flaw..
         std::vector<lit> r_chs;
         for (const auto &r : resolvers)
-            r_chs.push_back(lit(r->chosen, true));
-        if (!graph.core::sat.new_clause({lit(in_plan, false), lit(exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs), true)}))
+            r_chs.push_back(r->chosen);
+        if (!graph.core::sat.new_clause({lit(in_plan, false), exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs)}))
             throw unsolvable_exception();
     }
 }

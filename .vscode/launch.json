@@ -51,7 +51,7 @@
             "environment": [
                 {
                     "name": "PATH",
-                    "value": "%PATH%;C:/Program Files/Java/jre1.8.0_131/bin/server"
+                    "value": "%PATH%;C:/Program Files/Java/jre1.8.0_141/bin/server"
                 }
             ],
             "externalConsole": true,

@@ -16,6 +16,7 @@ class resolver
   friend class flaw;
 
 public:
+  resolver(causal_graph &graph, const var &ch, const lin &cost, flaw &eff);
   resolver(causal_graph &graph, const lin &cost, flaw &eff);
   resolver(const resolver &orig) = delete;
   virtual ~resolver();

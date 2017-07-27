@@ -94,7 +94,7 @@ var sat_core::new_eq(const lit &left, const lit &right)
         assert(nc);
         nc = new_clause({lit(e, false), left, !right});
         assert(nc);
-        nc = new_clause({lit(e, true), !left, !right});
+        nc = new_clause({e, !left, !right});
         assert(nc);
         exprs.insert({s_expr, e});
         return e;
@@ -120,7 +120,7 @@ var sat_core::new_conj(const std::vector<lit> &ls)
         // we need to create a new variable..
         var c = new_var();
         std::vector<lit> lits;
-        lits.push_back(lit(c, true));
+        lits.push_back(c);
         bool nc;
         for (const auto &l : ls)
         {
@@ -157,7 +157,7 @@ var sat_core::new_disj(const std::vector<lit> &ls)
         bool nc;
         for (const auto &l : ls)
         {
-            nc = new_clause({!l, lit(d, true)});
+            nc = new_clause({!l, d});
             assert(nc);
             lits.push_back(l);
         }
@@ -321,9 +321,9 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
 {
     std::set<var> seen;
     int counter = 0;
-    lit p = lit(FALSE_var, 0);
+    lit p;
     std::vector<lit> p_reason = cnfl;
-    out_learnt.push_back(lit(0, false));
+    out_learnt.push_back(lit());
     out_btlevel = 0;
     do
     {

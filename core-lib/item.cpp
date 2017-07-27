@@ -27,7 +27,7 @@ var item::eq(item &i) noexcept
 		{
 			for (const auto &f : q.front()->get_fields())
 				if (!f.second->synthetic)
-					eqs.push_back(lit(get(f.first)->eq(*i.get(f.first)), true));
+					eqs.push_back(get(f.first)->eq(*i.get(f.first)));
 			for (const auto &st : q.front()->get_supertypes())
 				q.push(st);
 			q.pop();
@@ -101,7 +101,7 @@ var arith_item::eq(item &i) noexcept
 	if (this == &i)
 		return TRUE_var;
 	else if (arith_item *ae = dynamic_cast<arith_item *>(&i))
-		return cr.sat.new_conj({lit(cr.la_th.new_leq(l, ae->l), true), lit(cr.la_th.new_geq(l, ae->l), true)});
+		return cr.sat.new_conj({cr.la_th.new_leq(l, ae->l), cr.la_th.new_geq(l, ae->l)});
 	else
 		return FALSE_var;
 }
@@ -172,7 +172,7 @@ expr enum_item::get(const std::string &name) const
 
 			for (unsigned int i = 0; i < c_vals.size(); i++)
 			{
-				bool af = cr.sat.eq(lit(cr.set_th.allows(ev, *c_vals[i]), true), lit(cr.set_th.allows(e->ev, *f_vals[i]), true));
+				bool af = cr.sat.eq(cr.set_th.allows(ev, *c_vals[i]), cr.set_th.allows(e->ev, *f_vals[i]));
 				assert(af);
 			}
 

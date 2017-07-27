@@ -6,12 +6,8 @@
 namespace cg
 {
 
-resolver::resolver(causal_graph &graph, const lin &cost, flaw &eff) : graph(graph), chosen(graph.core::sat.new_var()), cost(cost), effect(eff)
-{
-    bool nc = graph.core::sat.new_clause({lit(chosen, false), lit(eff.in_plan, true)});
-    assert(nc);
-}
-
+resolver::resolver(causal_graph &graph, const var &ch, const lin &cost, flaw &eff) : graph(graph), chosen(ch), cost(cost), effect(eff) {}
+resolver::resolver(causal_graph &graph, const lin &cost, flaw &eff) : resolver(graph, graph.core::sat.new_var(), cost, eff) {}
 resolver::~resolver() {}
 
 double resolver::get_cost() const

@@ -70,12 +70,12 @@ bool assertion::propagate_lb(var x_i, std::vector<lit> &cnfl)
             {
             case False:
                 // we have a propositional inconsistency..
-                cnfl.push_back(lit(b, true));
+                cnfl.push_back(b);
                 cnfl.push_back(!*th.assigns[la_theory::lb_index(x_i)].reason);
                 return false;
             case Undefined:
                 // we propagate information to the sat core..
-                th.record({lit(b, true), !*th.assigns[la_theory::lb_index(x_i)].reason});
+                th.record({b, !*th.assigns[la_theory::lb_index(x_i)].reason});
             }
             break;
         }
@@ -98,12 +98,12 @@ bool assertion::propagate_ub(var x_i, std::vector<lit> &cnfl)
             {
             case False:
                 // we have a propositional inconsistency..
-                cnfl.push_back(lit(b, true));
+                cnfl.push_back(b);
                 cnfl.push_back(!*th.assigns[la_theory::ub_index(x_i)].reason);
                 return false;
             case Undefined:
                 // we propagate information to the sat core..
-                th.record({lit(b, true), !*th.assigns[la_theory::ub_index(x_i)].reason});
+                th.record({b, !*th.assigns[la_theory::ub_index(x_i)].reason});
             }
             break;
         case geq:
@@ -141,7 +141,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     // we make room for the first literal..
-    cnfl.push_back(lit(FALSE_var, true));
+    cnfl.push_back(lit());
     if (l.vars.at(v) > 0)
     {
         double lb = 0;
@@ -196,7 +196,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
                         }
                         break;
                     case geq:
-                        cnfl[0] = lit(c->b, true);
+                        cnfl[0] = c->b;
                         // the assertion is satisfied..
                         switch (th.sat.value(c->b))
                         {
@@ -252,7 +252,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
                     switch (c->o)
                     {
                     case leq:
-                        cnfl[0] = lit(c->b, true);
+                        cnfl[0] = c->b;
                         // the assertion is satisfied..
                         switch (th.sat.value(c->b))
                         {
@@ -289,7 +289,7 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     // we make room for the first literal..
-    cnfl.push_back(lit(FALSE_var, true));
+    cnfl.push_back(lit());
     if (l.vars.at(v) > 0)
     {
         double ub = 0;
@@ -331,7 +331,7 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
                     switch (c->o)
                     {
                     case leq:
-                        cnfl[0] = lit(c->b, true);
+                        cnfl[0] = c->b;
                         // the assertion is satisfied..
                         switch (th.sat.value(c->b))
                         {
@@ -413,7 +413,7 @@ bool row::propagate_ub(var v, std::vector<lit> &cnfl)
                         }
                         break;
                     case geq:
-                        cnfl[0] = lit(c->b, true);
+                        cnfl[0] = c->b;
                         // the assertion is satisfied..
                         switch (th.sat.value(c->b))
                         {

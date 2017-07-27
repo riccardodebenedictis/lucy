@@ -50,7 +50,7 @@ void causal_graph::new_fact(atom &atm)
     new_flaw(*af);
 
     // we link the state of the atom to the state of the flaw..
-    if (!core::sat.new_clause({lit(atm.state, false), lit(af->in_plan, true)}))
+    if (!core::sat.new_clause({lit(atm.state, false), af->in_plan}))
         throw unsolvable_exception();
 
     core::new_fact(atm);
@@ -64,7 +64,7 @@ void causal_graph::new_goal(atom &atm)
     new_flaw(*af);
 
     // we link the state of the atom to the state of the flaw..
-    if (!core::sat.new_clause({lit(atm.state, false), lit(af->in_plan, true)}))
+    if (!core::sat.new_clause({lit(atm.state, false), af->in_plan}))
         throw unsolvable_exception();
 
     core::new_goal(atm);
@@ -85,7 +85,7 @@ void causal_graph::solve()
     // we create a new graph var..
     graph_var = core::sat.new_var();
     // we use the current graph var to allow search within the current graph..
-    bool a_gv = core::sat.assume(lit(graph_var, true));
+    bool a_gv = core::sat.assume(graph_var);
     assert(a_gv);
 
     while (true)
@@ -106,7 +106,7 @@ void causal_graph::solve()
                         resolvers.push_back(res);
 
                     // we apply the resolver..
-                    if (!core::sat.assume(lit(res->chosen, true)) || !core::sat.check())
+                    if (!core::sat.assume(res->chosen) || !core::sat.check())
                         throw unsolvable_exception();
 
                     res = nullptr;
@@ -120,7 +120,7 @@ void causal_graph::solve()
                             // we create a new graph var..
                             graph_var = core::sat.new_var();
                         }
-                        a_gv = core::sat.assume(lit(graph_var, true));
+                        a_gv = core::sat.assume(graph_var);
                         assert(a_gv);
                     }
                 }
@@ -154,7 +154,7 @@ void causal_graph::solve()
                 // we create a new graph var..
                 graph_var = core::sat.new_var();
                 // we use the current graph var to allow search within the current graph..
-                a_gv = core::sat.assume(lit(graph_var, true));
+                a_gv = core::sat.assume(graph_var);
                 assert(a_gv);
             }
             else
@@ -173,7 +173,7 @@ void causal_graph::solve()
                         // we create a new graph var..
                         graph_var = core::sat.new_var();
                     }
-                    a_gv = core::sat.assume(lit(graph_var, true));
+                    a_gv = core::sat.assume(graph_var);
                     assert(a_gv);
                 }
             }
@@ -202,7 +202,7 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 {
     r.preconditions.push_back(&f);
     f.supports.push_back(&r);
-    bool new_clause = core::sat.new_clause({lit(r.chosen, false), lit(f.in_plan, true)});
+    bool new_clause = core::sat.new_clause({lit(r.chosen, false), f.in_plan});
     assert(new_clause);
 
     // we notify the listeners that a new causal link has been created..
@@ -215,10 +215,10 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
     assert(cnfl.empty());
     if (in_plan.find(p.v) != in_plan.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
     {
-        if (p.sign)
+        // a decision has been taken about the presence of some flaws within the current partial solution..
+        for (const auto &f : in_plan.at(p.v))
         {
-            // these flaws have been added to the current partial solution..
-            for (const auto &f : in_plan.at(p.v))
+            if (p.sign) // this flaw has been added to the current partial solution..
             {
                 flaws.insert(f);
                 if (!trail.empty())
@@ -227,11 +227,7 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
                 for (const auto &l : listeners)
                     l->flaw_state_changed(*f);
             }
-        }
-        else
-        {
-            // these flaws have been removed from the current partial solution..
-            for (const auto &f : in_plan.at(p.v))
+            else // this flaw has been removed from the current partial solution..
             {
                 set_cost(*f, std::numeric_limits<double>::infinity());
                 // we notify the listeners that the state of the flaw has changed..
@@ -240,9 +236,12 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
             }
         }
     }
-    else // a decision has been taken about the presence of a resolver within the current partial solution..
+
+    if (chosen.find(p.v) != chosen.end())
     {
-        flaw_costs_q.push(&chosen.at(p.v)->effect);
+        // a decision has been taken about the presence of some resolvers within the current partial solution..
+        for (const auto &r : chosen.at(p.v))
+            flaw_costs_q.push(&r->effect);
         propagate_costs();
     }
 
@@ -338,9 +337,13 @@ void causal_graph::build()
                 {
                     // there are no requirements for this resolver..
                     set_cost(*flaw_q.front(), std::min(flaw_q.front()->cost, la_th.value(r->cost)));
-                    // making this resolver false might make the heuristic blind..
-                    chosen.insert({r->chosen, r});
-                    bind(r->chosen);
+                    assert(core::sat.value(r->chosen) != False);
+                    if (core::sat.value(r->chosen) != True)
+                    {
+                        // making this resolver false might make the heuristic blind..
+                        chosen[r->chosen].push_back(r);
+                        bind(r->chosen);
+                    }
                 }
                 resolvers.pop_front();
             }
@@ -385,9 +388,13 @@ void causal_graph::add_layer()
             {
                 // there are no requirements for this resolver..
                 set_cost(*f, std::min(f->cost, la_th.value(r->cost)));
-                // making this resolver false might make the heuristic blind..
-                chosen.insert({r->chosen, r});
-                bind(r->chosen);
+                assert(core::sat.value(r->chosen) != False);
+                if (core::sat.value(r->chosen) != True)
+                {
+                    // making this resolver false might make the heuristic blind..
+                    chosen[r->chosen].push_back(r);
+                    bind(r->chosen);
+                }
             }
             resolvers.pop_front();
         }
@@ -526,9 +533,13 @@ bool causal_graph::has_inconsistencies()
                 {
                     // there are no requirements for this resolver..
                     set_cost(*f, std::min(f->cost, la_th.value(r->cost)));
-                    // making this resolver false might make the heuristic blind..
-                    chosen.insert({r->chosen, r});
-                    bind(r->chosen);
+                    assert(core::sat.value(r->chosen) != False);
+                    if (core::sat.value(r->chosen) != True)
+                    {
+                        // making this resolver false might make the heuristic blind..
+                        chosen[r->chosen].push_back(r);
+                        bind(r->chosen);
+                    }
                 }
                 resolvers.pop_front();
             }
@@ -552,18 +563,18 @@ flaw *causal_graph::select_flaw()
     flaw *f_next = nullptr;
     for (auto it = flaws.begin(); it != flaws.end();)
     {
-        if (std::count_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != False; }) == 1)
+        if (std::any_of((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) == True; }))
         {
-            // we have a trivial flaw..
+            // we have either a trivial (i.e. has only one resolver) or an already solved flaw..
             assert(core::sat.value((*std::find_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != False; }))->chosen) == True);
-            // we remove the trivial flaw from the current flaws..
+            // we remove the flaw from the current flaws..
             if (!trail.empty())
                 trail.back().solved_flaws.insert((*it));
             flaws.erase(it++);
         }
         else
         {
-            // the flaw is not trivial: let's see if it's better than the previous one..
+            // the flaw not trivial nor already solved: let's see if it's better than the previous one..
             if (!f_next) // this is the first flaw we see..
                 f_next = *it;
             else if (f_next->has_subgoals() && !(*it)->has_subgoals()) // we prefere non-structural flaws (i.e., inconsistencies) to structural ones..

@@ -10,7 +10,7 @@ typedef size_t var;
 class lit
 {
 public:
-  lit(var v, bool sign);
+  lit(var v = -1, bool sign = true);
   virtual ~lit();
 
   lit operator!() const { return lit(v, !sign); }

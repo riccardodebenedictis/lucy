@@ -25,7 +25,7 @@ var set_theory::new_var(const std::unordered_set<set_item *> &items)
         {
             var bv = sat.new_var();
             assigns.back().insert({i, bv});
-            lits.push_back(lit(bv, true));
+            lits.push_back(bv);
             bind(bv);
             is_contained_in.insert({bv, id});
         }
@@ -86,11 +86,11 @@ var set_theory::eq(const var &left, const var &right)
         }
         for (const auto &v : intersection)
         {
-            nc = sat.new_clause({lit(e, false), lit(assigns[left].at(v), false), lit(assigns[right].at(v), true)});
+            nc = sat.new_clause({lit(e, false), lit(assigns[left].at(v), false), assigns[right].at(v)});
             assert(nc);
-            nc = sat.new_clause({lit(e, false), lit(assigns[left].at(v), true), lit(assigns[right].at(v), false)});
+            nc = sat.new_clause({lit(e, false), assigns[left].at(v), lit(assigns[right].at(v), false)});
             assert(nc);
-            nc = sat.new_clause({lit(e, true), lit(assigns[left].at(v), false), lit(assigns[right].at(v), false)});
+            nc = sat.new_clause({e, lit(assigns[left].at(v), false), lit(assigns[right].at(v), false)});
             assert(nc);
         }
         exprs.insert({s_expr, e});
