@@ -44,7 +44,7 @@ void atom_flaw::compute_resolvers()
                 continue;
 
             // this is the target flaw (i.e. the one we are checking for unification) and cannot be in the current flaw's causes' effects..
-            flaw *target = graph.reason.at(&c_atm);
+            atom_flaw *target = graph.reason.at(&c_atm);
 
             if (!target->is_expanded() ||                  // the target flaw must hav been already expanded..
                 ancestors.find(target) != ancestors.end()) // unifying with the target atom would introduce cyclic causality..
