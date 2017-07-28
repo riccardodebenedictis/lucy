@@ -415,9 +415,7 @@ bool causal_graph::is_deferrable(flaw &f)
     q.push(&f);
     while (!q.empty())
     {
-        if (!q.front()->exclusive) // we cannot defer this flaw..
-            return false;
-        else if (core::sat.value(q.front()->in_plan) == False) // it is not possible to solve this flaw with current assignments.. thus we defer..
+        if (core::sat.value(q.front()->in_plan) == False) // it is not possible to solve this flaw with current assignments.. thus we defer..
             return true;
         else if (q.front()->cost < std::numeric_limits<double>::infinity()) // we already have a possible solution for this flaw.. thus we defer..
             return true;
@@ -545,7 +543,8 @@ bool causal_graph::has_inconsistencies()
             }
         }
 
-        build();
+        if (std::any_of(incs.begin(), incs.end(), [&](flaw *f) { return f->has_subgoals(); }))
+            build();
 
         // we re-assume the current graph var to allow search within the current graph..
         bool a_gv = core::sat.assume(lit(graph_var, true));
