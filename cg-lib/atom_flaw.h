@@ -2,6 +2,7 @@
 
 #include "flaw.h"
 #include "atom.h"
+#include "type.h"
 #include "resolver.h"
 
 using namespace lucy;
@@ -16,7 +17,7 @@ public:
   atom_flaw(const atom_flaw &orig) = delete;
   virtual ~atom_flaw();
 
-  std::string get_label() const override { return is_fact ? "fact e" + std::to_string(atm.state) : "goal e" + std::to_string(atm.state); }
+  std::string get_label() const override { return (is_fact ? "fact s" : "goal s") + std::to_string(atm.state) + " " + atm.tp.name; }
 
 private:
   void compute_resolvers() override;

@@ -43,7 +43,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/build/lucy.exe",
             "args": [
-                "${workspaceRoot}/examples/blocks_5.rddl",
+                "${workspaceRoot}/examples/blocks_2.rddl",
                 "output.json"
             ],
             "stopAtEntry": false,
