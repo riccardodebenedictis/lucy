@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -77,6 +79,8 @@ public class CausalGraph extends Display {
     CausalGraph() {
         // initialize display and data
         super(new Visualization());
+
+        Logger.getLogger("prefuse").setLevel(Level.OFF);
 
         g.getNodeTable().addColumn(VisualItem.LABEL, String.class);
         g.getNodeTable().addColumn(NODE_TYPE, String.class);
