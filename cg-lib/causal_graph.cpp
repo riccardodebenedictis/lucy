@@ -102,7 +102,7 @@ void causal_graph::solve()
                 {
                     // this is the next resolver to be chosen..
                     res = &select_resolver(*f_next);
-                    if (f_next->has_subgoals())
+                    if (!res->preconditions.empty())
                         resolvers.push_back(res);
 
                     // we apply the resolver..
