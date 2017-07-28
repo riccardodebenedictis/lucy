@@ -46,7 +46,7 @@ private:
 
   void build();
   void add_layer();
-  bool has_solution();
+  inline bool has_solution();
   bool is_deferrable(flaw &f);
   void set_cost(flaw &f, double cost);
   void propagate_costs();

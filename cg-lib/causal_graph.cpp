@@ -312,8 +312,10 @@ void causal_graph::build()
 #endif
     assert(core::sat.root_level());
 
-    while (!has_solution() && !flaw_q.empty())
+    while (!has_solution())
     {
+        if (flaw_q.empty())
+            throw unsolvable_exception();
         assert(!flaw_q.front()->expanded);
         if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
             flaw_q.push(flaw_q.front());
@@ -403,10 +405,7 @@ void causal_graph::add_layer()
 
 bool causal_graph::has_solution()
 {
-    for (const auto &f : flaws)
-        if (f->cost == std::numeric_limits<double>::infinity())
-            return false;
-    return true;
+    return std::all_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->cost < std::numeric_limits<double>::infinity(); });
 }
 
 bool causal_graph::is_deferrable(flaw &f)
