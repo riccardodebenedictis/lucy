@@ -25,7 +25,6 @@ public:
 
   env &operator*() const { return *ptr; }
   env *operator->() const { return ptr; }
-  operator context() const { return context(ptr); }
 
   operator expr() const;
   operator bool_expr() const;
@@ -49,7 +48,6 @@ public:
 
   item &operator*() const;
   item *operator->() const;
-  operator expr() const;
 };
 
 class bool_expr : public expr
@@ -61,7 +59,6 @@ public:
 
   bool_item &operator*() const;
   bool_item *operator->() const;
-  operator bool_expr() const;
 };
 
 class arith_expr : public expr
@@ -73,7 +70,6 @@ public:
 
   arith_item &operator*() const;
   arith_item *operator->() const;
-  operator arith_expr() const;
 };
 
 class string_expr : public expr
@@ -85,7 +81,6 @@ public:
 
   string_item &operator*() const;
   string_item *operator->() const;
-  operator string_expr() const;
 };
 
 class enum_expr : public expr
@@ -97,6 +92,5 @@ public:
 
   enum_item &operator*() const;
   enum_item *operator->() const;
-  operator enum_expr() const;
 };
 }
