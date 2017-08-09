@@ -1,0 +1,9 @@
+Plate p1 = new Plate();
+
+Water w1 = new Water(10);
+
+Oil o1 = new Oil(10);
+
+Carbonara c1 = new Carbonara(new Spaghetti(8), new Lardon(6), new Eggs(3));
+
+goal c1_eaten = new c1.Eaten(end:horizon);
