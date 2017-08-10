@@ -39,15 +39,13 @@ void atom_flaw::compute_resolvers()
             // this is the atom we are checking for unification..
             atom &c_atm = static_cast<atom &>(*i);
 
-            if (graph.core::sat.value(c_atm.state) == False || // the target atom is unified with some other atom..
-                !atm.equates(c_atm))                           // the atom does not equate with the target target..
-                continue;
-
             // this is the target flaw (i.e. the one we are checking for unification) and cannot be in the current flaw's causes' effects..
             atom_flaw *target = graph.reason.at(&c_atm);
 
-            if (!target->is_expanded() ||                  // the target flaw must hav been already expanded..
-                ancestors.find(target) != ancestors.end()) // unifying with the target atom would introduce cyclic causality..
+            if (!target->is_expanded() ||                      // the target flaw must hav been already expanded..
+                ancestors.find(target) != ancestors.end() ||   // unifying with the target atom would introduce cyclic causality..
+                graph.core::sat.value(c_atm.state) == False || // the target atom is unified with some other atom..
+                !atm.equates(c_atm))                           // the atom does not equate with the target target..
                 continue;
 
             // the equality propositional variable..
@@ -58,22 +56,23 @@ void atom_flaw::compute_resolvers()
 
             // since atom 'c_atm' is a good candidate for unification, we build the unification literals..
             std::vector<lit> unif_lits;
-            std::unordered_set<flaw *> seen;
             q.push(this);
-            seen.insert(this);
-            unif_lits.push_back(lit(atm.state, false)); // we force the state of this atom to be 'unified' within the unification literals..
             q.push(target);
-            seen.insert(target);
-            unif_lits.push_back(c_atm.state); // we force the state of the target atom to be 'active' within the unification literals..
+            unif_lits.push_back(lit(atm.state, false)); // we force the state of this atom to be 'unified' within the unification literals..
+            unif_lits.push_back(c_atm.state);           // we force the state of the target atom to be 'active' within the unification literals..
+            std::unordered_set<const flaw *> seen;
             while (!q.empty())
             {
-                for (const auto &cause : q.front()->get_causes())
-                    if (graph.core::sat.value(cause->get_chosen()) != True && seen.find(&cause->get_effect()) == seen.end())
-                    {
-                        q.push(&cause->get_effect());             // we push its effect..
-                        seen.insert(target);                      // we avoid some repetition of literals..
-                        unif_lits.push_back(cause->get_chosen()); // we add the resolver's literal to the unification literals..
-                    }
+                if (seen.find(q.front()) == seen.end())
+                {
+                    seen.insert(q.front()); // we avoid some repetition of literals..
+                    for (const auto &cause : q.front()->get_causes())
+                        if (graph.core::sat.value(cause->get_chosen()) != True)
+                        {
+                            unif_lits.push_back(cause->get_chosen()); // we add the resolver's variable to the unification literals..
+                            q.push(&cause->get_effect());             // we push its effect..
+                        }
+                }
                 q.pop();
             }
 
