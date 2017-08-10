@@ -116,10 +116,10 @@ void reusable_resource::new_fact(atom_flaw &f)
 
 void reusable_resource::new_goal(atom_flaw &f) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
 
-reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}, {{REUSABLE_RESOURCE_CAPACITY, {new ast::id_expression({REUSABLE_RESOURCE_CAPACITY})}}}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}), new ast::real_literal_expression(0)))}) {}
+reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_CAPACITY)}, {{REUSABLE_RESOURCE_CAPACITY, {new ast::id_expression({REUSABLE_RESOURCE_CAPACITY})}}}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}), new ast::real_literal_expression(0)))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
 
-reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.graph, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_USE_AMOUNT_NAME)}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_USE_AMOUNT_NAME}), new ast::real_literal_expression(0)))}) { supertypes.push_back(&rr.graph.get_predicate("IntervalPredicate")); }
+reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.graph, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.graph.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_USE_AMOUNT_NAME), new field(rr, "scope")}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_USE_AMOUNT_NAME}), new ast::real_literal_expression(0)))}) { supertypes.push_back(&rr.graph.get_predicate("IntervalPredicate")); }
 reusable_resource::use_predicate::~use_predicate() {}
 
 reusable_resource::rr_atom_listener::rr_atom_listener(reusable_resource &rr, atom &atm) : atom_listener(atm), rr(rr) {}
