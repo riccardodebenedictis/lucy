@@ -4,7 +4,7 @@ class Klin : StateVariable {
     ReusableResource capacity;
     real baking_time;
 
-    Klin(ReusableResource energy, number capacity, real baking_time) : energy(energy), capacity(new ReusableResource(capacity)), baking_time(baking_time) {}
+    Klin(ReusableResource energy, real capacity, real baking_time) : energy(energy), capacity(new ReusableResource(capacity)), baking_time(baking_time) {}
 
     predicate Fire() {
         duration == baking_time;
