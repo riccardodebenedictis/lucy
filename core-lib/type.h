@@ -68,7 +68,7 @@ public:
   std::unordered_map<std::string, type *> get_types() const noexcept override { return types; }
 
 protected:
-  static void inherit(predicate &base, predicate &derived);
+  static void inherit(type &base, type &derived);
 
   void set_var(const var &v);
   void restore_var();

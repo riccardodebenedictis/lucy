@@ -236,7 +236,7 @@ type &type::get_type(const std::string &t_name) const
 void type::set_var(const var &v) { cr.set_var(v); }
 void type::restore_var() { cr.restore_var(); }
 
-void type::inherit(predicate &base, predicate &derived) { derived.supertypes.push_back(&base); }
+void type::inherit(type &base, type &derived) { derived.supertypes.push_back(&base); }
 
 bool_type::bool_type(core &cr) : type(cr, cr, BOOL_KEYWORD, true) {}
 bool_type::~bool_type() {}

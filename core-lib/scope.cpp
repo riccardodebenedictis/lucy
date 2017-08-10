@@ -32,4 +32,6 @@ std::unordered_map<std::string, type *> scope::get_types() const noexcept { retu
 
 predicate &scope::get_predicate(const std::string &name) const { return scp.get_predicate(name); }
 std::unordered_map<std::string, predicate *> scope::get_predicates() const noexcept { return scp.get_predicates(); }
+
+void scope::add_field(scope &s, field &f) { s.fields.insert({f.name, &f}); }
 }

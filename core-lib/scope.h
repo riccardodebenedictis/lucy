@@ -47,6 +47,9 @@ public:
   virtual std::unordered_map<std::string, predicate *> get_predicates() const noexcept;
 
 protected:
+  static void add_field(scope &s, field &f);
+
+protected:
   core &cr;
   scope &scp;
   std::unordered_map<std::string, field *> fields;
