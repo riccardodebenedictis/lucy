@@ -1,10 +1,11 @@
 class Klin : StateVariable {
 
+    real id;
     ReusableResource energy;
     ReusableResource capacity;
     real baking_time;
 
-    Klin(ReusableResource energy, real capacity, real baking_time) : energy(energy), capacity(new ReusableResource(capacity)), baking_time(baking_time) {}
+    Klin(real id, ReusableResource energy, real capacity, real baking_time) : id(id), energy(energy), capacity(new ReusableResource(capacity)), baking_time(baking_time) {}
 
     predicate Fire() {
         duration == baking_time;
@@ -22,10 +23,11 @@ class Klin : StateVariable {
 
 class CeramicPiece : StateVariable {
 
+    real id;
     real baking_time;
     real treating_time;
 
-    CeramicPiece(real baking_time, real treating_time) : baking_time(baking_time), treating_time(treating_time) {}
+    CeramicPiece(real id, real baking_time, real treating_time) : id(id), baking_time(baking_time), treating_time(treating_time) {}
 
     predicate Baking(Klin k) {
         duration == baking_time;
@@ -58,11 +60,12 @@ class CeramicPiece : StateVariable {
 
 class CeramicStructure : StateVariable {
 
+    real id;
     CeramicPiece p0;
     CeramicPiece p1;
     real baking_time;
 
-    CeramicStructure(CeramicPiece p0, CeramicPiece p1, real baking_time) : p0(p0), p1(p1), baking_time(baking_time) {}
+    CeramicStructure(real id, CeramicPiece p0, CeramicPiece p1, real baking_time) : id(id), p0(p0), p1(p1), baking_time(baking_time) {}
 
     predicate Assembling() {
         duration == 1.0;
