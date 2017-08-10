@@ -9,12 +9,12 @@ class Klin : StateVariable {
     predicate Fire() {
         duration == baking_time;
 
-        fact use_energy = new energy.Use(start:start, end:end, duration:duration, amount:1);
+        fact use_energy = new energy.Use(start:start, end:end, duration:duration, amount:1.0);
         goal ready = new Ready(end:start);
     }
 
     predicate Ready() {
-        duration >= 1;
+        duration >= 1.0;
 
         goal fire = new Fire(end:start);
     }
@@ -34,11 +34,11 @@ class CeramicPiece : StateVariable {
         firing.start <= start;
         firing.end >= end;
 
-        fact requires_space = new k.capacity.Use(start:start, end:end, duration:duration, amount:1);
+        fact requires_space = new k.capacity.Use(start:start, end:end, duration:duration, amount:1.0);
     }
 
     predicate Baked() {
-        duration >= 1;
+        duration >= 1.0;
 
         goal fire = new Baking(end:start);
     }
@@ -50,7 +50,7 @@ class CeramicPiece : StateVariable {
     }
 
     predicate Treated() {
-        duration >= 1;
+        duration >= 1.0;
 
         goal treating = new Treating(end:start);
     }
@@ -65,7 +65,7 @@ class CeramicStructure : StateVariable {
     CeramicStructure(CeramicPiece p0, CeramicPiece p1, real baking_time) : p0(p0), p1(p1), baking_time(baking_time) {}
 
     predicate Assembling() {
-        duration == 1;
+        duration == 1.0;
 
         goal p0_treated = new p0.Treated();
         p0_treated.end <= start;
@@ -74,7 +74,7 @@ class CeramicStructure : StateVariable {
     }
 
     predicate Assembled() {
-        duration >= 1;
+        duration >= 1.0;
 
         goal assembling = new Assembling(end:start);
     }
@@ -86,12 +86,12 @@ class CeramicStructure : StateVariable {
         firing.start <= start;
         firing.end >= end;
 
-        fact requires_space = new k.capacity.Use(start:start, end:end, duration:duration, amount:2);
+        fact requires_space = new k.capacity.Use(start:start, end:end, duration:duration, amount:2.0);
         goal assembled = new Assembled(end:start);
     }
 
     predicate Baked() {
-        duration >= 1;
+        duration >= 1.0;
 
         goal fire = new Baking(end:start);
     }
