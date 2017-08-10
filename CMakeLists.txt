@@ -47,3 +47,5 @@ add_test( NAME TestBlocks09 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks/bl
 add_test( NAME TestBlocks10 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks/blocks_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/blocks/blocks_problem_10.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestBlocks11 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks/blocks_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/blocks/blocks_problem_11.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestBlocks12 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/blocks/blocks_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/blocks/blocks_problem_12.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME CookingCarbonara01 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/cc/cc_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/cc/cc_problem_1_001.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TemporalMachineShop01 COMMAND lucy "${CMAKE_SOURCE_DIR}/examples/tms/tms_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/tms/tms_problem_1_001.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
