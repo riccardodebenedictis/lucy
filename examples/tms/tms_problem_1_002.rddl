@@ -5,5 +5,8 @@ fact k1_ready = new k1.Ready(start:origin);
 k1_ready.duration >= 1.0;
 
 CeramicPiece p1 = new CeramicPiece(5.0, 2.0);
+CeramicPiece p2 = new CeramicPiece(8.0, 3.0);
 
-goal p1_baked = new p1.Baked(end:horizon);
+CeramicStructure s1 = new CeramicStructure(p1, p2, 3);
+
+goal s1_baked = new s1.Baked(end:horizon);
