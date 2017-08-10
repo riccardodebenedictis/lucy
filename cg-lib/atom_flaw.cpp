@@ -58,16 +58,20 @@ void atom_flaw::compute_resolvers()
 
             // since atom 'c_atm' is a good candidate for unification, we build the unification literals..
             std::vector<lit> unif_lits;
+            std::unordered_set<flaw *> seen;
             q.push(this);
+            seen.insert(this);
             unif_lits.push_back(lit(atm.state, false)); // we force the state of this atom to be 'unified' within the unification literals..
             q.push(target);
+            seen.insert(target);
             unif_lits.push_back(c_atm.state); // we force the state of the target atom to be 'active' within the unification literals..
             while (!q.empty())
             {
                 for (const auto &cause : q.front()->get_causes())
-                    if (graph.core::sat.value(cause->get_chosen()) != True)
+                    if (graph.core::sat.value(cause->get_chosen()) != True && seen.find(&cause->get_effect()) == seen.end())
                     {
                         q.push(&cause->get_effect());             // we push its effect..
+                        seen.insert(target);                      // we avoid some repetition of literals..
                         unif_lits.push_back(cause->get_chosen()); // we add the resolver's literal to the unification literals..
                     }
                 q.pop();
