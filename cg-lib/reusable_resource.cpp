@@ -2,7 +2,7 @@
 #include "combinations.h"
 #include "statement.h"
 #include "expression.h"
-#include <cassert>
+#include "atom_flaw.h"
 
 namespace cg
 {
@@ -95,12 +95,17 @@ std::vector<flaw *> reusable_resource::get_flaws()
 
 void reusable_resource::new_predicate(predicate &p) { throw std::logic_error("it is not possible to define predicates on a reusable resource.."); }
 
-void reusable_resource::new_fact(atom &atm)
+void reusable_resource::new_fact(atom_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
+    atom &atm = f.get_atom();
     set_var(atm.state);
     static_cast<predicate &>(get_predicate(REUSABLE_RESOURCE_USE_PREDICATE_NAME)).apply_rule(atm);
     restore_var();
+
+    // we avoid unification..
+    if (!graph.core::sat.new_clause({lit(f.get_in_plan(), false), atm.state}))
+        throw unsolvable_exception();
 
     atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
     expr c_scope = atm.get("scope");
@@ -111,7 +116,7 @@ void reusable_resource::new_fact(atom &atm)
         to_check.insert(&*c_scope);
 }
 
-void reusable_resource::new_goal(atom &atm) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
+void reusable_resource::new_goal(atom_flaw &f) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
 
 reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type("real"), REUSABLE_RESOURCE_CAPACITY)}, {{REUSABLE_RESOURCE_CAPACITY, {new ast::id_expression({REUSABLE_RESOURCE_CAPACITY})}}}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}), new ast::real_literal_expression(0)))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}

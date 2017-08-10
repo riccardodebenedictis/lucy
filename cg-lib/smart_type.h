@@ -17,13 +17,18 @@ class flaw;
 
 class smart_type : public type
 {
+  friend class causal_graph;
+
 public:
   smart_type(causal_graph &graph, scope &scp, const std::string &name) : type(graph, scp, name, false), graph(graph) {}
   smart_type(const smart_type &that) = delete;
 
   virtual ~smart_type() {}
 
+private:
   virtual std::vector<flaw *> get_flaws() = 0;
+  virtual void new_fact(atom_flaw &f) {}
+  virtual void new_goal(atom_flaw &f) {}
 
 protected:
   causal_graph &graph;

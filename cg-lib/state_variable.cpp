@@ -1,6 +1,7 @@
 #include "state_variable.h"
 #include "predicate.h"
 #include "combinations.h"
+#include "atom_flaw.h"
 
 namespace cg
 {
@@ -85,9 +86,10 @@ std::vector<flaw *> state_variable::get_flaws()
 
 void state_variable::new_predicate(predicate &pred) { inherit(static_cast<predicate &>(graph.get_predicate("IntervalPredicate")), pred); }
 
-void state_variable::new_fact(atom &atm)
+void state_variable::new_fact(atom_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
+    atom &atm = f.get_atom();
     set_var(atm.state);
     static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm);
     restore_var();
@@ -101,8 +103,9 @@ void state_variable::new_fact(atom &atm)
         to_check.insert(&*c_scope);
 }
 
-void state_variable::new_goal(atom &atm)
+void state_variable::new_goal(atom_flaw &f)
 {
+    atom &atm = f.get_atom();
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
     expr c_scope = atm.get("scope");
     if (enum_item *multi_scope = dynamic_cast<enum_item *>(&*c_scope))

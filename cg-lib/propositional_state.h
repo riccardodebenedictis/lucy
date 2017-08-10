@@ -24,8 +24,8 @@ private:
   std::vector<flaw *> get_flaws() override;
 
   void new_predicate(predicate &pred) override;
-  void new_fact(atom &atm) override;
-  void new_goal(atom &atm) override;
+  void new_fact(atom_flaw &f) override;
+  void new_goal(atom_flaw &f) override;
 
   class ps_constructor : public constructor
   {

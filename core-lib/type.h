@@ -75,8 +75,6 @@ protected:
 
 private:
   virtual void new_predicate(predicate &p) {}
-  virtual void new_fact(atom &a) {}
-  virtual void new_goal(atom &a) {}
 
 public:
   const std::string name;

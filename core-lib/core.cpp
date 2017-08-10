@@ -321,38 +321,6 @@ double core::arith_value(const arith_expr &x) const noexcept { return la_th.valu
 
 std::unordered_set<set_item *> core::enum_value(const enum_expr &x) const noexcept { return set_th.value(x->ev); }
 
-void core::new_fact(atom &atm)
-{
-    if (&atm.tp.get_scope() != this)
-    {
-        std::queue<type *> q;
-        q.push(static_cast<type *>(&atm.tp.get_scope()));
-        while (!q.empty())
-        {
-            q.front()->new_fact(atm);
-            for (const auto &st : q.front()->get_supertypes())
-                q.push(st);
-            q.pop();
-        }
-    }
-}
-
-void core::new_goal(atom &atm)
-{
-    if (&atm.tp.get_scope() != this)
-    {
-        std::queue<type *> q;
-        q.push(static_cast<type *>(&atm.tp.get_scope()));
-        while (!q.empty())
-        {
-            q.front()->new_goal(atm);
-            for (const auto &st : q.front()->get_supertypes())
-                q.push(st);
-            q.pop();
-        }
-    }
-}
-
 std::string core::to_string(const std::unordered_map<std::string, expr> &c_items) const
 {
     std::string iss;

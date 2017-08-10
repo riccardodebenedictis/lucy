@@ -1,5 +1,6 @@
 #include "propositional_agent.h"
 #include "predicate.h"
+#include "atom_flaw.h"
 
 namespace cg
 {
@@ -17,10 +18,11 @@ std::vector<flaw *> propositional_agent::get_flaws()
         return flaws;
 }
 
-void propositional_agent::new_fact(atom &atm) { throw std::logic_error("it is not possible to define facts on propositional agents.."); }
+void propositional_agent::new_fact(atom_flaw &f) { throw std::logic_error("it is not possible to define facts on propositional agents.."); }
 
-void propositional_agent::new_goal(atom &atm)
+void propositional_agent::new_goal(atom_flaw &f)
 {
+    atom &atm = f.get_atom();
     atoms.push_back({&atm, new agnt_atom_listener(*this, atm)});
     to_check.insert(&atm);
 }

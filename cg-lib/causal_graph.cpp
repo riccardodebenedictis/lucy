@@ -49,7 +49,19 @@ void causal_graph::new_fact(atom &atm)
     reason.insert({&atm, af});
     new_flaw(*af);
 
-    core::new_fact(atm);
+    if (&atm.tp.get_scope() != this)
+    {
+        std::queue<type *> q;
+        q.push(static_cast<type *>(&atm.tp.get_scope()));
+        while (!q.empty())
+        {
+            if (smart_type *st = dynamic_cast<smart_type *>(q.front()))
+                st->new_fact(*af);
+            for (const auto &st : q.front()->get_supertypes())
+                q.push(st);
+            q.pop();
+        }
+    }
 }
 
 void causal_graph::new_goal(atom &atm)
@@ -59,7 +71,19 @@ void causal_graph::new_goal(atom &atm)
     reason.insert({&atm, af});
     new_flaw(*af);
 
-    core::new_goal(atm);
+    if (&atm.tp.get_scope() != this)
+    {
+        std::queue<type *> q;
+        q.push(static_cast<type *>(&atm.tp.get_scope()));
+        while (!q.empty())
+        {
+            if (smart_type *st = dynamic_cast<smart_type *>(q.front()))
+                st->new_goal(*af);
+            for (const auto &st : q.front()->get_supertypes())
+                q.push(st);
+            q.pop();
+        }
+    }
 }
 
 void causal_graph::new_disjunction(context &d_ctx, const disjunction &disj)
