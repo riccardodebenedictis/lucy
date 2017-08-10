@@ -49,10 +49,6 @@ void causal_graph::new_fact(atom &atm)
     reason.insert({&atm, af});
     new_flaw(*af);
 
-    // we link the state of the atom to the state of the flaw..
-    if (!core::sat.new_clause({lit(atm.state, false), af->in_plan}))
-        throw unsolvable_exception();
-
     core::new_fact(atm);
 }
 
@@ -62,10 +58,6 @@ void causal_graph::new_goal(atom &atm)
     atom_flaw *af = new atom_flaw(*this, atm, false);
     reason.insert({&atm, af});
     new_flaw(*af);
-
-    // we link the state of the atom to the state of the flaw..
-    if (!core::sat.new_clause({lit(atm.state, false), af->in_plan}))
-        throw unsolvable_exception();
 
     core::new_goal(atm);
 }
