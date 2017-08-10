@@ -72,7 +72,7 @@ private:
     agnt_resolver(const agnt_resolver &that) = delete;
     virtual ~agnt_resolver();
 
-    std::string get_label() const override { return "e" + std::to_string(before.state) + " <= e" + std::to_string(after.state); }
+    std::string get_label() const override { return "σ" + std::to_string(before.state) + " <= σ" + std::to_string(after.state); }
 
   private:
     void apply() override;

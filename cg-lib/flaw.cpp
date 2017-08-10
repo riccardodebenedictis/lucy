@@ -21,7 +21,7 @@ flaw::~flaw() {}
 
 std::string flaw::get_label() const
 {
-    std::string lbl = "b" + std::to_string(in_plan);
+    std::string lbl = "φ" + std::to_string(in_plan);
     switch (graph.core::sat.value(in_plan))
     {
     case True:

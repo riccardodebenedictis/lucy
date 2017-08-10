@@ -69,7 +69,7 @@ private:
     rr_flaw(rr_flaw &&) = delete;
     virtual ~rr_flaw();
 
-    std::string get_label() const override { return "rr-flaw"; }
+    std::string get_label() const override { return "φ" + std::to_string(get_in_plan()) + "rr-flaw"; }
 
   private:
     void compute_resolvers() override;
@@ -99,7 +99,7 @@ private:
     order_resolver(const order_resolver &that) = delete;
     virtual ~order_resolver();
 
-    std::string get_label() const override { return "e" + std::to_string(before.state) + " <= e" + std::to_string(after.state); }
+    std::string get_label() const override { return "ρ" + std::to_string(chosen) + " σ" + std::to_string(before.state) + " <= σ" + std::to_string(after.state); }
 
   private:
     const atom &before;
@@ -117,7 +117,7 @@ private:
     {
       // this should be an enumerative expression (or the resolver should not have been created)..
       enum_expr c_scp = a.get("scope");
-      return "scope (e" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
+      return "ρ" + std::to_string(chosen) + " scope (τ" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }
 
   private:

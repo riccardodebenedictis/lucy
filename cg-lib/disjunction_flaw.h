@@ -17,7 +17,7 @@ public:
   disjunction_flaw(const disjunction_flaw &orig) = delete;
   virtual ~disjunction_flaw();
 
-  std::string get_label() const override { return "disj"; }
+  std::string get_label() const override { return "φ" + std::to_string(get_in_plan()) + " disj"; }
 
 private:
   void compute_resolvers() override;
@@ -29,7 +29,7 @@ private:
     choose_conjunction(const choose_conjunction &that) = delete;
     virtual ~choose_conjunction();
 
-    std::string get_label() const override { return "conj"; }
+    std::string get_label() const override { return "ρ" + std::to_string(chosen) + " conj"; }
 
   private:
     void apply() override;

@@ -28,7 +28,7 @@ double resolver::get_cost() const
 
 std::string resolver::get_label() const
 {
-    std::string lbl = "b" + std::to_string(chosen);
+    std::string lbl = "ρ" + std::to_string(chosen);
     switch (graph.core::sat.value(chosen))
     {
     case True:
