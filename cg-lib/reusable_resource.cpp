@@ -93,8 +93,6 @@ std::vector<flaw *> reusable_resource::get_flaws()
     }
 }
 
-void reusable_resource::new_predicate(predicate &p) { throw std::logic_error("it is not possible to define predicates on a reusable resource.."); }
-
 void reusable_resource::new_fact(atom_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..

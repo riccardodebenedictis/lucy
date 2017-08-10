@@ -84,7 +84,11 @@ std::vector<flaw *> state_variable::get_flaws()
     }
 }
 
-void state_variable::new_predicate(predicate &pred) { inherit(static_cast<predicate &>(graph.get_predicate("IntervalPredicate")), pred); }
+void state_variable::new_predicate(predicate &pred)
+{
+    inherit(static_cast<predicate &>(graph.get_predicate("IntervalPredicate")), pred);
+    add_field(pred, *new field(static_cast<type &>(pred.get_scope()), "scope"));
+}
 
 void state_variable::new_fact(atom_flaw &f)
 {

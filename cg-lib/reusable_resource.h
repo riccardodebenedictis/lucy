@@ -24,7 +24,7 @@ public:
 private:
   std::vector<flaw *> get_flaws() override;
 
-  void new_predicate(predicate &pred) override;
+  void new_predicate(predicate &pred) override { throw std::logic_error("it is not possible to define predicates on a reusable resource.."); }
   void new_fact(atom_flaw &f) override;
   void new_goal(atom_flaw &f) override;
 
