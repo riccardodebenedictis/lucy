@@ -32,7 +32,6 @@ var set_theory::new_var(const std::unordered_set<set_item *> &items)
         bool eo = sat.exct_one(lits);
         assert(eo);
     }
-    exprs.insert({"e" + std::to_string(id), id});
     return id;
 }
 
@@ -52,19 +51,19 @@ var set_theory::eq(const var &left, const var &right)
     if (left > right)
         return eq(right, left);
 
-    std::unordered_set<set_item *> intersection;
-    for (const auto &v : assigns[left])
-        if (assigns[right].find(v.first) != assigns[right].end())
-            intersection.insert(v.first);
-
-    if (intersection.empty())
-        return FALSE_var;
-
     std::string s_expr = "e" + std::to_string(left) + " == " + "e" + std::to_string(right);
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
     else
     {
+        std::unordered_set<set_item *> intersection;
+        for (const auto &v : assigns[left])
+            if (assigns[right].find(v.first) != assigns[right].end())
+                intersection.insert(v.first);
+
+        if (intersection.empty())
+            return FALSE_var;
+
         // we need to create a new variable..
         var e = sat.new_var();
         bool nc;
