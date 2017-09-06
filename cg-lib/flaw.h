@@ -22,7 +22,7 @@ public:
   virtual ~flaw();
 
   bool is_expanded() const { return expanded; }
-  const var &get_in_plan() const { return in_plan; }
+  const var &get_phi() const { return phi; }
   std::vector<resolver *> get_causes() const { return causes; }
   std::vector<resolver *> get_supports() const { return supports; }
   double get_cost() const { return cost; }
@@ -44,7 +44,7 @@ protected:
 private:
   const bool exclusive;
   bool expanded = false;
-  var in_plan;
+  var phi;
   // the resolvers for this flaw..
   std::vector<resolver *> resolvers;
   // the causes for having this flaw..

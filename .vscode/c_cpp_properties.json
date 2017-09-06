@@ -58,7 +58,7 @@
                 "${workspaceRoot}/core-lib",
                 "${workspaceRoot}/cg-lib",
                 "${workspaceRoot}/gui",
-                "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.10.25017/include/*",
+                "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.11.25503/include/*",
                 "C:/Program Files/Java/jdk1.8.0_121/include/*",
                 "C:/Program Files/Java/jdk1.8.0_121/include/win32/*",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/ucrt"
@@ -69,7 +69,7 @@
             ],
             "browse": {
                 "path": [
-                    "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.10.25017/include/*",
+                    "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.11.25503/include/*",
                     "C:/Program Files/Java/jdk1.8.0_121/include/*",
                     "${workspaceRoot}"
                 ],

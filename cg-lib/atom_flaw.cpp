@@ -11,7 +11,7 @@ atom_flaw::~atom_flaw() {}
 
 void atom_flaw::compute_resolvers()
 {
-    assert(graph.core::sat.value(get_in_plan()) != False);
+    assert(graph.core::sat.value(get_phi()) != False);
     assert(graph.core::sat.value(atm.state) != False);
     if (graph.core::sat.value(atm.state) == Undefined) // we check if the atom can unify..
     {
@@ -25,8 +25,8 @@ void atom_flaw::compute_resolvers()
             {
                 ancestors.insert(q.front());
                 for (const auto &supp : q.front()->get_supports())
-                    if (graph.core::sat.value(supp->get_chosen()) != False) // if false, the edge is broken..
-                        q.push(&supp->get_effect());                        // we push its effect..
+                    if (graph.core::sat.value(supp->get_rho()) != False) // if false, the edge is broken..
+                        q.push(&supp->get_effect());                     // we push its effect..
             }
             q.pop();
         }
@@ -67,10 +67,10 @@ void atom_flaw::compute_resolvers()
                 {
                     seen.insert(q.front()); // we avoid some repetition of literals..
                     for (const auto &cause : q.front()->get_causes())
-                        if (graph.core::sat.value(cause->get_chosen()) != True)
+                        if (graph.core::sat.value(cause->get_rho()) != True)
                         {
-                            unif_lits.push_back(cause->get_chosen()); // we add the resolver's variable to the unification literals..
-                            q.push(&cause->get_effect());             // we push its effect..
+                            unif_lits.push_back(cause->get_rho()); // we add the resolver's variable to the unification literals..
+                            q.push(&cause->get_effect());          // we push its effect..
                         }
                 }
                 q.pop();
@@ -87,12 +87,12 @@ void atom_flaw::compute_resolvers()
                 graph.new_causal_link(*target, *u_res);
                 graph.set_cost(*this, target->get_cost());
 
-                assert(graph.core::sat.value(u_res->get_chosen()) != False);
-                if (graph.core::sat.value(u_res->get_chosen()) != True)
+                assert(graph.core::sat.value(u_res->get_rho()) != False);
+                if (graph.core::sat.value(u_res->get_rho()) != True)
                 {
                     // making this resolver false might make the heuristic blind..
-                    graph.chosen[u_res->get_chosen()].push_back(u_res);
-                    graph.bind(u_res->get_chosen());
+                    graph.rhos[u_res->get_rho()].push_back(u_res);
+                    graph.bind(u_res->get_rho());
                 }
             }
         }
@@ -107,14 +107,14 @@ void atom_flaw::compute_resolvers()
 atom_flaw::add_fact::add_fact(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(0), atm_flaw), atm(atm) {}
 atom_flaw::add_fact::~add_fact() {}
 
-void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(chosen, false), atm.state}); }
+void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(rho, false), atm.state}); }
 
 atom_flaw::expand_goal::expand_goal(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(1), atm_flaw), atm(atm) {}
 atom_flaw::expand_goal::~expand_goal() {}
 
 void atom_flaw::expand_goal::apply()
 {
-    graph.core::sat.new_clause({lit(chosen, false), atm.state});
+    graph.core::sat.new_clause({lit(rho, false), atm.state});
     static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
 }
 
@@ -124,6 +124,6 @@ atom_flaw::unify_atom::~unify_atom() {}
 void atom_flaw::unify_atom::apply()
 {
     for (const auto &v : unif_lits)
-        graph.core::sat.new_clause({lit(chosen, false), v});
+        graph.core::sat.new_clause({lit(rho, false), v});
 }
 }

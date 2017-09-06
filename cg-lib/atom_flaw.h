@@ -18,7 +18,7 @@ public:
   virtual ~atom_flaw();
 
   atom &get_atom() const { return atm; }
-  std::string get_label() const override { return "φ" + std::to_string(get_in_plan()) + (is_fact ? " fact σ" : " goal σ") + std::to_string(atm.state) + " " + atm.tp.name; }
+  std::string get_label() const override { return "φ" + std::to_string(get_phi()) + (is_fact ? " fact σ" : " goal σ") + std::to_string(atm.state) + " " + atm.tp.name; }
 
 private:
   void compute_resolvers() override;
@@ -30,7 +30,7 @@ private:
     add_fact(const add_fact &that) = delete;
     virtual ~add_fact();
 
-    std::string get_label() const override { return "ρ" + std::to_string(chosen) + " add fact"; }
+    std::string get_label() const override { return "ρ" + std::to_string(rho) + " add fact"; }
 
   private:
     void apply() override;
@@ -46,7 +46,7 @@ private:
     expand_goal(const expand_goal &that) = delete;
     virtual ~expand_goal();
 
-    std::string get_label() const override { return "ρ" + std::to_string(chosen) + " expand goal"; }
+    std::string get_label() const override { return "ρ" + std::to_string(rho) + " expand goal"; }
 
   private:
     void apply() override;
@@ -62,7 +62,7 @@ private:
     unify_atom(const unify_atom &that) = delete;
     virtual ~unify_atom();
 
-    std::string get_label() const override { return "ρ" + std::to_string(chosen) + " unify"; }
+    std::string get_label() const override { return "ρ" + std::to_string(rho) + " unify"; }
 
   private:
     void apply() override;

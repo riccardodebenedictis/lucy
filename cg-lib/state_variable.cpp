@@ -174,7 +174,7 @@ void state_variable::sv_flaw::compute_resolvers()
 
 state_variable::sv_resolver::sv_resolver(causal_graph &graph, const lin &cost, sv_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
 state_variable::sv_resolver::~sv_resolver() {}
-void state_variable::sv_resolver::apply() { graph.core::sat.new_clause({lit(chosen, false), to_do}); }
+void state_variable::sv_resolver::apply() { graph.core::sat.new_clause({lit(rho, false), to_do}); }
 
 state_variable::order_resolver::order_resolver(causal_graph &graph, const lin &cost, sv_flaw &f, const atom &before, const atom &after, const lit &to_do) : sv_resolver(graph, cost, f, to_do), before(before), after(after) {}
 state_variable::order_resolver::~order_resolver() {}

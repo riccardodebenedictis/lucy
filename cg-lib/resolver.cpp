@@ -6,13 +6,13 @@
 namespace cg
 {
 
-resolver::resolver(causal_graph &graph, const var &ch, const lin &cost, flaw &eff) : graph(graph), chosen(ch), cost(cost), effect(eff) {}
+resolver::resolver(causal_graph &graph, const var &r, const lin &cost, flaw &eff) : graph(graph), rho(r), cost(cost), effect(eff) {}
 resolver::resolver(causal_graph &graph, const lin &cost, flaw &eff) : resolver(graph, graph.core::sat.new_var(), cost, eff) {}
 resolver::~resolver() {}
 
 double resolver::get_cost() const
 {
-    if (graph.core::sat.value(chosen) == False) // the resolver cannot be chosen..
+    if (graph.core::sat.value(rho) == False) // the resolver cannot be rho..
         return std::numeric_limits<double>::infinity();
     else
     {
@@ -28,8 +28,8 @@ double resolver::get_cost() const
 
 std::string resolver::get_label() const
 {
-    std::string lbl = "ρ" + std::to_string(chosen);
-    switch (graph.core::sat.value(chosen))
+    std::string lbl = "ρ" + std::to_string(rho);
+    switch (graph.core::sat.value(rho))
     {
     case True:
         lbl += "(T)";

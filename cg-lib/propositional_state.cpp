@@ -65,7 +65,7 @@ void propositional_state::ps_flaw::compute_resolvers() {}
 
 propositional_state::ps_resolver::ps_resolver(causal_graph &graph, const lin &cost, ps_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
 propositional_state::ps_resolver::~ps_resolver() {}
-void propositional_state::ps_resolver::apply() { graph.core::sat.new_clause({lit(chosen, false), to_do}); }
+void propositional_state::ps_resolver::apply() { graph.core::sat.new_clause({lit(rho, false), to_do}); }
 
 propositional_state::order_resolver::order_resolver(causal_graph &graph, const lin &cost, ps_flaw &f, const atom &before, const atom &after, const lit &to_do) : ps_resolver(graph, cost, f, to_do), before(before), after(after) {}
 propositional_state::order_resolver::~order_resolver() {}

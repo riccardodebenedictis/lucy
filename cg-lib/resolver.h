@@ -16,14 +16,14 @@ class resolver
   friend class flaw;
 
 public:
-  resolver(causal_graph &graph, const var &ch, const lin &cost, flaw &eff);
+  resolver(causal_graph &graph, const var &r, const lin &cost, flaw &eff);
   resolver(causal_graph &graph, const lin &cost, flaw &eff);
   resolver(const resolver &orig) = delete;
   virtual ~resolver();
 
   virtual void apply() = 0;
 
-  const var &get_chosen() const { return chosen; }
+  const var &get_rho() const { return rho; }
   flaw &get_effect() const { return effect; }
   std::vector<flaw *> get_preconditions() const { return preconditions; }
   double get_cost() const;
@@ -32,7 +32,7 @@ public:
 
 protected:
   causal_graph &graph;
-  const var chosen;
+  const var rho;
   const lin cost;
   // the preconditions of this resolver..
   std::vector<flaw *> preconditions;

@@ -80,10 +80,10 @@ private:
   std::list<resolver *> resolvers;
   // the current flaws..
   std::unordered_set<flaw *> flaws;
-  // the in_plan variables (boolean variable to flaws) of the flaws..
-  std::unordered_map<var, std::vector<flaw *>> in_plan;
-  // the chosen variables (boolean variable to resolver) of the resolvers..
-  std::unordered_map<var, std::vector<resolver *>> chosen;
+  // the phi variables (boolean variable to flaws) of the flaws..
+  std::unordered_map<var, std::vector<flaw *>> phis;
+  // the rho variables (boolean variable to resolver) of the resolvers..
+  std::unordered_map<var, std::vector<resolver *>> rhos;
   // this variable represents the validity of the current graph..
   var graph_var;
   // the current resolver (will be into the trail)..

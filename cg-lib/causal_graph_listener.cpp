@@ -52,8 +52,8 @@ std::string causal_graph_listener::to_string()
         {
             if (fs_it != flaw_listeners.begin())
                 g += ", ";
-            g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(fs_it->first)) + "\", \"label\" : \"" + fs_it->first->get_label() + "\", \"in_plan_var\" : \"b" + std::to_string(fs_it->first->get_in_plan()) + "\", \"in_plan_val\" : ";
-            switch (graph.core::sat.value(fs_it->first->get_in_plan()))
+            g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(fs_it->first)) + "\", \"label\" : \"" + fs_it->first->get_label() + "\", \"phi_var\" : \"b" + std::to_string(fs_it->first->get_phi()) + "\", \"phi_val\" : ";
+            switch (graph.core::sat.value(fs_it->first->get_phi()))
             {
             case True:
                 g += "\"True\"";
@@ -80,8 +80,8 @@ std::string causal_graph_listener::to_string()
         {
             if (rs_it != resolver_listeners.begin())
                 g += ", ";
-            g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(rs_it->first)) + "\", \"label\" : \"" + rs_it->first->get_label() + "\", \"chosen_var\" : \"b" + std::to_string(rs_it->first->get_chosen()) + "\", \"chosen_val\" : ";
-            switch (graph.core::sat.value(rs_it->first->get_chosen()))
+            g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(rs_it->first)) + "\", \"label\" : \"" + rs_it->first->get_label() + "\", \"rho_var\" : \"b" + std::to_string(rs_it->first->get_rho()) + "\", \"rho_val\" : ";
+            switch (graph.core::sat.value(rs_it->first->get_rho()))
             {
             case True:
                 g += "\"True\"";
@@ -116,11 +116,11 @@ std::string causal_graph_listener::to_string()
     return g;
 }
 
-causal_graph_listener::flaw_listener::flaw_listener(causal_graph_listener &listener, const flaw &f) : sat_value_listener(listener.get_graph().core::sat), listener(listener), f(f) { listen_sat(f.get_in_plan()); }
+causal_graph_listener::flaw_listener::flaw_listener(causal_graph_listener &listener, const flaw &f) : sat_value_listener(listener.get_graph().core::sat), listener(listener), f(f) { listen_sat(f.get_phi()); }
 causal_graph_listener::flaw_listener::~flaw_listener() {}
 void causal_graph_listener::flaw_listener::sat_value_change(var v) { listener.flaw_state_changed(f); }
 
-causal_graph_listener::resolver_listener::resolver_listener(causal_graph_listener &listener, const resolver &r) : sat_value_listener(listener.get_graph().core::sat), listener(listener), r(r) { listen_sat(r.get_chosen()); }
+causal_graph_listener::resolver_listener::resolver_listener(causal_graph_listener &listener, const resolver &r) : sat_value_listener(listener.get_graph().core::sat), listener(listener), r(r) { listen_sat(r.get_rho()); }
 causal_graph_listener::resolver_listener::~resolver_listener() {}
 void causal_graph_listener::resolver_listener::sat_value_change(var v) { listener.resolver_state_changed(r); }
 }

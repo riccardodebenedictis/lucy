@@ -116,13 +116,13 @@ void causal_graph::solve()
                 assert(f_next->cost < std::numeric_limits<double>::infinity());
                 if (!f_next->has_subgoals() || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
                 {
-                    // this is the next resolver to be chosen..
+                    // this is the next resolver to be rho..
                     res = &select_resolver(*f_next);
                     if (!res->preconditions.empty())
                         resolvers.push_back(res);
 
                     // we apply the resolver..
-                    if (!core::sat.assume(res->chosen) || !core::sat.check())
+                    if (!core::sat.assume(res->rho) || !core::sat.check())
                         throw unsolvable_exception();
 
                     res = nullptr;
@@ -154,7 +154,7 @@ void causal_graph::solve()
             std::vector<lit> look_elsewhere;
             for (std::vector<layer>::reverse_iterator trail_it = trail.rbegin(); trail_it != trail.rend(); ++trail_it)
                 if (trail_it->r)
-                    look_elsewhere.push_back(lit(trail_it->r->chosen, false));
+                    look_elsewhere.push_back(lit(trail_it->r->rho, false));
             look_elsewhere.push_back(lit(graph_var, false));
             assert(std::all_of(look_elsewhere.begin(), look_elsewhere.end(), [&](const auto &l) { return this->core::sat.value(l) == False; }));
 
@@ -218,7 +218,7 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 {
     r.preconditions.push_back(&f);
     f.supports.push_back(&r);
-    bool new_clause = core::sat.new_clause({lit(r.chosen, false), f.in_plan});
+    bool new_clause = core::sat.new_clause({lit(r.rho, false), f.phi});
     assert(new_clause);
 
     // we notify the listeners that a new causal link has been created..
@@ -229,11 +229,8 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    if (in_plan.find(p.v) != in_plan.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
-    {
-        // a decision has been taken about the presence of some flaws within the current partial solution..
-        for (const auto &f : in_plan.at(p.v))
-        {
+    if (phis.find(p.v) != phis.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
+        for (const auto &f : phis.at(p.v))
             if (p.sign) // this flaw has been added to the current partial solution..
             {
                 flaws.insert(f);
@@ -250,13 +247,11 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
                 for (const auto &l : listeners)
                     l->flaw_state_changed(*f);
             }
-        }
-    }
 
-    if (chosen.find(p.v) != chosen.end())
+    if (rhos.find(p.v) != rhos.end())
     {
         // a decision has been taken about the presence of some resolvers within the current partial solution..
-        for (const auto &r : chosen.at(p.v))
+        for (const auto &r : rhos.at(p.v))
             flaw_costs_q.push(&r->effect);
         propagate_costs();
     }
@@ -270,7 +265,7 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
             cnfl.push_back(p);
             for (std::vector<layer>::reverse_iterator trail_it = trail.rbegin(); trail_it != trail.rend(); ++trail_it)
                 if (trail_it->r) // this resolver is null if we are calling the check from the sat core! Not bad: shorter conflict..
-                    cnfl.push_back(lit(trail_it->r->chosen, false));
+                    cnfl.push_back(lit(trail_it->r->rho, false));
             return false;
         }
     }
@@ -324,7 +319,7 @@ void causal_graph::pop()
 void causal_graph::build()
 {
 #ifndef NDEBUG
-    std::cout << "building the planning graph.." << std::endl;
+    std::cout << "building the causal graph.." << std::endl;
 #endif
     assert(core::sat.root_level());
 
@@ -344,7 +339,7 @@ void causal_graph::build()
             for (const auto &r : flaw_q.front()->resolvers)
             {
                 resolvers.push_front(r);
-                set_var(r->chosen);
+                set_var(r->rho);
                 r->apply();
 
                 if (!core::sat.check())
@@ -355,12 +350,12 @@ void causal_graph::build()
                 {
                     // there are no requirements for this resolver..
                     set_cost(*flaw_q.front(), std::min(flaw_q.front()->cost, la_th.value(r->cost)));
-                    assert(core::sat.value(r->chosen) != False);
-                    if (core::sat.value(r->chosen) != True)
+                    assert(core::sat.value(r->rho) != False);
+                    if (core::sat.value(r->rho) != True)
                     {
                         // making this resolver false might make the heuristic blind..
-                        chosen[r->chosen].push_back(r);
-                        bind(r->chosen);
+                        rhos[r->rho].push_back(r);
+                        bind(r->rho);
                     }
                 }
                 resolvers.pop_front();
@@ -373,7 +368,7 @@ void causal_graph::build()
 void causal_graph::add_layer()
 {
 #ifndef NDEBUG
-    std::cout << "adding a layer the planning graph.." << std::endl;
+    std::cout << "adding a layer to the causal graph.." << std::endl;
 #endif
     assert(core::sat.root_level());
 
@@ -395,7 +390,7 @@ void causal_graph::add_layer()
         for (const auto &r : f->resolvers)
         {
             resolvers.push_front(r);
-            set_var(r->chosen);
+            set_var(r->rho);
             r->apply();
 
             if (!core::sat.check())
@@ -406,12 +401,12 @@ void causal_graph::add_layer()
             {
                 // there are no requirements for this resolver..
                 set_cost(*f, std::min(f->cost, la_th.value(r->cost)));
-                assert(core::sat.value(r->chosen) != False);
-                if (core::sat.value(r->chosen) != True)
+                assert(core::sat.value(r->rho) != False);
+                if (core::sat.value(r->rho) != True)
                 {
                     // making this resolver false might make the heuristic blind..
-                    chosen[r->chosen].push_back(r);
-                    bind(r->chosen);
+                    rhos[r->rho].push_back(r);
+                    bind(r->rho);
                 }
             }
             resolvers.pop_front();
@@ -430,7 +425,7 @@ bool causal_graph::is_deferrable(flaw &f)
     q.push(&f);
     while (!q.empty())
     {
-        if (core::sat.value(q.front()->in_plan) == False) // it is not possible to solve this flaw with current assignments.. thus we defer..
+        if (core::sat.value(q.front()->phi) == False) // it is not possible to solve this flaw with current assignments.. thus we defer..
             return true;
         else if (q.front()->cost < std::numeric_limits<double>::infinity()) // we already have a possible solution for this flaw.. thus we defer..
             return true;
@@ -535,7 +530,7 @@ bool causal_graph::has_inconsistencies()
             for (const auto &r : f->resolvers)
             {
                 resolvers.push_front(r);
-                set_var(r->chosen);
+                set_var(r->rho);
                 r->apply();
 
                 if (!core::sat.check())
@@ -546,12 +541,12 @@ bool causal_graph::has_inconsistencies()
                 {
                     // there are no requirements for this resolver..
                     set_cost(*f, std::min(f->cost, la_th.value(r->cost)));
-                    assert(core::sat.value(r->chosen) != False);
-                    if (core::sat.value(r->chosen) != True)
+                    assert(core::sat.value(r->rho) != False);
+                    if (core::sat.value(r->rho) != True)
                     {
                         // making this resolver false might make the heuristic blind..
-                        chosen[r->chosen].push_back(r);
-                        bind(r->chosen);
+                        rhos[r->rho].push_back(r);
+                        bind(r->rho);
                     }
                 }
                 resolvers.pop_front();
@@ -572,15 +567,15 @@ bool causal_graph::has_inconsistencies()
 
 flaw *causal_graph::select_flaw()
 {
-    assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return f->expanded && core::sat.value(f->in_plan) == True; }));
+    assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return f->expanded && core::sat.value(f->phi) == True; }));
     // this is the next flaw to be solved (i.e., the most expensive one)..
     flaw *f_next = nullptr;
     for (auto it = flaws.begin(); it != flaws.end();)
     {
-        if (std::any_of((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) == True; }))
+        if (std::any_of((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->rho) == True; }))
         {
             // we have either a trivial (i.e. has only one resolver) or an already solved flaw..
-            assert(core::sat.value((*std::find_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->chosen) != False; }))->chosen) == True);
+            assert(core::sat.value((*std::find_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return core::sat.value(r->rho) != False; }))->rho) == True);
             // we remove the flaw from the current flaws..
             if (!trail.empty())
                 trail.back().solved_flaws.insert((*it));
@@ -599,7 +594,7 @@ flaw *causal_graph::select_flaw()
         }
     }
 
-    if (f_next) // we notify the listeners that we have chosen a flaw..
+    if (f_next) // we notify the listeners that we have rho a flaw..
         for (const auto &l : listeners)
             l->current_flaw(*f_next);
 
@@ -609,7 +604,7 @@ flaw *causal_graph::select_flaw()
 resolver &causal_graph::select_resolver(flaw &f)
 {
     double r_cost = std::numeric_limits<double>::infinity();
-    resolver *r_next = nullptr; // this is the next resolver to be chosen (i.e., the cheapest one)..
+    resolver *r_next = nullptr; // this is the next resolver to be rho (i.e., the cheapest one)..
     for (const auto &r : f.resolvers)
     {
         double c_cost = r->get_cost();
@@ -620,7 +615,7 @@ resolver &causal_graph::select_resolver(flaw &f)
         }
     }
 
-    // we notify the listeners that we have chosen a resolver..
+    // we notify the listeners that we have rho a resolver..
     for (const auto &l : listeners)
         l->current_resolver(*r_next);
 

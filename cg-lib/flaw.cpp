@@ -21,8 +21,8 @@ flaw::~flaw() {}
 
 std::string flaw::get_label() const
 {
-    std::string lbl = "φ" + std::to_string(in_plan);
-    switch (graph.core::sat.value(in_plan))
+    std::string lbl = "φ" + std::to_string(phi);
+    switch (graph.core::sat.value(phi))
     {
     case True:
         lbl += "(T)";
@@ -44,27 +44,27 @@ void flaw::init()
     assert(!expanded);
 
     if (causes.empty())
-        // the flaw is necessarily in_plan..
-        in_plan = TRUE_var;
+        // the flaw is necessarily phi..
+        phi = TRUE_var;
     else
     {
         // we create a new variable..
         std::vector<lit> cs;
         for (const auto &c : causes)
-            cs.push_back(c->chosen);
+            cs.push_back(c->rho);
 
-        // the flaw is in_plan if the conjunction of its causes is in_plan..
-        in_plan = graph.core::sat.new_conj(cs);
+        // the flaw is phi if the conjunction of its causes is phi..
+        phi = graph.core::sat.new_conj(cs);
     }
 
-    if (graph.core::sat.value(in_plan) == True)
+    if (graph.core::sat.value(phi) == True)
         // we have a top-level (a landmark) flaw..
         graph.flaws.insert(this);
     else
     {
-        // we listen for the flaw to become in_plan..
-        graph.in_plan[in_plan].push_back(this);
-        graph.bind(in_plan);
+        // we listen for the flaw to become phi..
+        graph.phis[phi].push_back(this);
+        graph.bind(phi);
     }
 }
 
@@ -76,11 +76,11 @@ void flaw::expand()
     compute_resolvers();
     expanded = true;
 
-    // we add causal relations between the flaw and its resolvers (i.e., if the flaw is in_plan exactly one of its resolvers should be in plan)..
+    // we add causal relations between the flaw and its resolvers (i.e., if the flaw is phi exactly one of its resolvers should be in plan)..
     if (resolvers.empty())
     {
         // there is no way for solving this flaw..
-        if (!graph.core::sat.new_clause({lit(in_plan, false)}))
+        if (!graph.core::sat.new_clause({lit(phi, false)}))
             throw unsolvable_exception();
     }
     else
@@ -88,8 +88,8 @@ void flaw::expand()
         // we need to take a decision for solving this flaw..
         std::vector<lit> r_chs;
         for (const auto &r : resolvers)
-            r_chs.push_back(r->chosen);
-        if (!graph.core::sat.new_clause({lit(in_plan, false), exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs)}))
+            r_chs.push_back(r->rho);
+        if (!graph.core::sat.new_clause({lit(phi, false), exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs)}))
             throw unsolvable_exception();
     }
 }

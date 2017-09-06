@@ -37,5 +37,5 @@ void propositional_agent::agnt_flaw::compute_resolvers() {}
 
 propositional_agent::agnt_resolver::agnt_resolver(causal_graph &g, const lin &cost, agnt_flaw &f, const atom &before, const atom &after, const lit &to_do) : resolver(g, cost, f), before(before), after(after), to_do(to_do) {}
 propositional_agent::agnt_resolver::~agnt_resolver() {}
-void propositional_agent::agnt_resolver::apply() { graph.core::sat.new_clause({lit(chosen, false), to_do}); }
+void propositional_agent::agnt_resolver::apply() { graph.core::sat.new_clause({lit(rho, false), to_do}); }
 }

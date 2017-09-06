@@ -16,7 +16,7 @@ public:
   enum_flaw(const enum_flaw &orig) = delete;
   virtual ~enum_flaw();
 
-  std::string get_label() const override { return "φ" + std::to_string(get_in_plan()) + " enum"; }
+  std::string get_label() const override { return "φ" + std::to_string(get_phi()) + " enum"; }
 
 private:
   void compute_resolvers() override;
@@ -28,7 +28,7 @@ private:
     choose_value(const choose_value &that) = delete;
     virtual ~choose_value();
 
-    std::string get_label() const override { return "ρ" + std::to_string(chosen) + " val"; }
+    std::string get_label() const override { return "ρ" + std::to_string(rho) + " val"; }
 
   private:
     void apply() override;

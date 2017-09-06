@@ -102,7 +102,7 @@ void reusable_resource::new_fact(atom_flaw &f)
     restore_var();
 
     // we avoid unification..
-    if (!graph.core::sat.new_clause({lit(f.get_in_plan(), false), atm.state}))
+    if (!graph.core::sat.new_clause({lit(f.get_phi(), false), atm.state}))
         throw unsolvable_exception();
 
     atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
@@ -177,7 +177,7 @@ void reusable_resource::rr_flaw::compute_resolvers()
 
 reusable_resource::rr_resolver::rr_resolver(causal_graph &graph, const lin &cost, rr_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
 reusable_resource::rr_resolver::~rr_resolver() {}
-void reusable_resource::rr_resolver::apply() { graph.core::sat.new_clause({lit(chosen, false), to_do}); }
+void reusable_resource::rr_resolver::apply() { graph.core::sat.new_clause({lit(rho, false), to_do}); }
 
 reusable_resource::order_resolver::order_resolver(causal_graph &graph, const lin &cost, rr_flaw &f, const atom &before, const atom &after, const lit &to_do) : rr_resolver(graph, cost, f, to_do), before(before), after(after) {}
 reusable_resource::order_resolver::~order_resolver() {}

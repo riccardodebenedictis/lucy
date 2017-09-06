@@ -175,10 +175,10 @@ public class CausalGraph extends Display {
                     String t_text = "";
                     switch ((String) nodeData.get(NODE_TYPE)) {
                     case "flaw":
-                        t_text += "in-plan";
+                        t_text += Character.toString('\u03C6');
                         break;
                     case "resolver":
-                        t_text += "chosen";
+                        t_text += Character.toString('\u03C1');
                         break;
                     }
                     t_text += ": ";
