@@ -79,6 +79,7 @@ void atom_flaw::compute_resolvers()
             if (graph.core::sat.value(eq_v) != True)
                 unif_lits.push_back(eq_v);
 
+            graph.checking = true;
             if (unif_lits.empty() || graph.core::sat.check(unif_lits))
             {
                 // unification is actually possible!
@@ -95,6 +96,7 @@ void atom_flaw::compute_resolvers()
                     graph.bind(u_res->get_rho());
                 }
             }
+            graph.checking = false;
         }
     }
 
