@@ -229,43 +229,41 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    if (phis.find(p.v) != phis.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
-        for (const auto &f : phis.at(p.v))
-            if (p.sign) // this flaw has been added to the current partial solution..
-            {
-                flaws.insert(f);
-                if (!trail.empty())
-                    trail.back().new_flaws.insert(f);
-                // we notify the listeners that the state of the flaw has changed..
-                for (const auto &l : listeners)
-                    l->flaw_state_changed(*f);
-            }
-            else // this flaw has been removed from the current partial solution..
-            {
-                set_cost(*f, std::numeric_limits<double>::infinity());
-                // we notify the listeners that the state of the flaw has changed..
-                for (const auto &l : listeners)
-                    l->flaw_state_changed(*f);
-            }
-
-    if (rhos.find(p.v) != rhos.end())
+    if (!checking)
     {
-        // a decision has been taken about the presence of some resolvers within the current partial solution..
-        for (const auto &r : rhos.at(p.v))
-            flaw_costs_q.push(&r->effect);
-        propagate_costs();
-    }
+        if (phis.find(p.v) != phis.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
+            for (const auto &f : phis.at(p.v))
+                if (p.sign) // this flaw has been added to the current partial solution..
+                {
+                    flaws.insert(f);
+                    if (!trail.empty())
+                        trail.back().new_flaws.insert(f);
+                    // we notify the listeners that the state of the flaw has changed..
+                    for (const auto &l : listeners)
+                        l->flaw_state_changed(*f);
+                }
+                else // this flaw has been removed from the current partial solution..
+                {
+                    set_cost(*f, std::numeric_limits<double>::infinity());
+                    // we notify the listeners that the state of the flaw has changed..
+                    for (const auto &l : listeners)
+                        l->flaw_state_changed(*f);
+                }
 
-    if (flaw_q.empty())
-    {
-        // we can use standard search techniques..
-        if (!has_solution())
+        if (rhos.find(p.v) != rhos.end())
         {
-            // we have made the heuristic blind..
-            cnfl.push_back(p);
-            for (std::vector<layer>::reverse_iterator trail_it = trail.rbegin(); trail_it != trail.rend(); ++trail_it)
-                if (trail_it->r) // this resolver is null if we are calling the check from the sat core! Not bad: shorter conflict..
-                    cnfl.push_back(lit(trail_it->r->rho, false));
+            // a decision has been taken about the presence of some resolvers within the current partial solution..
+            for (const auto &r : rhos.at(p.v))
+                flaw_costs_q.push(&r->effect);
+            propagate_costs();
+        }
+
+        if (!has_solution()) // we have made the heuristic blind..
+        {
+            for (const auto &r : rhos)
+                if (core::sat.value(r.first) == False)
+                    cnfl.push_back(r.first);
+            cnfl.push_back(lit(graph_var, false));
             return false;
         }
     }

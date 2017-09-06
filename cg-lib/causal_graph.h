@@ -70,6 +70,7 @@ private:
     std::unordered_set<flaw *> solved_flaws;
   };
 
+  bool checking = false;
   // the reason for having introduced a flaw..
   std::unordered_map<atom *, atom_flaw *> reason;
   // the flaw queue..
