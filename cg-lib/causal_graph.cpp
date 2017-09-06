@@ -100,100 +100,47 @@ void causal_graph::solve()
 
     // we create a new graph var..
     graph_var = core::sat.new_var();
-    // we use the current graph var to allow search within the current graph..
+    // we use the new graph var to allow search within the current graph..
     bool a_gv = core::sat.assume(graph_var);
     assert(a_gv);
 
     while (true)
     {
-        if (has_solution())
+        // this is the next flaw to be solved..
+        flaw *f_next = select_flaw();
+
+        if (f_next)
         {
-            // this is the next flaw to be solved..
-            flaw *f_next = select_flaw();
-
-            if (f_next)
+            assert(f_next->cost < std::numeric_limits<double>::infinity());
+            if (!f_next->has_subgoals() || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
             {
-                assert(f_next->cost < std::numeric_limits<double>::infinity());
-                if (!f_next->has_subgoals() || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
-                {
-                    // this is the next resolver to be rho..
-                    res = &select_resolver(*f_next);
-                    if (!res->preconditions.empty())
-                        resolvers.push_back(res);
+                // this is the next resolver to be rho..
+                res = &select_resolver(*f_next);
+                if (!res->preconditions.empty())
+                    resolvers.push_back(res);
 
-                    // we apply the resolver..
-                    if (!core::sat.assume(res->rho) || !core::sat.check())
-                        throw unsolvable_exception();
-
-                    res = nullptr;
-                    if (core::sat.root_level())
-                    {
-                        if (core::sat.value(graph_var) == False)
-                        {
-                            // we have exhausted the search within the graph: we extend the graph..
-                            add_layer();
-
-                            // we create a new graph var..
-                            graph_var = core::sat.new_var();
-                        }
-                        a_gv = core::sat.assume(graph_var);
-                        assert(a_gv);
-                    }
-                }
-            }
-            else if (!has_inconsistencies()) // we run out of flaws, we check for inconsistencies one last time..
-                // we have found a solution..
-                return;
-        }
-        else
-        {
-#ifndef NDEBUG
-            std::cout << "searching.." << std::endl;
-#endif
-            // we search within the graph..
-            std::vector<lit> look_elsewhere;
-            for (std::vector<layer>::reverse_iterator trail_it = trail.rbegin(); trail_it != trail.rend(); ++trail_it)
-                if (trail_it->r)
-                    look_elsewhere.push_back(lit(trail_it->r->rho, false));
-            look_elsewhere.push_back(lit(graph_var, false));
-            assert(std::all_of(look_elsewhere.begin(), look_elsewhere.end(), [&](const auto &l) { return this->core::sat.value(l) == False; }));
-
-            // we backtrack..
-            while (core::sat.value(look_elsewhere[0].v) != Undefined)
-                core::sat.pop();
-
-            if (core::sat.root_level())
-            {
-                // we have exhausted the search within the graph: we extend the graph..
-                add_layer();
-
-                // we create a new graph var..
-                graph_var = core::sat.new_var();
-                // we use the current graph var to allow search within the current graph..
-                a_gv = core::sat.assume(graph_var);
-                assert(a_gv);
-            }
-            else
-            {
-                record(look_elsewhere);
-                if (!core::sat.check())
+                // we apply the resolver..
+                if (!core::sat.assume(res->rho) || !core::sat.check())
                     throw unsolvable_exception();
 
+                res = nullptr;
+                assert(!core::sat.root_level() || core::sat.value(graph_var) == False);
                 if (core::sat.root_level())
                 {
-                    if (core::sat.value(graph_var) == False)
-                    {
-                        // we have exhausted the search within the graph: we extend the graph..
-                        add_layer();
+                    // we have exhausted the search within the graph: we extend the graph..
+                    add_layer();
 
-                        // we create a new graph var..
-                        graph_var = core::sat.new_var();
-                    }
+                    // we create a new graph var..
+                    graph_var = core::sat.new_var();
+                    // we use the new graph var to allow search within the new graph..
                     a_gv = core::sat.assume(graph_var);
                     assert(a_gv);
                 }
             }
         }
+        else if (!has_inconsistencies()) // we run out of flaws, we check for inconsistencies one last time..
+            // we have found a solution..
+            return;
     }
 }
 
