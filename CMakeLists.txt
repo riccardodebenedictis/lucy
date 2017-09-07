@@ -5,13 +5,17 @@ project ( lucy VERSION 0.1 LANGUAGES CXX )
 find_package( Java )
 find_package( JNI )
 
-if( Java_FOUND )
+option( BUILD_GUI "Build GUI" OFF )
+message( "Support for GUI: " ${BUILD_GUI} )
+
+if ( BUILD_GUI )
   include( UseJava )
   file( GLOB GUI_SOURCES "gui/*.java" )
   set(CMAKE_JAVA_INCLUDE_PATH gui/lib/prefuse.jar)
   add_jar( lucy_gui ${GUI_SOURCES} )
   configure_file(gui/lib/prefuse.jar ${CMAKE_BINARY_DIR}/prefuse.jar COPYONLY)
 
+  add_definitions( -DBUILD_GUI )
   file( GLOB SOURCES main.cpp "smt-lib/*.cpp" "core-lib/*.cpp" "cg-lib/*.cpp" "gui/*.cpp" )
   include_directories( ${CMAKE_SOURCE_DIR}/smt-lib ${CMAKE_SOURCE_DIR}/core-lib ${CMAKE_SOURCE_DIR}/cg-lib ${CMAKE_SOURCE_DIR}/gui ${JNI_INCLUDE_DIRS} )
 else()
@@ -23,7 +27,7 @@ configure_file(cg-lib/init.rddl ${CMAKE_BINARY_DIR}/init.rddl COPYONLY)
 
 add_executable( lucy ${SOURCES} )
 
-if( Java_FOUND )
+if( BUILD_GUI )
   target_link_libraries( lucy ${JNI_LIBRARIES} )
 endif()
 

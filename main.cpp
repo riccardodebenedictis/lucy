@@ -1,5 +1,5 @@
 #include "causal_graph.h"
-#ifndef NDEBUG
+#ifdef BUILD_GUI
 #include "cg_java_listener.h"
 #endif
 #include <iostream>
@@ -24,7 +24,7 @@ int main(int argc, char *argv[], char *envp[])
         std::cout << ".." << std::endl;
         cg::causal_graph g;
 
-#ifndef NDEBUG
+#ifdef BUILD_GUI
         gui::cg_java_listener gl(g);
 #endif
 
