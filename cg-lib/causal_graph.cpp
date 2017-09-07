@@ -278,43 +278,45 @@ void causal_graph::build()
             throw unsolvable_exception();
         }
         assert(!flaw_q.front()->expanded);
-        if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
-            flaw_q.push(flaw_q.front());
-        else
+        if (core::sat.value(flaw_q.front()->phi) != False)
         {
-            flaw_q.front()->expand();
-            if (!core::sat.check())
+            if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
+                flaw_q.push(flaw_q.front());
+            else
             {
-                building_graph = false;
-                throw unsolvable_exception();
-            }
-
-            for (const auto &r : flaw_q.front()->resolvers)
-            {
-                resolvers.push_front(r);
-                set_var(r->rho);
-                r->apply();
-
+                flaw_q.front()->expand();
                 if (!core::sat.check())
                 {
                     building_graph = false;
                     throw unsolvable_exception();
                 }
 
-                restore_var();
-                if (r->preconditions.empty())
+                for (const auto &r : flaw_q.front()->resolvers)
                 {
-                    // there are no requirements for this resolver..
-                    set_cost(*flaw_q.front(), std::min(flaw_q.front()->cost, la_th.value(r->cost)));
-                    assert(core::sat.value(r->rho) != False);
-                    if (core::sat.value(r->rho) != True)
+                    resolvers.push_front(r);
+                    set_var(r->rho);
+                    r->apply();
+
+                    if (!core::sat.check())
                     {
-                        // making this resolver false might make the heuristic blind..
-                        rhos[r->rho].push_back(r);
-                        bind(r->rho);
+                        building_graph = false;
+                        throw unsolvable_exception();
                     }
+
+                    restore_var();
+                    if (r->preconditions.empty() && core::sat.value(r->rho) != False)
+                    {
+                        // there are no requirements for this resolver..
+                        set_cost(*flaw_q.front(), std::min(flaw_q.front()->cost, la_th.value(r->cost)));
+                        if (core::sat.value(r->rho) != True)
+                        {
+                            // making this resolver false might make the heuristic blind..
+                            rhos[r->rho].push_back(r);
+                            bind(r->rho);
+                        }
+                    }
+                    resolvers.pop_front();
                 }
-                resolvers.pop_front();
             }
         }
         flaw_q.pop();
@@ -341,40 +343,41 @@ void causal_graph::add_layer()
     for (const auto &f : fs)
     {
         assert(!f->expanded);
-        f->expand();
-
-        if (!core::sat.check())
+        if (core::sat.value(f->phi) != False)
         {
-            building_graph = false;
-            throw unsolvable_exception();
-        }
-
-        for (const auto &r : f->resolvers)
-        {
-            resolvers.push_front(r);
-            set_var(r->rho);
-            r->apply();
-
+            f->expand();
             if (!core::sat.check())
             {
                 building_graph = false;
                 throw unsolvable_exception();
             }
 
-            restore_var();
-            if (r->preconditions.empty())
+            for (const auto &r : f->resolvers)
             {
-                // there are no requirements for this resolver..
-                set_cost(*f, std::min(f->cost, la_th.value(r->cost)));
-                assert(core::sat.value(r->rho) != False);
-                if (core::sat.value(r->rho) != True)
+                resolvers.push_front(r);
+                set_var(r->rho);
+                r->apply();
+
+                if (!core::sat.check())
                 {
-                    // making this resolver false might make the heuristic blind..
-                    rhos[r->rho].push_back(r);
-                    bind(r->rho);
+                    building_graph = false;
+                    throw unsolvable_exception();
                 }
+
+                restore_var();
+                if (r->preconditions.empty() && core::sat.value(r->rho) != False)
+                {
+                    // there are no requirements for this resolver..
+                    set_cost(*f, std::min(f->cost, la_th.value(r->cost)));
+                    if (core::sat.value(r->rho) != True)
+                    {
+                        // making this resolver false might make the heuristic blind..
+                        rhos[r->rho].push_back(r);
+                        bind(r->rho);
+                    }
+                }
+                resolvers.pop_front();
             }
-            resolvers.pop_front();
         }
     }
     building_graph = false;

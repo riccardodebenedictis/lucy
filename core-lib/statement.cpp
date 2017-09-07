@@ -121,7 +121,16 @@ void formula_statement::execute(const scope &scp, context &ctx) const
     }
 
     for (const auto &a : assignments)
-        assgnments.insert({a.first, a.second->evaluate(scp, ctx)});
+    {
+        expr e = a.second->evaluate(scp, ctx);
+        if (p->get_field(a.first).tp.is_assignable_from(e->tp))
+            assgnments.insert({a.first, e});
+        else
+        {
+            scp.get_core().assert_facts({False});
+            return;
+        }
+    }
 
     atom *a;
     if (assgnments.find("scope") == assgnments.end())
