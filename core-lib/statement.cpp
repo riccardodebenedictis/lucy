@@ -49,7 +49,10 @@ expression_statement::~expression_statement() { delete xpr; }
 void expression_statement::execute(const scope &scp, context &ctx) const
 {
     bool_expr be = xpr->evaluate(scp, ctx);
-    scp.get_core().assert_facts({be->l});
+    if (scp.get_core().sat.value(be->l) != False)
+        scp.get_core().assert_facts({be->l});
+    else
+        throw inconsistency_exception();
 }
 
 block_statement::block_statement(const std::vector<const statement *> &stmnts) : statements(stmnts) {}
@@ -126,10 +129,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
         if (p->get_field(a.first).tp.is_assignable_from(e->tp))
             assgnments.insert({a.first, e});
         else
-        {
-            scp.get_core().assert_facts({False});
-            return;
-        }
+            throw inconsistency_exception();
     }
 
     atom *a;

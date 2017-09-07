@@ -295,7 +295,18 @@ void causal_graph::build()
                 {
                     resolvers.push_front(r);
                     set_var(r->rho);
-                    r->apply();
+                    try
+                    {
+                        r->apply();
+                    }
+                    catch (const inconsistency_exception &)
+                    {
+                        if (!core::sat.new_clause({r->rho}))
+                        {
+                            building_graph = false;
+                            throw unsolvable_exception();
+                        }
+                    }
 
                     if (!core::sat.check())
                     {
@@ -356,7 +367,18 @@ void causal_graph::add_layer()
             {
                 resolvers.push_front(r);
                 set_var(r->rho);
-                r->apply();
+                try
+                {
+                    r->apply();
+                }
+                catch (const inconsistency_exception &)
+                {
+                    if (!core::sat.new_clause({r->rho}))
+                    {
+                        building_graph = false;
+                        throw unsolvable_exception();
+                    }
+                }
 
                 if (!core::sat.check())
                 {
