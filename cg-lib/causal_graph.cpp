@@ -95,7 +95,7 @@ void causal_graph::new_disjunction(context &d_ctx, const disjunction &disj)
 
 void causal_graph::solve()
 {
-    // we build the planning graph..
+    // we build the causal graph..
     build();
 
     // we create a new graph var..
@@ -139,7 +139,7 @@ void causal_graph::solve()
             }
         }
         else if (!has_inconsistencies()) // we run out of flaws, we check for inconsistencies one last time..
-            // we have found a solution..
+            // Hurray!! we have found a solution..
             return;
     }
 }
@@ -176,7 +176,7 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    if (!checking)
+    if (!building_graph)
     {
         if (phis.find(p.v) != phis.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
             for (const auto &f : phis.at(p.v))
@@ -266,12 +266,17 @@ void causal_graph::build()
 #ifndef NDEBUG
     std::cout << "building the causal graph.." << std::endl;
 #endif
+    assert(!building_graph);
     assert(core::sat.root_level());
 
+    building_graph = true;
     while (!has_solution())
     {
         if (flaw_q.empty())
+        {
+            building_graph = false;
             throw unsolvable_exception();
+        }
         assert(!flaw_q.front()->expanded);
         if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
             flaw_q.push(flaw_q.front());
@@ -279,7 +284,10 @@ void causal_graph::build()
         {
             flaw_q.front()->expand();
             if (!core::sat.check())
+            {
+                building_graph = false;
                 throw unsolvable_exception();
+            }
 
             for (const auto &r : flaw_q.front()->resolvers)
             {
@@ -288,7 +296,10 @@ void causal_graph::build()
                 r->apply();
 
                 if (!core::sat.check())
+                {
+                    building_graph = false;
                     throw unsolvable_exception();
+                }
 
                 restore_var();
                 if (r->preconditions.empty())
@@ -308,6 +319,7 @@ void causal_graph::build()
         }
         flaw_q.pop();
     }
+    building_graph = false;
 }
 
 void causal_graph::add_layer()
@@ -315,8 +327,10 @@ void causal_graph::add_layer()
 #ifndef NDEBUG
     std::cout << "adding a layer to the causal graph.." << std::endl;
 #endif
+    assert(!building_graph);
     assert(core::sat.root_level());
 
+    building_graph = true;
     std::vector<flaw *> fs;
     while (!flaw_q.empty())
     {
@@ -330,7 +344,10 @@ void causal_graph::add_layer()
         f->expand();
 
         if (!core::sat.check())
+        {
+            building_graph = false;
             throw unsolvable_exception();
+        }
 
         for (const auto &r : f->resolvers)
         {
@@ -339,7 +356,10 @@ void causal_graph::add_layer()
             r->apply();
 
             if (!core::sat.check())
+            {
+                building_graph = false;
                 throw unsolvable_exception();
+            }
 
             restore_var();
             if (r->preconditions.empty())
@@ -357,6 +377,7 @@ void causal_graph::add_layer()
             resolvers.pop_front();
         }
     }
+    building_graph = false;
 }
 
 bool causal_graph::has_solution()
