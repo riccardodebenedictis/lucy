@@ -301,7 +301,7 @@ void causal_graph::build()
                     }
                     catch (const inconsistency_exception &)
                     {
-                        if (!core::sat.new_clause({r->rho}))
+                        if (!core::sat.new_clause({lit(r->rho, false)}))
                         {
                             building_graph = false;
                             throw unsolvable_exception();
@@ -373,7 +373,7 @@ void causal_graph::add_layer()
                 }
                 catch (const inconsistency_exception &)
                 {
-                    if (!core::sat.new_clause({r->rho}))
+                    if (!core::sat.new_clause({lit(r->rho, false)}))
                     {
                         building_graph = false;
                         throw unsolvable_exception();
