@@ -126,8 +126,24 @@ void formula_statement::execute(const scope &scp, context &ctx) const
     for (const auto &a : assignments)
     {
         expr e = a.second->evaluate(scp, ctx);
-        if (p->get_field(a.first).tp.is_assignable_from(e->tp))
+        const type &tt = p->get_field(a.first).tp; // the target type..
+        if (tt.is_assignable_from(e->tp))          // the target type is a superclass of the assignment..
             assgnments.insert({a.first, e});
+        else if (e->tp.is_assignable_from(tt))                  // the target type is a subclass of the assignment..
+            if (enum_item *ae = dynamic_cast<enum_item *>(&*e)) // some of the allowed values might be inhibited..
+            {
+                std::unordered_set<set_item *> alwd_vals = scp.get_core().set_th.value(ae->ev); // the allowed values..
+                std::vector<lit> not_alwd_vals;                                                 // the not allowed values..
+                for (const auto &ev : alwd_vals)
+                    if (!tt.is_assignable_from(static_cast<item *>(ev)->tp)) // the target type is not a superclass of the value..
+                        not_alwd_vals.push_back(lit(scp.get_core().set_th.allows(ae->ev, *ev), false));
+                if (alwd_vals.size() == not_alwd_vals.size()) // none of the values is allowed..
+                    throw inconsistency_exception();          // no need to go further..
+                else
+                    scp.get_core().assert_facts(not_alwd_vals); // we inhibit the not allowed values..
+            }
+            else
+                throw inconsistency_exception();
         else
             throw inconsistency_exception();
     }
