@@ -78,6 +78,6 @@
         "future": "cpp"
     },
     "cmake.configureSettings": {
-        "BUILD_GUI": false
+        "BUILD_GUI": true
     }
 }
