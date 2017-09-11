@@ -46,12 +46,11 @@ public class TimelineViewer extends JComponent {
     public void addTimelines(Timeline... ts) {
         for (Timeline t : ts) {
             t.x_offset = x_offset;
-            if (timelines.isEmpty()) {
+            if (timelines.isEmpty())
                 t.y_offset = y_offset;
-            } else {
+            else
                 t.y_offset = y_offset + gap + timelines.get(timelines.size() - 1).y_offset
                         + timelines.get(timelines.size() - 1).height;
-            }
             timelines.add(t);
         }
         repaint();
@@ -65,9 +64,8 @@ public class TimelineViewer extends JComponent {
         g2.setColor(Color.WHITE);
         g2.fillRect(0, 0, getWidth(), getHeight());
 
-        for (Timeline timeline : timelines) {
+        for (Timeline timeline : timelines)
             timeline.paint(g2);
-        }
 
         if (mouse.inside) {
             g2.setColor(Color.GRAY);
@@ -97,16 +95,14 @@ public class TimelineViewer extends JComponent {
             if (inside) {
                 mouse_x = e.getX();
                 boolean show_tooltip = false;
-                for (Timeline t : timelines) {
+                for (Timeline t : timelines)
                     if (t.contains(e.getPoint())) {
                         show_tooltip = true;
-                        setToolTipText(t.getToolTipText());
+                        setToolTipText(t.getToolTipText(e.getPoint()));
                         break;
                     }
-                }
-                if (!show_tooltip) {
+                if (!show_tooltip)
                     setToolTipText(null);
-                }
                 repaint();
             }
             ToolTipManager.sharedInstance().mouseMoved(e);

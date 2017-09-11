@@ -15,5 +15,5 @@ public abstract class Timeline {
 
     public abstract boolean contains(Point2D p);
 
-    public abstract String getToolTipText();
+    public abstract String getToolTipText(Point2D p);
 }
