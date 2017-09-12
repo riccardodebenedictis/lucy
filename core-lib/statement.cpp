@@ -49,7 +49,10 @@ expression_statement::~expression_statement() { delete xpr; }
 void expression_statement::execute(const scope &scp, context &ctx) const
 {
     bool_expr be = xpr->evaluate(scp, ctx);
-    scp.get_core().assert_facts({be->l});
+    if (scp.get_core().sat.value(be->l) != False)
+        scp.get_core().assert_facts({be->l});
+    else
+        throw inconsistency_exception();
 }
 
 block_statement::block_statement(const std::vector<const statement *> &stmnts) : statements(stmnts) {}
@@ -121,7 +124,29 @@ void formula_statement::execute(const scope &scp, context &ctx) const
     }
 
     for (const auto &a : assignments)
-        assgnments.insert({a.first, a.second->evaluate(scp, ctx)});
+    {
+        expr e = a.second->evaluate(scp, ctx);
+        const type &tt = p->get_field(a.first).tp; // the target type..
+        if (tt.is_assignable_from(e->tp))          // the target type is a superclass of the assignment..
+            assgnments.insert({a.first, e});
+        else if (e->tp.is_assignable_from(tt))                  // the target type is a subclass of the assignment..
+            if (enum_item *ae = dynamic_cast<enum_item *>(&*e)) // some of the allowed values might be inhibited..
+            {
+                std::unordered_set<set_item *> alwd_vals = scp.get_core().set_th.value(ae->ev); // the allowed values..
+                std::vector<lit> not_alwd_vals;                                                 // the not allowed values..
+                for (const auto &ev : alwd_vals)
+                    if (!tt.is_assignable_from(static_cast<item *>(ev)->tp)) // the target type is not a superclass of the value..
+                        not_alwd_vals.push_back(lit(scp.get_core().set_th.allows(ae->ev, *ev), false));
+                if (alwd_vals.size() == not_alwd_vals.size()) // none of the values is allowed..
+                    throw inconsistency_exception();          // no need to go further..
+                else
+                    scp.get_core().assert_facts(not_alwd_vals); // we inhibit the not allowed values..
+            }
+            else
+                throw inconsistency_exception();
+        else
+            throw inconsistency_exception();
+    }
 
     atom *a;
     if (assgnments.find("scope") == assgnments.end())

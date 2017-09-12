@@ -36,3 +36,6 @@ fact in_city_pos1_cit1 = new agent.propositional_state.In_city(polarity:true, l:
 fact in_city_pos2_cit2 = new agent.propositional_state.In_city(polarity:true, l:pos2, c:cit2, start:origin);  in_city_pos2_cit2.duration >= 1.0;
 
 goal _at_obj11_apt1 = new agent.propositional_state.At(polarity:true, obj:obj11, l:apt1, end:horizon);
+goal _at_obj13_apt1 = new agent.propositional_state.At(polarity:true, obj:obj13, l:apt1, end:horizon);
+goal _at_obj21_pos1 = new agent.propositional_state.At(polarity:true, obj:obj21, l:pos1, end:horizon);
+goal _at_obj23_pos1 = new agent.propositional_state.At(polarity:true, obj:obj23, l:pos1, end:horizon);

@@ -46,6 +46,14 @@ public:
   unsolvable_exception(const std::string &what_arg) : runtime_error(what_arg) {}
 };
 
+class inconsistency_exception : public std::runtime_error
+{
+
+public:
+  inconsistency_exception() : runtime_error("an inconsistency has been found within the current scope") {}
+  inconsistency_exception(const std::string &what_arg) : runtime_error(what_arg) {}
+};
+
 class core : public scope, public env
 {
   friend class type;
