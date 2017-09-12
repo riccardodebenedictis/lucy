@@ -100,6 +100,9 @@ void causal_graph::solve()
 
     // we create a new graph var..
     graph_var = core::sat.new_var();
+#ifndef NDEBUG
+    std::cout << "graph var is: b" << std::to_string(graph_var) << std::endl;
+#endif
     // we use the new graph var to allow search within the current graph..
     bool a_gv = core::sat.assume(graph_var);
     assert(a_gv);
@@ -111,11 +114,17 @@ void causal_graph::solve()
 
         if (f_next)
         {
+#ifndef NDEBUG
+            std::cout << "(" << std::to_string(trail.size()) << "): " << f_next->get_label();
+#endif
             assert(f_next->cost < std::numeric_limits<double>::infinity());
             if (!f_next->has_subgoals() || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
             {
                 // this is the next resolver to be rho..
                 res = &select_resolver(*f_next);
+#ifndef NDEBUG
+                std::cout << " " << res->get_label() << std::endl;
+#endif
                 if (!res->preconditions.empty())
                     resolvers.push_back(res);
 
@@ -132,6 +141,9 @@ void causal_graph::solve()
 
                     // we create a new graph var..
                     graph_var = core::sat.new_var();
+#ifndef NDEBUG
+                    std::cout << "graph var is: b" << std::to_string(graph_var) << std::endl;
+#endif
                     // we use the new graph var to allow search within the new graph..
                     a_gv = core::sat.assume(graph_var);
                     assert(a_gv);
