@@ -205,7 +205,7 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
             propagate_costs();
         }
 
-        if (!has_solution()) // we have made the heuristic blind..
+        if (std::any_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->cost == std::numeric_limits<double>::infinity(); })) // we have made the heuristic blind..
         {
             for (const auto &r : rhos)
                 if (core::sat.value(r.first) == False)
@@ -270,7 +270,7 @@ void causal_graph::build()
     assert(core::sat.root_level());
 
     building_graph = true;
-    while (!has_solution())
+    while (std::any_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->cost == std::numeric_limits<double>::infinity(); }))
     {
         if (flaw_q.empty())
         {
@@ -403,11 +403,6 @@ void causal_graph::add_layer()
         }
     }
     building_graph = false;
-}
-
-bool causal_graph::has_solution()
-{
-    return std::all_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->cost < std::numeric_limits<double>::infinity(); });
 }
 
 bool causal_graph::is_deferrable(flaw &f)
