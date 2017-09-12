@@ -350,20 +350,27 @@ void causal_graph::add_layer()
         fs.push_back(flaw_q.front());
         flaw_q.pop();
     }
-
     for (const auto &f : fs)
+        flaw_q.push(f);
+
+    while (std::all_of(fs.begin(), fs.end(), [&](flaw *f) { return f->cost == std::numeric_limits<double>::infinity(); }))
     {
-        assert(!f->expanded);
-        if (core::sat.value(f->phi) != False)
+        if (flaw_q.empty())
         {
-            f->expand();
+            building_graph = false;
+            throw unsolvable_exception();
+        }
+        assert(!flaw_q.front()->expanded);
+        if (core::sat.value(flaw_q.front()->phi) != False)
+        {
+            flaw_q.front()->expand();
             if (!core::sat.check())
             {
                 building_graph = false;
                 throw unsolvable_exception();
             }
 
-            for (const auto &r : f->resolvers)
+            for (const auto &r : flaw_q.front()->resolvers)
             {
                 resolvers.push_front(r);
                 set_var(r->rho);
@@ -390,7 +397,7 @@ void causal_graph::add_layer()
                 if (r->preconditions.empty() && core::sat.value(r->rho) != False)
                 {
                     // there are no requirements for this resolver..
-                    set_cost(*f, std::min(f->cost, la_th.value(r->cost)));
+                    set_cost(*flaw_q.front(), std::min(flaw_q.front()->cost, la_th.value(r->cost)));
                     if (core::sat.value(r->rho) != True)
                     {
                         // making this resolver false might make the heuristic blind..
@@ -401,6 +408,7 @@ void causal_graph::add_layer()
                 resolvers.pop_front();
             }
         }
+        flaw_q.pop();
     }
     building_graph = false;
 }
