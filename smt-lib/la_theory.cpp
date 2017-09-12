@@ -152,12 +152,10 @@ bool la_theory::check(std::vector<lit> &cnfl)
             {
                 // we generate an explanation for the conflict..
                 for (auto &term : f_row->l.vars)
-                {
                     if (term.second > 0)
                         cnfl.push_back(!*assigns[la_theory::ub_index(term.first)].reason);
                     else if (term.second < 0)
                         cnfl.push_back(!*assigns[la_theory::lb_index(term.first)].reason);
-                }
                 cnfl.push_back(!*assigns[la_theory::lb_index(x_i)].reason);
                 return false;
             }
@@ -171,12 +169,10 @@ bool la_theory::check(std::vector<lit> &cnfl)
             {
                 // we generate an explanation for the conflict..
                 for (auto &term : f_row->l.vars)
-                {
                     if (term.second > 0)
                         cnfl.push_back(!*assigns[la_theory::lb_index(term.first)].reason);
                     else if (term.second < 0)
                         cnfl.push_back(!*assigns[la_theory::ub_index(term.first)].reason);
-                }
                 cnfl.push_back(!*assigns[la_theory::ub_index(x_i)].reason);
                 return false;
             }
@@ -306,12 +302,8 @@ void la_theory::pivot_and_update(var x_i, var x_j, double v)
             // x_k = x_k + a_kj * theta..
             vals[c->x] += c->l.vars[x_j] * theta;
             if (listening.find(c->x) != listening.end())
-            {
                 for (const auto &l : listening[c->x])
-                {
                     l->la_value_change(c->x);
-                }
-            }
         }
 
     pivot(x_i, x_j);
