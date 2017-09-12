@@ -56,7 +56,7 @@ class LogisticsState : PropositionalState {
     LogisticsState(LogisticsAgent agent) : agent(agent) {}
 
     predicate In_city(Location l, City c) {
-        duration >= 1.0;
+        false;
     }
 
     predicate At(Thing obj, Location l) {
