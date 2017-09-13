@@ -7,8 +7,7 @@
 namespace smt
 {
 
-assertion::assertion(la_theory &th, op o, var b, var x, double v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
-
+assertion::assertion(la_theory &th, const op o, const var b, const var x, const double v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
 assertion::~assertion() {}
 
 std::string assertion::to_string() const
@@ -45,7 +44,6 @@ bool assertion::propagate_lb(const var &x_i, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (th.lb(x_i) > v)
-    {
         switch (o)
         {
         case leq: // the assertion is unsatisfable: [x_i >= lb(x_i)] -> ![x_i <= v]..
@@ -71,7 +69,6 @@ bool assertion::propagate_lb(const var &x_i, std::vector<lit> &cnfl)
             }
             break;
         }
-    }
 
     return true;
 }
@@ -80,7 +77,6 @@ bool assertion::propagate_ub(const var &x_i, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (th.ub(x_i) < v)
-    {
         switch (o)
         {
         case leq: // the assertion is satisfied: [x_i <= ub(x_i)] -> [x_i <= v]..
@@ -106,12 +102,11 @@ bool assertion::propagate_ub(const var &x_i, std::vector<lit> &cnfl)
             }
             break;
         }
-    }
 
     return true;
 }
 
-row::row(la_theory &th, var x, lin l) : th(th), x(x), l(l)
+row::row(la_theory &th, const var x, lin l) : th(th), x(x), l(l)
 {
     for (const auto &term : l.vars)
         th.t_watches[term.first].insert(this);
@@ -130,9 +125,7 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
     {
         double lb = 0;
         for (const auto &term : l.vars)
-        {
             if (term.second > 0)
-            {
                 if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
@@ -144,9 +137,7 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
                     lb += term.second * th.lb(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
-            }
             else if (term.second < 0)
-            {
                 if (th.ub(term.first) == std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
@@ -158,11 +149,9 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
                     lb += term.second * th.ub(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
-            }
-        }
+
         if (lb > th.lb(x))
             for (const auto &c : th.a_watches[x])
-            {
                 if (lb > c->v)
                     switch (c->o)
                     {
@@ -187,15 +176,12 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
                         }
                         break;
                     }
-            }
     }
     else
     {
         double ub = 0;
         for (const auto &term : l.vars)
-        {
             if (term.second > 0)
-            {
                 if (th.ub(term.first) == std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
@@ -207,9 +193,7 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
                     ub += term.second * th.ub(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
-            }
             else if (term.second < 0)
-            {
                 if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
@@ -221,11 +205,9 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
                     ub += term.second * th.lb(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
-            }
-        }
+
         if (ub < th.ub(x))
             for (const auto &c : th.a_watches[x])
-            {
                 if (ub < c->v)
                     switch (c->o)
                     {
@@ -250,7 +232,6 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
                         }
                         break;
                     }
-            }
     }
 
     cnfl.clear();
@@ -266,9 +247,7 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
     {
         double ub = 0;
         for (const auto &term : l.vars)
-        {
             if (term.second > 0)
-            {
                 if (th.ub(term.first) == std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
@@ -280,9 +259,7 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
                     ub += term.second * th.ub(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
-            }
             else if (term.second < 0)
-            {
                 if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
@@ -294,11 +271,9 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
                     ub += term.second * th.lb(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
-            }
-        }
+
         if (ub < th.ub(x))
             for (const auto &c : th.a_watches[x])
-            {
                 if (ub < c->v)
                     switch (c->o)
                     {
@@ -323,15 +298,12 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
                         }
                         break;
                     }
-            }
     }
     else
     {
         double lb = 0;
         for (const auto &term : l.vars)
-        {
             if (term.second > 0)
-            {
                 if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
@@ -343,9 +315,7 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
                     lb += term.second * th.lb(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
-            }
             else if (term.second < 0)
-            {
                 if (th.ub(term.first) == std::numeric_limits<double>::infinity())
                 {
                     // nothing to propagate..
@@ -357,11 +327,9 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
                     lb += term.second * th.ub(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
-            }
-        }
+
         if (lb > th.lb(x))
             for (const auto &c : th.a_watches[x])
-            {
                 if (lb > c->v)
                     switch (c->o)
                     {
@@ -386,7 +354,6 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
                         }
                         break;
                     }
-            }
     }
 
     cnfl.clear();

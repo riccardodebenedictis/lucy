@@ -5,8 +5,8 @@ namespace smt
 {
 
 lin::lin() : known_term(0) {}
-lin::lin(double known_term) : known_term(known_term) {}
-lin::lin(var v, double c) : known_term(0) { vars.insert({v, c}); }
+lin::lin(const double known_term) : known_term(known_term) {}
+lin::lin(const var v, const double c) : known_term(0) { vars.insert({v, c}); }
 
 lin lin::operator+(const lin &right) const
 {

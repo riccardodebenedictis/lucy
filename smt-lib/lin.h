@@ -11,8 +11,8 @@ class lin
 {
 public:
   lin();
-  lin(double known_term);
-  lin(var v, double c);
+  lin(const double known_term);
+  lin(const var v, const double c);
 
 public:
   lin operator+(const lin &right) const;
@@ -45,7 +45,7 @@ public:
   std::string to_string() const;
 
 public:
-  std::map<var, double> vars;
+  std::map<const var, double> vars;
   double known_term;
 };
 }
