@@ -1,5 +1,3 @@
-import java.util.List;
-
 /**
  * SATCore
  */
@@ -16,7 +14,7 @@ public class SATCore {
         System.out.println("new value (" + id + "): " + val);
     }
 
-    public void new_clause(final long id, List<Lit> clause) {
+    public void new_clause(final long id, Lit[] clause) {
         System.out.println("new clause (" + id + "): " + clause);
     }
 
