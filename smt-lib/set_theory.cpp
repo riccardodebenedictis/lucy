@@ -11,10 +11,10 @@ set_theory::set_theory(sat_core &sat) : theory(sat) {}
 
 set_theory::~set_theory() {}
 
-var set_theory::new_var(const std::unordered_set<set_item *> &items)
+const var set_theory::new_var(const std::unordered_set<set_item *> &items)
 {
     assert(!items.empty());
-    var id = assigns.size();
+    const var id = assigns.size();
     assigns.push_back(std::unordered_map<set_item *, var>());
     if (items.size() == 1)
         assigns.back().insert({*items.begin(), TRUE_var});
@@ -23,7 +23,7 @@ var set_theory::new_var(const std::unordered_set<set_item *> &items)
         std::vector<lit> lits;
         for (const auto &i : items)
         {
-            var bv = sat.new_var();
+            const var bv = sat.new_var();
             assigns.back().insert({i, bv});
             lits.push_back(bv);
             bind(bv);
@@ -35,7 +35,7 @@ var set_theory::new_var(const std::unordered_set<set_item *> &items)
     return id;
 }
 
-var set_theory::allows(const var &left, set_item &right) const
+const var set_theory::allows(const var &left, set_item &right) const
 {
     if (assigns[left].find(&right) != assigns[left].end())
         return assigns[left].at(&right);
@@ -43,7 +43,7 @@ var set_theory::allows(const var &left, set_item &right) const
         return FALSE_var;
 }
 
-var set_theory::eq(const var &left, const var &right)
+const var set_theory::eq(const var &left, const var &right)
 {
     if (left == right)
         return TRUE_var;
@@ -65,7 +65,7 @@ var set_theory::eq(const var &left, const var &right)
             return FALSE_var;
 
         // we need to create a new variable..
-        var e = sat.new_var();
+        const var e = sat.new_var();
         bool nc;
         for (const auto &v : assigns[left])
         {

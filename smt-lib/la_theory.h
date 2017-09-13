@@ -24,10 +24,10 @@ public:
   la_theory(const la_theory &orig) = delete;
   virtual ~la_theory();
 
-  var new_var();
+  const var new_var();
 
-  var new_leq(const lin &left, const lin &right);
-  var new_geq(const lin &left, const lin &right);
+  const var new_leq(const lin &left, const lin &right);
+  const var new_geq(const lin &left, const lin &right);
 
   interval bounds(const var &v) const { return interval(assigns[lb_index(v)].value, assigns[ub_index(v)].value); }
 
@@ -52,7 +52,7 @@ public:
   }
 
 private:
-  var mk_slack(const lin &l);
+  const var mk_slack(const lin &l);
 
   bool propagate(const lit &p, std::vector<lit> &cnfl) override;
   bool check(std::vector<lit> &cnfl) override;

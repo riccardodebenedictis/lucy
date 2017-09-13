@@ -12,9 +12,9 @@ la_theory::la_theory(sat_core &sat) : theory(sat) {}
 
 la_theory::~la_theory() {}
 
-var la_theory::new_var()
+const var la_theory::new_var()
 {
-    var id = vals.size();
+    const var id = vals.size();
     assigns.push_back({-std::numeric_limits<double>::infinity(), nullptr});
     assigns.push_back({std::numeric_limits<double>::infinity(), nullptr});
     vals.push_back(0);
@@ -24,7 +24,7 @@ var la_theory::new_var()
     return id;
 }
 
-var la_theory::new_leq(const lin &left, const lin &right)
+const var la_theory::new_leq(const lin &left, const lin &right)
 {
     lin expr = left - right;
     std::vector<var> vars;
@@ -38,22 +38,22 @@ var la_theory::new_leq(const lin &left, const lin &right)
             expr += tableau[v]->l * c;
         }
 
-    double c_right = -expr.known_term;
+    const double c_right = -expr.known_term;
     expr.known_term = 0;
-    interval i = bounds(expr);
+    const interval i = bounds(expr);
 
     if (i <= c_right) // the constraint is already satisfied..
         return TRUE_var;
     else if (i > c_right) // the constraint is unsatisfable..
         return FALSE_var;
 
-    var slack = mk_slack(expr);
-    std::string s_assertion = "x" + std::to_string(slack) + " <= " + std::to_string(c_right);
+    const var slack = mk_slack(expr);
+    const std::string s_assertion = "x" + std::to_string(slack) + " <= " + std::to_string(c_right);
     if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
         return s_asrts.at(s_assertion);
     else
     {
-        var ctr = sat.new_var();
+        const var ctr = sat.new_var();
         bind(ctr);
         s_asrts.insert({s_assertion, ctr});
         v_asrts.insert({ctr, new assertion(*this, op::leq, ctr, slack, c_right)});
@@ -61,7 +61,7 @@ var la_theory::new_leq(const lin &left, const lin &right)
     }
 }
 
-var la_theory::new_geq(const lin &left, const lin &right)
+const var la_theory::new_geq(const lin &left, const lin &right)
 {
     lin expr = left - right;
     std::vector<var> vars;
@@ -75,22 +75,22 @@ var la_theory::new_geq(const lin &left, const lin &right)
             expr += tableau[v]->l * c;
         }
 
-    double c_right = -expr.known_term;
+    const double c_right = -expr.known_term;
     expr.known_term = 0;
-    interval i = bounds(expr);
+    const interval i = bounds(expr);
 
     if (i >= c_right) // the constraint is already satisfied..
         return TRUE_var;
     else if (i < c_right) // the constraint is unsatisfable..
         return FALSE_var;
 
-    var slack = mk_slack(expr);
-    std::string s_assertion = "x" + std::to_string(slack) + " >= " + std::to_string(c_right);
+    const var slack = mk_slack(expr);
+    const std::string s_assertion = "x" + std::to_string(slack) + " >= " + std::to_string(c_right);
     if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
         return s_asrts.at(s_assertion);
     else
     {
-        var ctr = sat.new_var();
+        const var ctr = sat.new_var();
         bind(ctr);
         s_asrts.insert({s_assertion, ctr});
         v_asrts.insert({ctr, new assertion(*this, op::geq, ctr, slack, c_right)});
@@ -98,15 +98,15 @@ var la_theory::new_geq(const lin &left, const lin &right)
     }
 }
 
-var la_theory::mk_slack(const lin &l)
+const var la_theory::mk_slack(const lin &l)
 {
-    std::string s_expr = l.to_string();
+    const std::string s_expr = l.to_string();
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
     else
     {
         // we need to create a new slack variable..
-        var slack = new_var();
+        const var slack = new_var();
         exprs.insert({s_expr, slack});
         // we set the initial value of the new slack variable..
         vals[slack] = value(l);
@@ -119,7 +119,7 @@ var la_theory::mk_slack(const lin &l)
 bool la_theory::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    assertion *a = v_asrts.at(p.v);
+    const assertion *a = v_asrts.at(p.v);
     switch (a->o)
     {
     case op::leq:
@@ -283,7 +283,7 @@ void la_theory::pivot_and_update(const var &x_i, const var &x_j, const double v)
     assert(tableau.find(x_j) == tableau.end() && "x_j should be a non-basic variable..");
     assert(tableau[x_i]->l.vars.find(x_j) != tableau[x_i]->l.vars.end());
 
-    double theta = (v - vals[x_i]) / tableau.at(x_i)->l.vars.at(x_j);
+    const double theta = (v - vals[x_i]) / tableau.at(x_i)->l.vars.at(x_j);
     // x_i = v
     vals[x_i] = v;
     if (listening.find(x_i) != listening.end())
@@ -319,7 +319,7 @@ void la_theory::pivot(const var x_i, const var x_j)
         t_watches[c.first].erase(ex_row);
     delete ex_row;
 
-    double c = expr.vars.at(x_j);
+    const double c = expr.vars.at(x_j);
     expr.vars.erase(x_j);
     expr /= -c;
     expr.vars.insert({x_i, 1 / c});

@@ -27,9 +27,9 @@ sat_core::~sat_core()
         delete c;
 }
 
-var sat_core::new_var()
+const var sat_core::new_var()
 {
-    var id = assigns.size();
+    const var id = assigns.size();
     watches.push_back(std::vector<clause *>());
     watches.push_back(std::vector<clause *>());
     assigns.push_back(Undefined);
@@ -81,20 +81,20 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
     return true;
 }
 
-var sat_core::new_eq(const lit &left, const lit &right)
+const var sat_core::new_eq(const lit &left, const lit &right)
 {
     assert(root_level());
     if (left == right)
         return TRUE_var;
     if (left.v > right.v)
         return new_eq(right, left);
-    std::string s_expr = (left.sign ? "b" : "!b") + std::to_string(left.v) + " == " + (right.sign ? "b" : "!b") + std::to_string(right.v);
+    const std::string s_expr = (left.sign ? "b" : "!b") + std::to_string(left.v) + " == " + (right.sign ? "b" : "!b") + std::to_string(right.v);
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
     else
     {
         // we need to create a new variable..
-        var e = new_var();
+        const var e = new_var();
         bool nc;
         nc = new_clause({lit(e, false), !left, right});
         assert(nc);
@@ -107,7 +107,7 @@ var sat_core::new_eq(const lit &left, const lit &right)
     }
 }
 
-var sat_core::new_conj(const std::vector<lit> &ls)
+const var sat_core::new_conj(const std::vector<lit> &ls)
 {
     assert(root_level());
     std::vector<lit> c_lits = ls;
@@ -124,7 +124,7 @@ var sat_core::new_conj(const std::vector<lit> &ls)
     else
     {
         // we need to create a new variable..
-        var c = new_var();
+        const var c = new_var();
         std::vector<lit> lits;
         lits.push_back(c);
         bool nc;
@@ -141,7 +141,7 @@ var sat_core::new_conj(const std::vector<lit> &ls)
     }
 }
 
-var sat_core::new_disj(const std::vector<lit> &ls)
+const var sat_core::new_disj(const std::vector<lit> &ls)
 {
     std::vector<lit> c_lits = ls;
     std::sort(c_lits.begin(), c_lits.end(), [](const lit &l0, const lit &l1) { return l0.v > l1.v; });
@@ -157,7 +157,7 @@ var sat_core::new_disj(const std::vector<lit> &ls)
     else
     {
         // we need to create a new variable..
-        var d = new_var();
+        const var d = new_var();
         std::vector<lit> lits;
         lits.push_back(lit(d, false));
         bool nc;
@@ -174,7 +174,7 @@ var sat_core::new_disj(const std::vector<lit> &ls)
     }
 }
 
-var sat_core::new_exct_one(const std::vector<lit> &ls)
+const var sat_core::new_exct_one(const std::vector<lit> &ls)
 {
     std::vector<lit> c_lits = ls;
     std::sort(c_lits.begin(), c_lits.end(), [](const lit &l0, const lit &l1) { return l0.v > l1.v; });
@@ -190,7 +190,7 @@ var sat_core::new_exct_one(const std::vector<lit> &ls)
     else
     {
         // we need to create a new variable..
-        var eo = new_var();
+        const var eo = new_var();
         std::vector<lit> lits;
         lits.push_back(lit(eo, false));
         bool nc;
@@ -408,7 +408,7 @@ bool sat_core::enqueue(const lit &p, clause *const c)
 
 void sat_core::pop_one()
 {
-    var v = trail.back().v;
+    const var v = trail.back().v;
     assigns[v] = Undefined;
     reason[v] = nullptr;
     level[v] = 0;

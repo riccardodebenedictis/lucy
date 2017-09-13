@@ -36,13 +36,13 @@ class sat_core
     sat_core(const sat_core &orig) = delete;
     virtual ~sat_core();
 
-    var new_var();
+    const var new_var();
     bool new_clause(const std::vector<lit> &lits);
 
-    var new_eq(const lit &left, const lit &right);
-    var new_conj(const std::vector<lit> &ls);
-    var new_disj(const std::vector<lit> &ls);
-    var new_exct_one(const std::vector<lit> &ls);
+    const var new_eq(const lit &left, const lit &right);
+    const var new_conj(const std::vector<lit> &ls);
+    const var new_disj(const std::vector<lit> &ls);
+    const var new_exct_one(const std::vector<lit> &ls);
 
     bool eq(const lit &left, const lit &right) { return new_clause({!left, right}) && new_clause({left, !right}); }
 
@@ -64,10 +64,10 @@ class sat_core
     bool assume(const lit &p);
     void pop();
 
-    size_t n_vars() { return assigns.size(); }      // the number of variables..
-    size_t n_assigns() { return trail.size(); }     // the number of assigned variables..
-    size_t n_constrs() { return constrs.size(); }   // the number of constraints..
-    lbool value(var x) const { return assigns[x]; } // returns the value of variable 'v'..
+    size_t n_vars() { return assigns.size(); }             // the number of variables..
+    size_t n_assigns() { return trail.size(); }            // the number of assigned variables..
+    size_t n_constrs() { return constrs.size(); }          // the number of constraints..
+    lbool value(const var &x) const { return assigns[x]; } // returns the value of variable 'v'..
 
     lbool value(const lit &p) const
     {
