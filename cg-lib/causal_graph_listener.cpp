@@ -116,11 +116,11 @@ std::string causal_graph_listener::to_string()
     return g;
 }
 
-causal_graph_listener::flaw_listener::flaw_listener(causal_graph_listener &listener, const flaw &f) : sat_value_listener(listener.get_graph().core::sat), listener(listener), f(f) { listen_sat(f.get_phi()); }
+causal_graph_listener::flaw_listener::flaw_listener(causal_graph_listener &listener, const flaw &f) : sat_listener(listener.get_graph().core::sat), listener(listener), f(f) { listen_sat(f.get_phi()); }
 causal_graph_listener::flaw_listener::~flaw_listener() {}
-void causal_graph_listener::flaw_listener::sat_value_change(var v) { listener.flaw_state_changed(f); }
+void causal_graph_listener::flaw_listener::sat_value_change(const var &v) { listener.flaw_state_changed(f); }
 
-causal_graph_listener::resolver_listener::resolver_listener(causal_graph_listener &listener, const resolver &r) : sat_value_listener(listener.get_graph().core::sat), listener(listener), r(r) { listen_sat(r.get_rho()); }
+causal_graph_listener::resolver_listener::resolver_listener(causal_graph_listener &listener, const resolver &r) : sat_listener(listener.get_graph().core::sat), listener(listener), r(r) { listen_sat(r.get_rho()); }
 causal_graph_listener::resolver_listener::~resolver_listener() {}
-void causal_graph_listener::resolver_listener::sat_value_change(var v) { listener.resolver_state_changed(r); }
+void causal_graph_listener::resolver_listener::sat_value_change(const var &v) { listener.resolver_state_changed(r); }
 }

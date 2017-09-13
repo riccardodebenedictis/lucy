@@ -21,8 +21,8 @@ public:
   sat_core &get_core() const { return sat; }
 
 protected:
-  void bind(var v);
-  void unbind(var v);
+  void bind(const var &v);
+  void unbind(const var &v);
   void record(const std::vector<lit> &clause);
 
 private:

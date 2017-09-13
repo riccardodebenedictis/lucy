@@ -9,13 +9,13 @@
 namespace smt
 {
 
-class la_value_listener;
+class la_listener;
 class assertion;
 class row;
 
 class la_theory : public theory
 {
-  friend class la_value_listener;
+  friend class la_listener;
   friend class assertion;
   friend class row;
 
@@ -59,14 +59,14 @@ private:
   void push() override;
   void pop() override;
 
-  bool assert_lower(var x_i, double val, const lit &p, std::vector<lit> &cnfl);
-  bool assert_upper(var x_i, double val, const lit &p, std::vector<lit> &cnfl);
-  void update(var x_i, double v);
-  void pivot_and_update(var x_i, var x_j, double v);
-  void pivot(var x_i, var x_j);
+  bool assert_lower(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl);
+  bool assert_upper(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl);
+  void update(const var &x_i, const double v);
+  void pivot_and_update(const var &x_i, const var &x_j, const double v);
+  void pivot(const var &x_i, const var &x_j);
 
-  void listen(var v, la_value_listener *const l);
-  void forget(var v, la_value_listener *const l);
+  void listen(const var &v, la_listener *const l);
+  void forget(const var &v, la_listener *const l);
 
   static size_t lb_index(const var &v) { return v << 1; }
   static size_t ub_index(const var &v) { return (v << 1) ^ 1; }
@@ -99,6 +99,6 @@ private:
   std::vector<std::set<row *>> t_watches;
   // we store the updated bounds..
   std::vector<std::unordered_map<size_t, bound>> layers;
-  std::unordered_map<var, std::list<la_value_listener *>> listening;
+  std::unordered_map<var, std::list<la_listener *>> listening;
 };
 }

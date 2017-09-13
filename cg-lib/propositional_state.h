@@ -53,9 +53,9 @@ private:
   private:
     void something_changed();
 
-    void sat_value_change(size_t var) override { something_changed(); }
-    void la_value_change(size_t var) override { something_changed(); }
-    void set_value_change(size_t var) override { something_changed(); }
+    void sat_value_change(const var &v) override { something_changed(); }
+    void la_value_change(const var &v) override { something_changed(); }
+    void set_value_change(const var &v) override { something_changed(); }
 
   protected:
     propositional_state &ps;

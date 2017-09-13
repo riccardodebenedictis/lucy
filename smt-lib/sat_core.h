@@ -11,7 +11,7 @@ namespace smt
 
 class clause;
 class theory;
-class sat_value_listener;
+class sat_listener;
 
 static const var FALSE_var = 0;
 static const var TRUE_var = 1;
@@ -27,7 +27,7 @@ class sat_core
 {
     friend class clause;
     friend class theory;
-    friend class sat_value_listener;
+    friend class sat_listener;
 
   public:
     sat_core();
@@ -104,11 +104,11 @@ class sat_core
 
     void add_theory(theory &th);
     void remove_theory(theory &th);
-    void bind(var v, theory &th);
-    void unbind(var v, theory &th);
+    void bind(const var &v, theory &th);
+    void unbind(const var &v, theory &th);
 
-    void listen(var v, sat_value_listener *const l);
-    void forget(var v, sat_value_listener *const l);
+    void listen(const var &v, sat_listener *const l);
+    void forget(const var &v, sat_listener *const l);
 
   public:
     std::string to_string();
@@ -136,6 +136,6 @@ class sat_core
     // all the theories..
     std::vector<theory *> theories;
     std::unordered_map<var, std::list<theory *>> bounds;
-    std::unordered_map<var, std::list<sat_value_listener *>> listening;
+    std::unordered_map<var, std::list<sat_listener *>> listening;
 };
 }

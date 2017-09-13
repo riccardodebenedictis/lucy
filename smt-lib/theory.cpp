@@ -15,20 +15,20 @@ theory::~theory()
     sat.remove_theory(*this);
 }
 
-void theory::bind(var var)
+void theory::bind(const var &v)
 {
-    if (listening_on.find(var) == listening_on.end())
+    if (listening_on.find(v) == listening_on.end())
     {
-        listening_on.insert(var);
-        sat.bind(var, *this);
+        listening_on.insert(v);
+        sat.bind(v, *this);
     }
 }
 
-void theory::unbind(var var)
+void theory::unbind(const var &v)
 {
-    assert(listening_on.find(var) != listening_on.end());
-    listening_on.erase(var);
-    sat.unbind(var, *this);
+    assert(listening_on.find(v) != listening_on.end());
+    listening_on.erase(v);
+    sat.unbind(v, *this);
 }
 
 void theory::record(const std::vector<lit> &cls) { sat.record(cls); }

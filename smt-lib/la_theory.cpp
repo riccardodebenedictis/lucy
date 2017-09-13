@@ -1,7 +1,7 @@
 #include "la_theory.h"
 #include "sat_core.h"
 #include "la_constr.h"
-#include "la_value_listener.h"
+#include "la_listener.h"
 #include <algorithm>
 #include <cassert>
 
@@ -193,7 +193,7 @@ void la_theory::pop()
     layers.pop_back();
 }
 
-bool la_theory::assert_lower(var x_i, double val, const lit &p, std::vector<lit> &cnfl)
+bool la_theory::assert_lower(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (val <= lb(x_i))
@@ -226,7 +226,7 @@ bool la_theory::assert_lower(var x_i, double val, const lit &p, std::vector<lit>
     }
 }
 
-bool la_theory::assert_upper(var x_i, double val, const lit &p, std::vector<lit> &cnfl)
+bool la_theory::assert_upper(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (val >= ub(x_i))
@@ -259,7 +259,7 @@ bool la_theory::assert_upper(var x_i, double val, const lit &p, std::vector<lit>
     }
 }
 
-void la_theory::update(var x_i, double v)
+void la_theory::update(const var &x_i, const double v)
 {
     assert(tableau.find(x_i) == tableau.end() && "x_i should be a non-basic variable..");
     for (const auto &c : t_watches[x_i])
@@ -277,7 +277,7 @@ void la_theory::update(var x_i, double v)
             l->la_value_change(x_i);
 }
 
-void la_theory::pivot_and_update(var x_i, var x_j, double v)
+void la_theory::pivot_and_update(const var &x_i, const var &x_j, const double v)
 {
     assert(tableau.find(x_i) != tableau.end() && "x_i should be a basic variable..");
     assert(tableau.find(x_j) == tableau.end() && "x_j should be a non-basic variable..");
@@ -309,7 +309,7 @@ void la_theory::pivot_and_update(var x_i, var x_j, double v)
     pivot(x_i, x_j);
 }
 
-void la_theory::pivot(var x_i, var x_j)
+void la_theory::pivot(const var &x_i, const var &x_j)
 {
     // the exiting row..
     row *ex_row = tableau.at(x_i);
@@ -342,9 +342,9 @@ void la_theory::pivot(var x_i, var x_j)
     tableau.insert({x_j, new row(*this, x_j, expr)});
 }
 
-void la_theory::listen(var v, la_value_listener *const l) { listening[v].push_back(l); }
+void la_theory::listen(const var &v, la_listener *const l) { listening[v].push_back(l); }
 
-void la_theory::forget(var v, la_value_listener *const l)
+void la_theory::forget(const var &v, la_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())

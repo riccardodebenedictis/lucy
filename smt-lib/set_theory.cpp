@@ -1,6 +1,6 @@
 #include "set_theory.h"
 #include "sat_core.h"
-#include "set_value_listener.h"
+#include "set_listener.h"
 #include <cassert>
 #include <algorithm>
 
@@ -133,9 +133,9 @@ void set_theory::pop()
     layers.pop_back();
 }
 
-void set_theory::listen(var v, set_value_listener *const l) { listening[v].push_back(l); }
+void set_theory::listen(const var &v, set_listener *const l) { listening[v].push_back(l); }
 
-void set_theory::forget(var v, set_value_listener *const l)
+void set_theory::forget(const var &v, set_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())
