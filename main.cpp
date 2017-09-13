@@ -1,6 +1,7 @@
 #include "causal_graph.h"
 #ifdef BUILD_GUI
 #include "cg_java_listener.h"
+#include "sat_java_listener.h"
 #endif
 #include <iostream>
 #include <fstream>
@@ -26,6 +27,7 @@ int main(int argc, char *argv[], char *envp[])
 
 #ifdef BUILD_GUI
         gui::cg_java_listener gl(g);
+        gui::sat_java_listener satl(g.core::sat);
 #endif
 
         std::cout << "parsing input files.." << std::endl;

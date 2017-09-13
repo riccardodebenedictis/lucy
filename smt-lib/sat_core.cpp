@@ -1,6 +1,7 @@
 #include "sat_core.h"
 #include "clause.h"
 #include "theory.h"
+#include "sat_listener.h"
 #include "sat_value_listener.h"
 #include <cassert>
 #include <algorithm>
@@ -35,6 +36,8 @@ var sat_core::new_var()
     exprs.insert({"b" + std::to_string(id), id});
     level.push_back(0);
     reason.push_back(nullptr);
+    for (const auto &l : listeners)
+        l->new_var(id);
     return id;
 }
 
@@ -52,7 +55,6 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
         {
             bool found = false;
             for (const auto &c_l : c_lits)
-            {
                 if (c_l == l)
                 {
                     found = true;
@@ -60,7 +62,6 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
                 }
                 else if (c_l == !l)
                     return true; // the clause represents a tautology..
-            }
             if (!found)
                 c_lits.push_back(l);
         }
@@ -71,7 +72,12 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
     else if (c_lits.size() == 1)
         enqueue(c_lits[0]);
     else
-        constrs.push_back(new clause(*this, c_lits));
+    {
+        clause *c = new clause(*this, c_lits);
+        for (const auto &l : listeners)
+            l->new_clause(*c, c_lits);
+        constrs.push_back(c);
+    }
     return true;
 }
 
@@ -291,7 +297,6 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
 
         // we perform theory propagation..
         for (const auto &th : bounds[prop_q.front().v])
-        {
             if (!th->propagate(prop_q.front(), cnfl))
             {
                 assert(!cnfl.empty());
@@ -299,20 +304,17 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
                     prop_q.pop();
                 return false;
             }
-        }
 
         prop_q.pop();
     }
 
     // we check theories..
     for (const auto &th : theories)
-    {
         if (!th->check(cnfl))
         {
             assert(!cnfl.empty());
             return false;
         }
-    }
 
     return true;
 }
@@ -329,7 +331,6 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
     {
         // trace reason for 'p'..
         for (const auto &q : p_reason)
-        {
             if (seen.find(q.v) == seen.end())
             {
                 seen.insert(q.v);
@@ -341,7 +342,6 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
                     out_btlevel = std::max(out_btlevel, level[q.v]);
                 }
             }
-        }
         // select next literal to look at..
         do
         {
@@ -373,6 +373,8 @@ void sat_core::record(const std::vector<lit> &lits)
     else
     {
         clause *c = new clause(*this, lits);
+        for (const auto &l : listeners)
+            l->new_clause(*c, lits);
         bool e = enqueue(lits[0], c);
         assert(e);
         constrs.push_back(c);
@@ -396,6 +398,8 @@ bool sat_core::enqueue(const lit &p, clause *const c)
         if (listening.find(p.v) != listening.end())
             for (const auto &l : listening[p.v])
                 l->sat_value_change(p.v);
+        for (const auto &l : listeners)
+            l->new_value(p.v);
         return true;
     default:
         std::unexpected();
@@ -404,13 +408,16 @@ bool sat_core::enqueue(const lit &p, clause *const c)
 
 void sat_core::pop_one()
 {
-    assigns[trail.back().v] = Undefined;
-    reason[trail.back().v] = nullptr;
-    level[trail.back().v] = 0;
-    if (listening.find(trail.back().v) != listening.end())
-        for (const auto &l : listening[trail.back().v])
-            l->sat_value_change(trail.back().v);
+    var v = trail.back().v;
+    assigns[v] = Undefined;
+    reason[v] = nullptr;
+    level[v] = 0;
     trail.pop_back();
+    if (listening.find(v) != listening.end())
+        for (const auto &l : listening[v])
+            l->sat_value_change(v);
+    for (const auto &l : listeners)
+        l->new_value(v);
 }
 
 void sat_core::add_theory(theory &th) { theories.push_back(&th); }

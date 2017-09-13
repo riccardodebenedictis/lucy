@@ -11,6 +11,7 @@ namespace smt
 
 class clause;
 class theory;
+class sat_listener;
 class sat_value_listener;
 
 static const var FALSE_var = 0;
@@ -27,6 +28,7 @@ class sat_core
 {
     friend class clause;
     friend class theory;
+    friend class sat_listener;
     friend class sat_value_listener;
 
   public:
@@ -51,13 +53,9 @@ class sat_core
         for (size_t i = 0; i < lits.size(); i++)
         {
             for (size_t j = i + 1; j < lits.size(); j++)
-            {
                 // the at-most-one clauses..
                 if (!new_clause({!lits[i], !lits[j]}))
-                {
                     return false;
-                }
-            }
             ls.push_back(lits[i]);
         }
         return new_clause(ls);
@@ -137,5 +135,7 @@ class sat_core
     std::vector<theory *> theories;
     std::unordered_map<var, std::list<theory *>> bounds;
     std::unordered_map<var, std::list<sat_value_listener *>> listening;
+
+    std::vector<sat_listener *> listeners;
 };
 }
