@@ -355,7 +355,7 @@ std::string la_theory::to_string()
 {
     std::string la;
     la += "{ \"vars\" : [";
-    for (size_t i = 0; i < assigns.size(); i++)
+    for (size_t i = 0; i < vals.size(); i++)
     {
         if (i)
             la += ", ";
