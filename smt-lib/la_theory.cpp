@@ -327,17 +327,17 @@ void la_theory::pivot(const var x_i, const var x_j)
     for (const auto &r : std::vector<row *>(t_watches[x_j].begin(), t_watches[x_j].end())) // these are the rows in which x_j appears..
     {
         for (const auto &term : r->l.vars)
-    for (const auto &term : r->l.vars)
-        t_watches[term.first].erase(r);
-    double cc = r->l.vars.at(x_j);
-    r->l.vars.erase(x_j);
-    r->l += expr * cc;
-    for (const auto &term : r->l.vars)
-        t_watches[term.first].insert(r);
-}
+            t_watches[term.first].erase(r);
+        double cc = r->l.vars.at(x_j);
+        r->l.vars.erase(x_j);
+        r->l += expr * cc;
+        for (const auto &term : r->l.vars)
+            t_watches[term.first].insert(r);
+    }
 
-// we add a new row into the tableau..
-tableau.insert({x_j, new row(*this, x_j, expr)});
+    // we add a new row into the tableau..
+    tableau.insert({x_j, new row(*this, x_j, expr)});
+}
 
 void la_theory::listen(const var &v, la_value_listener *const l) { listening[v].push_back(l); }
 
