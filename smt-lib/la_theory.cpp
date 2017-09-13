@@ -136,22 +136,22 @@ bool la_theory::check(std::vector<lit> &cnfl)
     assert(cnfl.empty());
     while (true)
     {
-        auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, row *> &v) { return value(v.first) < lb(v.first) || value(v.first) > ub(v.first); });
+        const auto x_i_it = std::find_if(tableau.begin(), tableau.end(), [&](const std::pair<var, row *> &v) { return value(v.first) < lb(v.first) || value(v.first) > ub(v.first); });
         if (x_i_it == tableau.end())
             return true;
         // the current value of the x_i variable is out of its bounds..
-        var x_i = (*x_i_it).first;
+        const var x_i = (*x_i_it).first;
         // the flawed row..
-        row *f_row = (*x_i_it).second;
+        const row *f_row = (*x_i_it).second;
         if (value(x_i) < lb(x_i))
         {
-            auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars.at(v.first) > 0 && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first) < 0 && value(v.first) > lb(v.first)); });
+            const auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars.at(v.first) > 0 && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first) < 0 && value(v.first) > lb(v.first)); });
             if (x_j_it != f_row->l.vars.end()) // var x_j can be used to increase the value of x_i..
                 pivot_and_update(x_i, (*x_j_it).first, lb(x_i));
             else
             {
                 // we generate an explanation for the conflict..
-                for (auto &term : f_row->l.vars)
+                for (const auto &term : f_row->l.vars)
                     if (term.second > 0)
                         cnfl.push_back(!*assigns[la_theory::ub_index(term.first)].reason);
                     else if (term.second < 0)
@@ -162,13 +162,13 @@ bool la_theory::check(std::vector<lit> &cnfl)
         }
         else if (value(x_i) > ub(x_i))
         {
-            auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars[v.first] < 0 && value(v.first) < ub(v.first)) || (f_row->l.vars[v.first] > 0 && value(v.first) > lb(v.first)); });
+            const auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, double> &v) { return (f_row->l.vars.at(v.first) < 0 && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first) > 0 && value(v.first) > lb(v.first)); });
             if (x_j_it != f_row->l.vars.end()) // var x_j can be used to decrease the value of x_i..
                 pivot_and_update(x_i, (*x_j_it).first, ub(x_i));
             else
             {
                 // we generate an explanation for the conflict..
-                for (auto &term : f_row->l.vars)
+                for (const auto &term : f_row->l.vars)
                     if (term.second > 0)
                         cnfl.push_back(!*assigns[la_theory::lb_index(term.first)].reason);
                     else if (term.second < 0)
@@ -309,7 +309,7 @@ void la_theory::pivot_and_update(const var &x_i, const var &x_j, const double v)
     pivot(x_i, x_j);
 }
 
-void la_theory::pivot(const var &x_i, const var &x_j)
+void la_theory::pivot(const var x_i, const var x_j)
 {
     // the exiting row..
     row *ex_row = tableau.at(x_i);

@@ -41,7 +41,7 @@ std::string assertion::to_string() const
     return asrt;
 }
 
-bool assertion::propagate_lb(var x_i, std::vector<lit> &cnfl)
+bool assertion::propagate_lb(const var &x_i, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (th.lb(x_i) > v)
@@ -76,7 +76,7 @@ bool assertion::propagate_lb(var x_i, std::vector<lit> &cnfl)
     return true;
 }
 
-bool assertion::propagate_ub(var x_i, std::vector<lit> &cnfl)
+bool assertion::propagate_ub(const var &x_i, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (th.ub(x_i) < v)
@@ -121,7 +121,7 @@ row::~row() {}
 
 std::string row::to_string() const { return "{ \"basic-var\" : \"x" + std::to_string(x) + "\", \"expr\" : \"" + l.to_string() + "\" }"; }
 
-bool row::propagate_lb(var v, std::vector<lit> &cnfl)
+bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     // we make room for the first literal..
@@ -257,7 +257,7 @@ bool row::propagate_lb(var v, std::vector<lit> &cnfl)
     return true;
 }
 
-bool row::propagate_ub(var v, std::vector<lit> &cnfl)
+bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     // we make room for the first literal..

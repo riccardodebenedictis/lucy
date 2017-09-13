@@ -28,8 +28,8 @@ public:
   std::string to_string() const;
 
 private:
-  bool propagate_lb(var x, std::vector<lit> &cnfl);
-  bool propagate_ub(var x, std::vector<lit> &cnfl);
+  bool propagate_lb(const var &x, std::vector<lit> &cnfl);
+  bool propagate_ub(const var &x, std::vector<lit> &cnfl);
 
 private:
   la_theory &th;
@@ -51,8 +51,8 @@ public:
   std::string to_string() const;
 
 private:
-  bool propagate_lb(var x, std::vector<lit> &cnfl);
-  bool propagate_ub(var x, std::vector<lit> &cnfl);
+  bool propagate_lb(const var &x, std::vector<lit> &cnfl);
+  bool propagate_ub(const var &x, std::vector<lit> &cnfl);
 
 private:
   la_theory &th;

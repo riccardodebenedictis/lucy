@@ -29,7 +29,7 @@ public:
   var new_leq(const lin &left, const lin &right);
   var new_geq(const lin &left, const lin &right);
 
-  interval bounds(var v) const { return interval(assigns[lb_index(v)].value, assigns[ub_index(v)].value); }
+  interval bounds(const var &v) const { return interval(assigns[lb_index(v)].value, assigns[ub_index(v)].value); }
 
   interval bounds(const lin &l) const
   {
@@ -63,7 +63,7 @@ private:
   bool assert_upper(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl);
   void update(const var &x_i, const double v);
   void pivot_and_update(const var &x_i, const var &x_j, const double v);
-  void pivot(const var &x_i, const var &x_j);
+  void pivot(const var x_i, const var x_j);
 
   void listen(const var &v, la_value_listener *const l);
   void forget(const var &v, la_value_listener *const l);
