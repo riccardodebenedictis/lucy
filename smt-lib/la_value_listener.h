@@ -5,15 +5,15 @@
 namespace smt
 {
 
-class la_listener
+class la_value_listener
 {
   friend class la_theory;
 
 public:
-  la_listener(la_theory &s) : th(s) {}
-  la_listener(const la_listener &that) = delete;
+  la_value_listener(la_theory &s) : th(s) {}
+  la_value_listener(const la_value_listener &that) = delete;
 
-  virtual ~la_listener()
+  virtual ~la_value_listener()
   {
     for (const auto &v : la_vars)
       th.forget(v, this);
@@ -27,7 +27,6 @@ protected:
   }
 
 private:
-  virtual void new_la_var(const var &v) {}
   virtual void la_value_change(const var &v) {}
 
 private:

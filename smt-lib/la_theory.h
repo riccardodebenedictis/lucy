@@ -9,13 +9,13 @@
 namespace smt
 {
 
-class la_listener;
+class la_value_listener;
 class assertion;
 class row;
 
 class la_theory : public theory
 {
-  friend class la_listener;
+  friend class la_value_listener;
   friend class assertion;
   friend class row;
 
@@ -65,8 +65,8 @@ private:
   void pivot_and_update(const var &x_i, const var &x_j, const double v);
   void pivot(const var &x_i, const var &x_j);
 
-  void listen(const var &v, la_listener *const l);
-  void forget(const var &v, la_listener *const l);
+  void listen(const var &v, la_value_listener *const l);
+  void forget(const var &v, la_value_listener *const l);
 
   static size_t lb_index(const var &v) { return v << 1; }
   static size_t ub_index(const var &v) { return (v << 1) ^ 1; }
@@ -99,6 +99,6 @@ private:
   std::vector<std::set<row *>> t_watches;
   // we store the updated bounds..
   std::vector<std::unordered_map<size_t, bound>> layers;
-  std::unordered_map<var, std::list<la_listener *>> listening;
+  std::unordered_map<var, std::list<la_value_listener *>> listening;
 };
 }

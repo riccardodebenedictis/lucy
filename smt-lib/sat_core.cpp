@@ -1,7 +1,7 @@
 #include "sat_core.h"
 #include "clause.h"
 #include "theory.h"
-#include "sat_listener.h"
+#include "sat_value_listener.h"
 #include <cassert>
 #include <algorithm>
 
@@ -436,9 +436,9 @@ void sat_core::unbind(const var &v, theory &th)
         bounds[v].erase(it);
 }
 
-void sat_core::listen(const var &v, sat_listener *const l) { listening[v].push_back(l); }
+void sat_core::listen(const var &v, sat_value_listener *const l) { listening[v].push_back(l); }
 
-void sat_core::forget(const var &v, sat_listener *const l)
+void sat_core::forget(const var &v, sat_value_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())

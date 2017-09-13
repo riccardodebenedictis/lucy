@@ -1,7 +1,7 @@
 #include "la_theory.h"
 #include "sat_core.h"
 #include "la_constr.h"
-#include "la_listener.h"
+#include "la_value_listener.h"
 #include <algorithm>
 #include <cassert>
 
@@ -342,9 +342,9 @@ void la_theory::pivot(const var &x_i, const var &x_j)
     tableau.insert({x_j, new row(*this, x_j, expr)});
 }
 
-void la_theory::listen(const var &v, la_listener *const l) { listening[v].push_back(l); }
+void la_theory::listen(const var &v, la_value_listener *const l) { listening[v].push_back(l); }
 
-void la_theory::forget(const var &v, la_listener *const l)
+void la_theory::forget(const var &v, la_value_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())

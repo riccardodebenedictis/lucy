@@ -5,15 +5,15 @@
 namespace smt
 {
 
-class set_listener
+class set_value_listener
 {
   friend class set_theory;
 
 public:
-  set_listener(set_theory &s) : th(s) {}
-  set_listener(const set_listener &that) = delete;
+  set_value_listener(set_theory &s) : th(s) {}
+  set_value_listener(const set_value_listener &that) = delete;
 
-  virtual ~set_listener()
+  virtual ~set_value_listener()
   {
     for (const auto &v : la_vars)
       th.forget(v, this);
@@ -27,7 +27,6 @@ protected:
   }
 
 private:
-  virtual void new_set_var(const var &v) {}
   virtual void set_value_change(const var &v) {}
 
 private:

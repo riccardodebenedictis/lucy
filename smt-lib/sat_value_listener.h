@@ -5,15 +5,15 @@
 namespace smt
 {
 
-class sat_listener
+class sat_value_listener
 {
   friend class sat_core;
 
 public:
-  sat_listener(sat_core &s) : sat(s) {}
-  sat_listener(const sat_listener &that) = delete;
+  sat_value_listener(sat_core &s) : sat(s) {}
+  sat_value_listener(const sat_value_listener &that) = delete;
 
-  virtual ~sat_listener()
+  virtual ~sat_value_listener()
   {
     for (const auto &v : sat_vars)
       sat.forget(v, this);
@@ -27,7 +27,6 @@ protected:
   }
 
 private:
-  virtual void new_sat_var(const var &v) {}
   virtual void sat_value_change(const var &v) {}
 
 private:

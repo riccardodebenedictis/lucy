@@ -8,7 +8,7 @@
 namespace smt
 {
 
-class set_listener;
+class set_value_listener;
 
 class set_item
 {
@@ -20,7 +20,7 @@ public:
 
 class set_theory : public theory
 {
-  friend class set_listener;
+  friend class set_value_listener;
 
 public:
   set_theory(sat_core &sat);
@@ -42,8 +42,8 @@ private:
 
   void pop() override;
 
-  void listen(const var &v, set_listener *const l);
-  void forget(const var &v, set_listener *const l);
+  void listen(const var &v, set_value_listener *const l);
+  void forget(const var &v, set_value_listener *const l);
 
 private:
   class layer
@@ -62,6 +62,6 @@ private:
   std::unordered_map<var, var> is_contained_in;
   // we store the updated variables..
   std::vector<layer> layers;
-  std::unordered_map<var, std::list<set_listener *>> listening;
+  std::unordered_map<var, std::list<set_value_listener *>> listening;
 };
 }

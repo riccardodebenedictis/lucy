@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sat_listener.h"
+#include "sat_value_listener.h"
 
 using namespace smt;
 
@@ -40,7 +40,7 @@ private:
 
   std::string to_string();
 
-  class flaw_listener : public sat_listener
+  class flaw_listener : public sat_value_listener
   {
   public:
     flaw_listener(causal_graph_listener &l, const flaw &f);
@@ -55,7 +55,7 @@ private:
     const flaw &f;
   };
 
-  class resolver_listener : public sat_listener
+  class resolver_listener : public sat_value_listener
   {
   public:
     resolver_listener(causal_graph_listener &l, const resolver &r);
