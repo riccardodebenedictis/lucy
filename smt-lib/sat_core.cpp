@@ -243,8 +243,6 @@ bool sat_core::check()
         {
             if (root_level())
                 return false;
-            // we sort literals according to descending order of variable assignment..
-            std::sort(cnfl.begin(), cnfl.end(), [&](lit &a, lit &b) { return level[a.v] > level[b.v]; });
             std::vector<lit> no_good;
             size_t bt_level;
             // we analyze the conflict..
@@ -327,16 +325,17 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
 
 void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learnt, size_t &out_btlevel)
 {
+    assert(std::all_of(cnfl.begin(), cnfl.end(), [&](const lit &lt) { return value(lt) != Undefined; })); // all these literals must have been assigned for being a conflict..
     std::set<var> seen;
     int counter = 0;
     lit p;
-    std::vector<lit> p_reason = cnfl;
+    std::vector<lit> p_reason = std::move(cnfl);
     out_learnt.push_back(lit());
-    out_btlevel = 0;
+    out_btlevel = 0; // this is the number of variables of the current decision level that have been seen..
     do
     {
         // trace reason for 'p'..
-        for (const auto &q : p_reason)
+        for (const auto &q : p_reason) // the order in which these literals are visited is not relevant..
             if (seen.find(q.v) == seen.end())
             {
                 seen.insert(q.v);
@@ -344,7 +343,8 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
                     counter++;
                 else if (level[q.v] > 0) // exclude variables from decision level 0..
                 {
-                    out_learnt.push_back(q);
+                    assert(q.sign ? value(q) == False : value(q) == True); // this literal should propagate the clause..
+                    out_learnt.push_back(q);                               // this literal has been assigned in a previous decision level..
                     out_btlevel = std::max(out_btlevel, level[q.v]);
                 }
             }
@@ -352,16 +352,19 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
         do
         {
             p = trail.back();
-            if (reason[p.v])
-            {
-                p_reason.clear();
-                p_reason.insert(p_reason.end(), reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end());
-            }
+            assert(level[p.v] == decision_level());                                                                                         // this variable must have been assigned at the current decision level..
+            assert(reason[p.v]);                                                                                                            // this variable must have been assigned as a consequence of some propagation..
+            assert(std::all_of(reason[p.v]->lits.begin(), reason[p.v]->lits.end(), [&](const lit &lt) { return value(lt) != Undefined; })); // all these literals must have been assigned for propagating 'p'..
+            assert(reason[p.v]->lits[0] == p);                                                                                              // the assignment of literal 'p' is a consequence of propagating the literals of reason[p.v] except the first (i.e. 'p')..
+            p_reason.clear();
+            p_reason.insert(p_reason.end(), reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end());
             pop_one();
         } while (seen.find(p.v) == seen.end());
         counter--;
     } while (counter > 0);
     out_learnt[0] = !p;
+    // we sort literals according to descending order of variable assignment..
+    std::sort(out_learnt.begin() + 1, out_learnt.end(), [&](lit &a, lit &b) { return level[a.v] > level[b.v]; });
 }
 
 void sat_core::record(const std::vector<lit> &lits)
