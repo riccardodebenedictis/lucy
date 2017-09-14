@@ -5,7 +5,9 @@
 #include "smart_type.h"
 #include "state_variable.h"
 #include "reusable_resource.h"
+#ifdef BUILD_GUI
 #include "causal_graph_listener.h"
+#endif
 #include "propositional_state.h"
 #include "propositional_agent.h"
 #include <algorithm>
@@ -161,16 +163,20 @@ void causal_graph::new_flaw(flaw &f)
     f.init();
     flaw_q.push(&f);
 
+#ifdef BUILD_GUI
     // we notify the listeners that a new flaw has arised..
     for (const auto &l : listeners)
         l->new_flaw(f);
+#endif
 }
 
 void causal_graph::new_resolver(resolver &r)
 {
+#ifdef BUILD_GUI
     // we notify the listeners that a new resolver has arised..
     for (const auto &l : listeners)
         l->new_resolver(r);
+#endif
 }
 
 void causal_graph::new_causal_link(flaw &f, resolver &r)
@@ -180,9 +186,11 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
     bool new_clause = core::sat.new_clause({lit(r.rho, false), f.phi});
     assert(new_clause);
 
+#ifdef BUILD_GUI
     // we notify the listeners that a new causal link has been created..
     for (const auto &l : listeners)
         l->causal_link_added(f, r);
+#endif
 }
 
 bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
@@ -197,16 +205,20 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
                     flaws.insert(f);
                     if (!trail.empty())
                         trail.back().new_flaws.insert(f);
+#ifdef BUILD_GUI
                     // we notify the listeners that the state of the flaw has changed..
                     for (const auto &l : listeners)
                         l->flaw_state_changed(*f);
+#endif
                 }
                 else // this flaw has been removed from the current partial solution..
                 {
                     set_cost(*f, std::numeric_limits<double>::infinity());
+#ifdef BUILD_GUI
                     // we notify the listeners that the state of the flaw has changed..
                     for (const auto &l : listeners)
                         l->flaw_state_changed(*f);
+#endif
                 }
 
         if (rhos.find(p.v) != rhos.end())
@@ -261,10 +273,12 @@ void causal_graph::pop()
     for (const auto &c : trail.back().old_costs)
         c.first->cost = c.second;
 
+#ifdef BUILD_GUI
     // we notify the listeners that the cost of some flaws has been restored..
     for (const auto &l : listeners)
         for (const auto &c : trail.back().old_costs)
             l->flaw_cost_changed(*c.first);
+#endif
 
     // we manage structural flaws..
     if (!resolvers.empty() && resolvers.back() == trail.back().r)
@@ -451,9 +465,11 @@ void causal_graph::set_cost(flaw &f, double cost)
             trail.back().old_costs.insert({&f, f.cost});
         f.cost = cost;
 
+#ifdef BUILD_GUI
         // we notify the listeners that a flaw cost has changed..
         for (const auto &l : listeners)
             l->flaw_cost_changed(f);
+#endif
 
         for (const auto &supp : f.supports)
             flaw_costs_q.push(&supp->effect);
@@ -479,9 +495,11 @@ void causal_graph::propagate_costs()
                 trail.back().old_costs.insert({flaw_costs_q.front(), flaw_costs_q.front()->cost});
             flaw_costs_q.front()->cost = f_cost;
 
+#ifdef BUILD_GUI
             // we notify the listeners that a flaw cost has changed..
             for (const auto &l : listeners)
                 l->flaw_cost_changed(*flaw_costs_q.front());
+#endif
 
             for (const auto &supp : flaw_costs_q.front()->supports)
                 flaw_costs_q.push(&supp->effect);
@@ -524,9 +542,11 @@ bool causal_graph::has_inconsistencies()
         {
             f->init();
 
+#ifdef BUILD_GUI
             // we notify the listeners that a new flaw has arised..
             for (const auto &l : listeners)
                 l->new_flaw(*f);
+#endif
 
             // we expand the flaw..
             f->expand();
@@ -600,9 +620,11 @@ flaw *causal_graph::select_flaw()
         }
     }
 
+#ifdef BUILD_GUI
     if (f_next) // we notify the listeners that we have rho a flaw..
         for (const auto &l : listeners)
             l->current_flaw(*f_next);
+#endif
 
     return f_next;
 }
@@ -621,9 +643,11 @@ resolver &causal_graph::select_resolver(flaw &f)
         }
     }
 
+#ifdef BUILD_GUI
     // we notify the listeners that we have rho a resolver..
     for (const auto &l : listeners)
         l->current_resolver(*r_next);
+#endif
 
     return *r_next;
 }

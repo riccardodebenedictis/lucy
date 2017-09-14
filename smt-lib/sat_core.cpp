@@ -1,7 +1,9 @@
 #include "sat_core.h"
 #include "clause.h"
 #include "theory.h"
+#ifdef BUILD_GUI
 #include "sat_listener.h"
+#endif
 #include "sat_value_listener.h"
 #include <cassert>
 #include <algorithm>
@@ -36,8 +38,10 @@ const var sat_core::new_var()
     exprs.insert({"b" + std::to_string(id), id});
     level.push_back(0);
     reason.push_back(nullptr);
+#ifdef BUILD_GUI
     for (const auto &l : listeners)
         l->new_var(id);
+#endif
     return id;
 }
 
@@ -74,8 +78,10 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
     else
     {
         clause *c = new clause(*this, c_lits);
+#ifdef BUILD_GUI
         for (const auto &l : listeners)
             l->new_clause(*c, c_lits);
+#endif
         constrs.push_back(c);
     }
     return true;
@@ -373,8 +379,10 @@ void sat_core::record(const std::vector<lit> &lits)
     else
     {
         clause *c = new clause(*this, lits);
+#ifdef BUILD_GUI
         for (const auto &l : listeners)
             l->new_clause(*c, lits);
+#endif
         bool e = enqueue(lits[0], c);
         assert(e);
         constrs.push_back(c);
@@ -398,8 +406,10 @@ bool sat_core::enqueue(const lit &p, clause *const c)
         if (listening.find(p.v) != listening.end())
             for (const auto &l : listening[p.v])
                 l->sat_value_change(p.v);
+#ifdef BUILD_GUI
         for (const auto &l : listeners)
             l->new_value(p.v);
+#endif
         return true;
     default:
         std::unexpected();
@@ -416,8 +426,10 @@ void sat_core::pop_one()
     if (listening.find(v) != listening.end())
         for (const auto &l : listening[v])
             l->sat_value_change(v);
+#ifdef BUILD_GUI
     for (const auto &l : listeners)
         l->new_value(v);
+#endif
 }
 
 void sat_core::add_theory(theory &th) { theories.push_back(&th); }
