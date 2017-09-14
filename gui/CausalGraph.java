@@ -7,9 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,7 +71,8 @@ public class CausalGraph extends Display {
     private final Map<Long, Node> resolvers = new HashMap<>();
     private final Map<Long, Collection<Long>> causes = new HashMap<>();
     private final Map<Long, Collection<Long>> preconditions = new HashMap<>();
-    private static final Executor EXECUTOR = Executors.newCachedThreadPool();
+    private Long current_flaw;
+    private Long current_resolver;
 
     CausalGraph() {
         // initialize display and data
@@ -284,23 +282,16 @@ public class CausalGraph extends Display {
     }
 
     public void current_flaw(final long f_id) {
-        EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (m_vis) {
-                    assert flaws.containsKey(f_id) : "the flaw does not exist..";
-                    if (!m_vis.getVisualItem(NODES, flaws.get(f_id)).isHighlighted())
-                        m_vis.getVisualItem(NODES, flaws.get(f_id)).setHighlighted(true);
-                }
-                try {
-                    TimeUnit.SECONDS.sleep(5);
-                } catch (Exception e) {
-                }
-                synchronized (m_vis) {
-                    m_vis.getVisualItem(NODES, flaws.get(f_id)).setHighlighted(false);
-                }
-            }
-        });
+        assert flaws.containsKey(f_id) : "the flaw does not exist..";
+        synchronized (m_vis) {
+            if (current_flaw != null)
+                m_vis.getVisualItem(NODES, flaws.get(current_flaw)).setHighlighted(false);
+            if (current_resolver != null)
+                m_vis.getVisualItem(NODES, resolvers.get(current_resolver)).setHighlighted(false);
+
+            current_flaw = f_id;
+            m_vis.getVisualItem(NODES, flaws.get(f_id)).setHighlighted(true);
+        }
     }
 
     public void resolver_created(final long r_id, final long f_id, final String label, final int state) {
@@ -332,23 +323,11 @@ public class CausalGraph extends Display {
     }
 
     public void current_resolver(final long r_id) {
-        EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (m_vis) {
-                    assert resolvers.containsKey(r_id) : "the resolver does not exist..";
-                    if (!m_vis.getVisualItem(NODES, resolvers.get(r_id)).isHighlighted())
-                        m_vis.getVisualItem(NODES, resolvers.get(r_id)).setHighlighted(true);
-                }
-                try {
-                    TimeUnit.SECONDS.sleep(5);
-                } catch (Exception e) {
-                }
-                synchronized (m_vis) {
-                    m_vis.getVisualItem(NODES, resolvers.get(r_id)).setHighlighted(false);
-                }
-            }
-        });
+        assert resolvers.containsKey(r_id) : "the resolver does not exist..";
+        synchronized (m_vis) {
+            current_resolver = r_id;
+            m_vis.getVisualItem(NODES, resolvers.get(r_id)).setHighlighted(true);
+        }
     }
 
     public void causal_link_added(final long f_id, final long r_id) {
