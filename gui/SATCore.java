@@ -53,6 +53,16 @@ public class SATCore extends JPanel {
         add(var_pane);
 
         JList clause_list = new JList<>(clause_list_model);
+        clause_list.setCellRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                c.setFont(c.getFont().deriveFont(Font.PLAIN));
+                return c;
+            }
+        });
         JScrollPane clause_pane = new JScrollPane(clause_list);
         add(clause_pane);
 
@@ -72,34 +82,42 @@ public class SATCore extends JPanel {
         }
     }
 
-    public void new_var(final long id) {
+    public synchronized void new_var(final long id) {
         assert !vars.containsKey(id) : "the variable already exists..";
-        synchronized (this) {
-            vars.put(id, vars.size());
-            vals.add(LBool.Undefined);
-            var_list_model.addElement("b" + vars.get(id));
-        }
-    }
-
-    public void new_value(final long id, final LBool val) {
-        assert vars.containsKey(id) : "the variable does not exist..";
-        synchronized (this) {
-            vals.set(vars.get(id), val);
-            if (current_var != null) {
-                var_list_model.set(current_var, "b" + current_var + ": " + val);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                vars.put(id, vars.size());
+                vals.add(LBool.Undefined);
+                var_list_model.addElement("b" + vars.get(id));
             }
-            var_list_model.set(vars.get(id), "b" + vars.get(id) + ": " + val);
-        }
+        });
     }
 
-    public void new_clause(final long id, Lit[] clause) {
+    public synchronized void new_value(final long id, final LBool val) {
+        assert vars.containsKey(id) : "the variable does not exist..";
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                vals.set(vars.get(id), val);
+                if (current_var != null) {
+                    var_list_model.set(current_var, "b" + current_var + ": " + val);
+                }
+                var_list_model.set(vars.get(id), "b" + vars.get(id) + ": " + val);
+            }
+        });
+    }
+
+    public synchronized void new_clause(final long id, Lit[] clause) {
         assert !clauses.containsKey(id) : "the clause already exists..";
-        synchronized (this) {
-            clauses.put(id, clause);
-            clause_list_model.addElement("("
-                    + Stream.of(clause).map(l -> (l.sign ? "" : "-") + "b" + l.var).collect(Collectors.joining(", "))
-                    + ")");
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                clauses.put(id, clause);
+                clause_list_model.addElement("(" + Stream.of(clause).map(l -> (l.sign ? "" : "-") + "b" + l.var)
+                        .collect(Collectors.joining(", ")) + ")");
+            }
+        });
     }
 
     public static class Lit {
