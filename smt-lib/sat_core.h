@@ -84,6 +84,8 @@ class sat_core
         }
     }
 
+    clause &get_constr(const size_t &id) { return *constrs.at(id); }
+
     size_t decision_level() { return trail_lim.size(); } // returns the current decision level..
     bool root_level() { return trail_lim.empty(); }      // checks whether this decision level is root level..
 

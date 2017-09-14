@@ -18,7 +18,7 @@ public:
 private:
   virtual void new_var(const var &v) {}
   virtual void new_value(const var &v) {}
-  virtual void new_clause(const clause &c, const std::vector<lit> &ls) {}
+  virtual void new_clause(const clause &c) {}
 
 protected:
   sat_core &sat;

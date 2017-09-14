@@ -18,7 +18,7 @@ public:
 private:
   virtual void new_var(const smt::var &v) override;
   virtual void new_value(const smt::var &v) override;
-  virtual void new_clause(const smt::clause &c, const std::vector<smt::lit> &ls) override;
+  virtual void new_clause(const smt::clause &c) override;
 
 private:
   java_gui &gui;

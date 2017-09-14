@@ -12,6 +12,9 @@ class clause
 {
   friend class sat_core;
 
+public:
+  std::vector<lit> get_lits() const { return lits; }
+
 private:
   clause(sat_core &s, const std::vector<lit> &lits);
   clause(const clause &orig) = delete;

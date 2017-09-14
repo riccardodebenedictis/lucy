@@ -7,8 +7,8 @@
             "request": "launch",
             "program": "${workspaceRoot}/build/lucy",
             "args": [
-                "${workspaceRoot}/examples/tms/tms_domain.rddl",
-                "${workspaceRoot}/examples/tms/tms_problem_1_002.rddl",
+                "${workspaceRoot}/examples/logistics/logistics_domain.rddl",
+                "${workspaceRoot}/examples/logistics/logistics_problem_1.rddl",
                 "output.json"
             ],
             "stopAtEntry": false,
@@ -45,7 +45,7 @@
             "program": "${workspaceRoot}/build/lucy.exe",
             "args": [
                 "${workspaceRoot}/examples/logistics/logistics_domain.rddl",
-                "${workspaceRoot}/examples/logistics/logistics_problem_0.rddl",
+                "${workspaceRoot}/examples/logistics/logistics_problem_1.rddl",
                 "output.json"
             ],
             "stopAtEntry": false,

@@ -1,9 +1,20 @@
 #include "sat_java_listener.h"
+#include "clause.h"
 #include "java_gui.h"
 
 namespace gui
 {
-sat_java_listener::sat_java_listener(java_gui &gui, smt::sat_core &s) : gui(gui), sat_listener(s) {}
+sat_java_listener::sat_java_listener(java_gui &gui, smt::sat_core &s) : gui(gui), sat_listener(s)
+{
+    for (size_t i = 0; i < s.n_vars(); i++)
+    {
+        new_var(i);
+        new_value(i);
+    }
+    for (size_t i = 0; i < s.n_constrs(); i++)
+        new_clause(s.get_constr(i));
+}
+
 sat_java_listener::~sat_java_listener() {}
 
 void sat_java_listener::new_var(const smt::var &v) { gui.env->CallVoidMethod(gui.sat_object, gui.n_var, v); }
@@ -24,8 +35,9 @@ void sat_java_listener::new_value(const smt::var &v)
     }
 }
 
-void sat_java_listener::new_clause(const smt::clause &c, const std::vector<smt::lit> &ls)
+void sat_java_listener::new_clause(const smt::clause &c)
 {
+    std::vector<smt::lit> ls = c.get_lits();
     jobjectArray lits_array = gui.env->NewObjectArray(ls.size(), gui.lit_cls, NULL);
     for (size_t i = 0; i < ls.size(); i++)
     {

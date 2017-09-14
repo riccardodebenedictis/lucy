@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.swing.AbstractListModel;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -22,14 +23,8 @@ import javax.swing.SwingUtilities;
  */
 public class SATCore extends JPanel {
 
-    private final Map<Long, Integer> vars = new HashMap<>();
-    private final List<LBool> vals = new ArrayList<>();
-    private final DefaultListModel<String> var_list_model = new DefaultListModel<>();
-
-    private final Map<Long, Lit[]> clauses = new HashMap<>();
-    private final DefaultListModel<String> clause_list_model = new DefaultListModel<>();
-
-    private Integer current_var;
+    private final VarListModel var_list_model = new VarListModel();
+    private final ClauseListModel clause_list_model = new ClauseListModel();
 
     public SATCore() {
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
@@ -41,7 +36,7 @@ public class SATCore extends JPanel {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
                     boolean cellHasFocus) {
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (current_var != null && index == current_var) {
+                if (var_list_model.current_var != null && index == var_list_model.current_var) {
                     c.setFont(c.getFont().deriveFont(Font.BOLD));
                 } else {
                     c.setFont(c.getFont().deriveFont(Font.PLAIN));
@@ -82,42 +77,89 @@ public class SATCore extends JPanel {
         }
     }
 
-    public synchronized void new_var(final long id) {
-        assert !vars.containsKey(id) : "the variable already exists..";
+    public void new_var(final long id) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                vars.put(id, vars.size());
-                vals.add(LBool.Undefined);
-                var_list_model.addElement("b" + vars.get(id));
+                var_list_model.addVar(id);
             }
         });
     }
 
-    public synchronized void new_value(final long id, final LBool val) {
-        assert vars.containsKey(id) : "the variable does not exist..";
+    public void new_value(final long id, final LBool val) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                vals.set(vars.get(id), val);
-                if (current_var != null) {
-                    var_list_model.set(current_var, "b" + current_var + ": " + val);
-                }
-                var_list_model.set(vars.get(id), "b" + vars.get(id) + ": " + val);
+                var_list_model.setValue(id, val);
             }
         });
     }
 
-    public synchronized void new_clause(final long id, Lit[] clause) {
-        assert !clauses.containsKey(id) : "the clause already exists..";
+    public void new_clause(final long id, final Lit[] clause) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                clauses.put(id, clause);
-                clause_list_model.addElement("(" + Stream.of(clause).map(l -> (l.sign ? "" : "-") + "b" + l.var)
-                        .collect(Collectors.joining(", ")) + ")");
+                clause_list_model.addClause(clause);
             }
         });
+    }
+
+    private class VarListModel extends AbstractListModel<String> {
+
+        private final List<LBool> vals = new ArrayList<>();
+        private Integer current_var;
+
+        public void addVar(final long id) {
+            assert vals.size() == id;
+            int index = vals.size();
+            vals.add(LBool.Undefined);
+            fireIntervalAdded(this, index, index);
+        }
+
+        public void setValue(final long id, final LBool val) {
+            vals.set((int) id, val);
+            if (current_var != null) {
+                int c_var = current_var;
+                current_var = (int) id;
+                fireContentsChanged(this, c_var, c_var);
+                fireContentsChanged(this, current_var, current_var);
+            } else {
+                current_var = (int) id;
+                fireContentsChanged(this, current_var, current_var);
+            }
+        }
+
+        @Override
+        public int getSize() {
+            return vals.size();
+        }
+
+        @Override
+        public String getElementAt(int index) {
+            return vals.get(index) == LBool.Undefined ? "b" + index : "b" + index + ": " + vals.get(index);
+        }
+    }
+
+    private class ClauseListModel extends AbstractListModel<String> {
+
+        private final List<Lit[]> clauses = new ArrayList<>();
+
+        public void addClause(Lit[] lits) {
+            int index = clauses.size();
+            clauses.add(lits);
+            fireIntervalAdded(this, index, index);
+        }
+
+        @Override
+        public int getSize() {
+            return clauses.size();
+        }
+
+        @Override
+        public String getElementAt(int index) {
+            return "(" + Stream.of(clauses.get(index)).map(l -> (l.sign ? "" : "-") + "b" + l.var).collect(Collectors.joining(", "))
+                    + ")";
+        }
     }
 
     public static class Lit {

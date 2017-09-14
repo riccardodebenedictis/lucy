@@ -80,7 +80,7 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
         clause *c = new clause(*this, c_lits);
 #ifdef BUILD_GUI
         for (const auto &l : listeners)
-            l->new_clause(*c, c_lits);
+            l->new_clause(*c);
 #endif
         constrs.push_back(c);
     }
@@ -381,7 +381,7 @@ void sat_core::record(const std::vector<lit> &lits)
         clause *c = new clause(*this, lits);
 #ifdef BUILD_GUI
         for (const auto &l : listeners)
-            l->new_clause(*c, lits);
+            l->new_clause(*c);
 #endif
         bool e = enqueue(lits[0], c);
         assert(e);
