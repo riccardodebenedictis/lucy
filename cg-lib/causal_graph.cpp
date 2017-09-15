@@ -103,7 +103,7 @@ void causal_graph::solve()
     // we create a new graph var..
     graph_var = core::sat.new_var();
 #ifndef NDEBUG
-    std::cout << "graph var is: b" << std::to_string(graph_var) << std::endl;
+    std::cout << "graph var is: γ" << std::to_string(graph_var) << std::endl;
 #endif
     // we use the new graph var to allow search within the current graph..
     bool a_gv = core::sat.assume(graph_var);
@@ -135,21 +135,28 @@ void causal_graph::solve()
                     throw unsolvable_exception();
 
                 res = nullptr;
-                assert(!core::sat.root_level() || core::sat.value(graph_var) == False);
                 if (core::sat.root_level())
-                {
-                    // we have exhausted the search within the graph: we extend the graph..
-                    add_layer();
+                    if (core::sat.value(graph_var) == Undefined)
+                    {
+                        // we have learnt a unit clause! thus, we reassume the graph var..
+                        a_gv = core::sat.assume(graph_var);
+                        assert(a_gv);
+                    }
+                    else
+                    {
+                        assert(core::sat.value(graph_var) == False);
+                        // we have exhausted the search within the graph: we extend the graph..
+                        add_layer();
 
-                    // we create a new graph var..
-                    graph_var = core::sat.new_var();
+                        // we create a new graph var..
+                        graph_var = core::sat.new_var();
 #ifndef NDEBUG
-                    std::cout << "graph var is: b" << std::to_string(graph_var) << std::endl;
+                        std::cout << "graph var is: γ" << std::to_string(graph_var) << std::endl;
 #endif
-                    // we use the new graph var to allow search within the new graph..
-                    a_gv = core::sat.assume(graph_var);
-                    assert(a_gv);
-                }
+                        // we use the new graph var to allow search within the new graph..
+                        a_gv = core::sat.assume(graph_var);
+                        assert(a_gv);
+                    }
             }
         }
         else if (!has_inconsistencies()) // we run out of flaws, we check for inconsistencies one last time..

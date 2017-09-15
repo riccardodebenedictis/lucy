@@ -355,8 +355,8 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
             assert(level[p.v] == decision_level()); // this variable must have been assigned at the current decision level..
             if (reason[p.v])                        // 'p' can be the asserting literal..
             {
-                assert(reason[p.v]->lits[0] == p); // a consequence of propagating the clause is the assignment of literal 'p'..
-                assert(value(p) == True); // 'p' has been propagated as true..
+                assert(reason[p.v]->lits[0] == p);                                                                                              // a consequence of propagating the clause is the assignment of literal 'p'..
+                assert(value(p) == True);                                                                                                       // 'p' has been propagated as true..
                 assert(std::all_of(reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end(), [&](const lit &lt) { return value(lt) == False; })); // all these literals must have been assigned as false for propagating 'p'..
                 p_reason.clear();
                 p_reason.insert(p_reason.end(), reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end());
