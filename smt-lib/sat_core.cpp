@@ -356,8 +356,8 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
             if (reason[p.v])                        // 'p' can be the asserting literal..
             {
                 assert(reason[p.v]->lits[0] == p); // a consequence of propagating the clause is the assignment of literal 'p'..
-                assert(value(p) == True);
-                assert(std::all_of(reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end(), [&](const lit &lt) { return value(lt) == False; })); // all these literals must have been assigned as negated for propagating 'p'..
+                assert(value(p) == True); // 'p' has been propagated as true..
+                assert(std::all_of(reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end(), [&](const lit &lt) { return value(lt) == False; })); // all these literals must have been assigned as false for propagating 'p'..
                 p_reason.clear();
                 p_reason.insert(p_reason.end(), reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end());
             }
@@ -365,9 +365,9 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
         } while (seen.find(p.v) == seen.end());
         counter--;
     } while (counter > 0);
-    // 'p' is now the asserting literal that led to the conflict..
+    // 'p' is now the first Unique Implication Point (UIP), possibly the asserting literal, that led to the conflict..
     assert(value(p) == Undefined);
-    assert(std::all_of(out_learnt.begin() + 1, out_learnt.end(), [&](const lit &lt) { return value(lt) == False; })); // all these literals must have been assigned as negated for propagating 'p'..
+    assert(std::all_of(out_learnt.begin() + 1, out_learnt.end(), [&](const lit &lt) { return value(lt) == False; })); // all these literals must have been assigned as false for propagating 'p'..
     out_learnt[0] = !p;
     // we sort literals according to descending order of variable assignment (except for 'p' which is now unassigned)..
     std::sort(out_learnt.begin() + 1, out_learnt.end(), [&](lit &a, lit &b) { return level[a.v] > level[b.v]; });
