@@ -327,24 +327,24 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
 {
     assert(std::all_of(cnfl.begin(), cnfl.end(), [&](const lit &lt) { return value(lt) != Undefined; })); // all these literals must have been assigned for being a conflict..
     std::set<var> seen;
-    int counter = 0;
+    int counter = 0; // this is the number of variables of the current decision level that have already been seen..
     lit p;
     std::vector<lit> p_reason = std::move(cnfl);
     out_learnt.push_back(lit());
-    out_btlevel = 0; // this is the number of variables of the current decision level that have been seen..
+    out_btlevel = 0;
     do
     {
         // trace reason for 'p'..
         for (const auto &q : p_reason) // the order in which these literals are visited is not relevant..
             if (seen.find(q.v) == seen.end())
             {
+                assert(value(q) == False); // this literal should have propagated the clause..
                 seen.insert(q.v);
                 if (level[q.v] == decision_level())
                     counter++;
                 else if (level[q.v] > 0) // exclude variables from decision level 0..
                 {
-                    assert(q.sign ? value(q) == False : value(q) == True); // this literal should propagate the clause..
-                    out_learnt.push_back(q);                               // this literal has been assigned in a previous decision level..
+                    out_learnt.push_back(q); // this literal has been assigned in a previous decision level..
                     out_btlevel = std::max(out_btlevel, level[q.v]);
                 }
             }
@@ -352,18 +352,24 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
         do
         {
             p = trail.back();
-            assert(level[p.v] == decision_level());                                                                                         // this variable must have been assigned at the current decision level..
-            assert(reason[p.v]);                                                                                                            // this variable must have been assigned as a consequence of some propagation..
-            assert(std::all_of(reason[p.v]->lits.begin(), reason[p.v]->lits.end(), [&](const lit &lt) { return value(lt) != Undefined; })); // all these literals must have been assigned for propagating 'p'..
-            assert(reason[p.v]->lits[0] == p);                                                                                              // the assignment of literal 'p' is a consequence of propagating the literals of reason[p.v] except the first (i.e. 'p')..
-            p_reason.clear();
-            p_reason.insert(p_reason.end(), reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end());
+            assert(level[p.v] == decision_level()); // this variable must have been assigned at the current decision level..
+            if (reason[p.v])                        // 'p' can be the asserting literal..
+            {
+                assert(reason[p.v]->lits[0] == p); // a consequence of propagating the clause is the assignment of literal 'p'..
+                assert(value(p) == True);
+                assert(std::all_of(reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end(), [&](const lit &lt) { return value(lt) == False; })); // all these literals must have been assigned as negated for propagating 'p'..
+                p_reason.clear();
+                p_reason.insert(p_reason.end(), reason[p.v]->lits.begin() + 1, reason[p.v]->lits.end());
+            }
             pop_one();
         } while (seen.find(p.v) == seen.end());
         counter--;
     } while (counter > 0);
+    // 'p' is now the asserting literal that led to the conflict..
+    assert(value(p) == Undefined);
+    assert(std::all_of(out_learnt.begin() + 1, out_learnt.end(), [&](const lit &lt) { return value(lt) == False; })); // all these literals must have been assigned as negated for propagating 'p'..
     out_learnt[0] = !p;
-    // we sort literals according to descending order of variable assignment..
+    // we sort literals according to descending order of variable assignment (except for 'p' which is now unassigned)..
     std::sort(out_learnt.begin() + 1, out_learnt.end(), [&](lit &a, lit &b) { return level[a.v] > level[b.v]; });
 }
 
