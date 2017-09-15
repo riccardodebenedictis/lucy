@@ -106,7 +106,7 @@ void causal_graph::solve()
     std::cout << "graph var is: γ" << std::to_string(graph_var) << std::endl;
 #endif
     // we use the new graph var to allow search within the current graph..
-    bool a_gv = core::sat.assume(graph_var);
+    bool a_gv = core::sat.assume(graph_var) && core::sat.check();
     assert(a_gv);
 
     while (true)
@@ -141,6 +141,8 @@ void causal_graph::solve()
                         // we have learnt a unit clause! thus, we reassume the graph var..
                         a_gv = core::sat.assume(graph_var);
                         assert(a_gv);
+                        if (!core::sat.check())
+                            throw unsolvable_exception();
                     }
                     else
                     {
@@ -154,7 +156,7 @@ void causal_graph::solve()
                         std::cout << "graph var is: γ" << std::to_string(graph_var) << std::endl;
 #endif
                         // we use the new graph var to allow search within the new graph..
-                        a_gv = core::sat.assume(graph_var);
+                        a_gv = core::sat.assume(graph_var) && core::sat.check();
                         assert(a_gv);
                     }
             }
