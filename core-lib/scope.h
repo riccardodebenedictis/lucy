@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #define THIS_KEYWORD "this"
@@ -35,16 +35,16 @@ public:
   scope &get_scope() const { return scp; }
 
   virtual field &get_field(const std::string &name) const;
-  std::unordered_map<std::string, field *> get_fields() const noexcept;
+  std::map<std::string, field *> get_fields() const noexcept;
 
   virtual method &get_method(const std::string &name, const std::vector<const type *> &ts) const;
   virtual std::vector<method *> get_methods() const noexcept;
 
   virtual type &get_type(const std::string &name) const;
-  virtual std::unordered_map<std::string, type *> get_types() const noexcept;
+  virtual std::map<std::string, type *> get_types() const noexcept;
 
   virtual predicate &get_predicate(const std::string &name) const;
-  virtual std::unordered_map<std::string, predicate *> get_predicates() const noexcept;
+  virtual std::map<std::string, predicate *> get_predicates() const noexcept;
 
 protected:
   static void add_field(scope &s, field &f);
@@ -52,6 +52,6 @@ protected:
 protected:
   core &cr;
   scope &scp;
-  std::unordered_map<std::string, field *> fields;
+  std::map<std::string, field *> fields;
 };
 }

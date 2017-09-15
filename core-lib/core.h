@@ -117,10 +117,10 @@ public:
   }
 
   predicate &get_predicate(const std::string &name) const override;
-  std::unordered_map<std::string, predicate *> get_predicates() const noexcept override { return predicates; }
+  std::map<std::string, predicate *> get_predicates() const noexcept override { return predicates; }
 
   type &get_type(const std::string &name) const override;
-  std::unordered_map<std::string, type *> get_types() const noexcept override { return types; }
+  std::map<std::string, type *> get_types() const noexcept override { return types; }
 
   expr get(const std::string &name) const override;
 
@@ -151,7 +151,7 @@ public:
 private:
   std::string to_string(const item *const i) const;
   std::string to_string(const atom *const i) const;
-  std::string to_string(const std::unordered_map<std::string, expr> &items) const;
+  std::string to_string(const std::map<std::string, expr> &items) const;
 
 private:
   parser prs;
@@ -167,8 +167,8 @@ private:
   var ctr_var = TRUE_var;
 
 protected:
-  std::unordered_map<std::string, std::vector<method *>> methods;
-  std::unordered_map<std::string, type *> types;
-  std::unordered_map<std::string, predicate *> predicates;
+  std::map<std::string, std::vector<method *>> methods;
+  std::map<std::string, type *> types;
+  std::map<std::string, predicate *> predicates;
 };
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "context.h"
-#include <unordered_map>
+#include <map>
 #include <string>
 
 namespace lucy
@@ -39,7 +39,7 @@ public:
   context get_ctx() const { return ctx; }
 
   virtual expr get(const std::string &name) const;
-  std::unordered_map<std::string, expr> get_items() const noexcept { return items; }
+  std::map<std::string, expr> get_items() const noexcept { return items; }
 
 private:
   unsigned ref_count;
@@ -47,6 +47,6 @@ private:
 protected:
   core &cr;
   const context ctx;
-  std::unordered_map<std::string, expr> items;
+  std::map<std::string, expr> items;
 };
 }

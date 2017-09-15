@@ -321,10 +321,10 @@ double core::arith_value(const arith_expr &x) const noexcept { return la_th.valu
 
 std::unordered_set<set_item *> core::enum_value(const enum_expr &x) const noexcept { return set_th.value(x->ev); }
 
-std::string core::to_string(const std::unordered_map<std::string, expr> &c_items) const
+std::string core::to_string(const std::map<std::string, expr> &c_items) const
 {
     std::string iss;
-    for (std::unordered_map<std::string, expr>::const_iterator is_it = c_items.begin(); is_it != c_items.end(); ++is_it)
+    for (std::map<std::string, expr>::const_iterator is_it = c_items.begin(); is_it != c_items.end(); ++is_it)
     {
         if (is_it != c_items.begin())
             iss += ", ";
@@ -380,7 +380,7 @@ std::string core::to_string(const item *const i) const
 {
     std::string is;
     is += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(i)) + "\", \"type\" : \"" + i->tp.name + "\"";
-    std::unordered_map<std::string, expr> c_is = i->get_items();
+    std::map<std::string, expr> c_is = i->get_items();
     if (!c_is.empty())
         is += ", \"items\" : [ " + to_string(c_is) + " ]";
     is += "}";
@@ -403,7 +403,7 @@ std::string core::to_string(const atom *const a) const
         as += "\"Inactive\"";
         break;
     }
-    std::unordered_map<std::string, expr> is = a->get_items();
+    std::map<std::string, expr> is = a->get_items();
     if (!is.empty())
         as += ", \"pars\" : [ " + to_string(is) + " ]";
     as += "}";

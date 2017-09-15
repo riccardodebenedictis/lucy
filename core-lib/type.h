@@ -62,10 +62,10 @@ public:
   }
 
   predicate &get_predicate(const std::string &p_name) const override;
-  std::unordered_map<std::string, predicate *> get_predicates() const noexcept override { return predicates; }
+  std::map<std::string, predicate *> get_predicates() const noexcept override { return predicates; }
 
   type &get_type(const std::string &t_name) const override;
-  std::unordered_map<std::string, type *> get_types() const noexcept override { return types; }
+  std::map<std::string, type *> get_types() const noexcept override { return types; }
 
 protected:
   static void inherit(type &base, type &derived);
@@ -83,9 +83,9 @@ public:
 protected:
   std::vector<type *> supertypes;
   std::vector<constructor *> constructors;
-  std::unordered_map<std::string, std::vector<method *>> methods;
-  std::unordered_map<std::string, type *> types;
-  std::unordered_map<std::string, predicate *> predicates;
+  std::map<std::string, std::vector<method *>> methods;
+  std::map<std::string, type *> types;
+  std::map<std::string, predicate *> predicates;
   std::vector<expr> instances;
 };
 
