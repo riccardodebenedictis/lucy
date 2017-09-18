@@ -120,14 +120,14 @@ void causal_graph::solve()
             std::cout << "(" << std::to_string(trail.size()) << "): " << f_next->get_label();
 #endif
             assert(f_next->cost < std::numeric_limits<double>::infinity());
-            if (!f_next->has_subgoals() || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
+            if (!f_next->structural || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
             {
                 // this is the next resolver to be rho..
                 res = &select_resolver(*f_next);
 #ifndef NDEBUG
                 std::cout << " " << res->get_label() << std::endl;
 #endif
-                if (!res->preconditions.empty())
+                if (f_next->structural)
                     resolvers.push_back(res);
 
                 // we apply the resolver..
@@ -588,7 +588,7 @@ bool causal_graph::has_inconsistencies()
             }
         }
 
-        if (std::any_of(incs.begin(), incs.end(), [&](flaw *f) { return f->has_subgoals(); }))
+        if (std::any_of(incs.begin(), incs.end(), [&](flaw *f) { return f->structural; }))
             build();
 
         // we re-assume the current graph var to allow search within the current graph..
@@ -621,9 +621,9 @@ flaw *causal_graph::select_flaw()
             // the flaw not trivial nor already solved: let's see if it's better than the previous one..
             if (!f_next) // this is the first flaw we see..
                 f_next = *it;
-            else if (f_next->has_subgoals() && !(*it)->has_subgoals()) // we prefere non-structural flaws (i.e., inconsistencies) to structural ones..
+            else if (f_next->structural && !(*it)->structural) // we prefere non-structural flaws (i.e., inconsistencies) to structural ones..
                 f_next = *it;
-            else if (f_next->has_subgoals() == (*it)->has_subgoals() && f_next->cost < (*it)->cost) // this flaw is actually better than the previous one..
+            else if (f_next->structural == (*it)->structural && f_next->cost < (*it)->cost) // this flaw is actually better than the previous one..
                 f_next = *it;
             ++it;
         }

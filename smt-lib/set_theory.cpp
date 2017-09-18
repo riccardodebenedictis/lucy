@@ -29,8 +29,6 @@ const var set_theory::new_var(const std::unordered_set<set_item *> &items)
             bind(bv);
             is_contained_in.insert({bv, id});
         }
-        bool eo = sat.exct_one(lits);
-        assert(eo);
     }
     return id;
 }

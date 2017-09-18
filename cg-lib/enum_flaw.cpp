@@ -4,7 +4,7 @@
 namespace cg
 {
 
-enum_flaw::enum_flaw(causal_graph &graph, enum_item &e_itm) : flaw(graph), e_itm(e_itm) {}
+enum_flaw::enum_flaw(causal_graph &graph, enum_item &e_itm) : flaw(graph, true, true), e_itm(e_itm) {}
 enum_flaw::~enum_flaw() {}
 
 void enum_flaw::compute_resolvers()

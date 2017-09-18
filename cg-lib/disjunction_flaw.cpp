@@ -5,7 +5,7 @@
 namespace cg
 {
 
-disjunction_flaw::disjunction_flaw(causal_graph &graph, const context &ctx, const disjunction &disj) : flaw(graph), ctx(ctx), disj(disj) {}
+disjunction_flaw::disjunction_flaw(causal_graph &graph, const context &ctx, const disjunction &disj) : flaw(graph, false, true), ctx(ctx), disj(disj) {}
 
 disjunction_flaw::~disjunction_flaw() {}
 

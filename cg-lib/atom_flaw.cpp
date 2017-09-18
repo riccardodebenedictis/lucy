@@ -6,7 +6,7 @@
 namespace cg
 {
 
-atom_flaw::atom_flaw(causal_graph &graph, atom &atm, bool is_fact) : flaw(graph, true), atm(atm), is_fact(is_fact) {}
+atom_flaw::atom_flaw(causal_graph &graph, atom &atm, bool is_fact) : flaw(graph, true, true), atm(atm), is_fact(is_fact) {}
 atom_flaw::~atom_flaw() {}
 
 void atom_flaw::compute_resolvers()

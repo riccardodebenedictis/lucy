@@ -7,7 +7,7 @@
 namespace cg
 {
 
-flaw::flaw(causal_graph &graph, const bool &exclusive) : graph(graph), exclusive(exclusive), supports(graph.resolvers.begin(), graph.resolvers.end())
+flaw::flaw(causal_graph &graph, const bool &exclusive, const bool &structural) : graph(graph), exclusive(exclusive), structural(structural), supports(graph.resolvers.begin(), graph.resolvers.end())
 {
     // the cuases for this flaw is the current resolvers of the causal graph..
     for (const auto &r : graph.resolvers)
@@ -92,11 +92,6 @@ void flaw::expand()
         if (!graph.core::sat.new_clause({lit(phi, false), exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs)}))
             throw unsolvable_exception();
     }
-}
-
-bool flaw::has_subgoals()
-{
-    return std::any_of(resolvers.begin(), resolvers.end(), [](const resolver *r) { return !r->preconditions.empty(); });
 }
 
 void flaw::add_resolver(resolver &r)

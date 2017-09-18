@@ -17,7 +17,7 @@ class flaw
   friend class resolver;
 
 public:
-  flaw(causal_graph &graph, const bool &exclusive = false);
+  flaw(causal_graph &graph, const bool &exclusive = false, const bool &structural = false);
   flaw(const flaw &orig) = delete;
   virtual ~flaw();
 
@@ -33,7 +33,6 @@ private:
   virtual void init();
   void expand();
   virtual void compute_resolvers() = 0;
-  bool has_subgoals();
 
 protected:
   void add_resolver(resolver &r);
@@ -43,6 +42,7 @@ protected:
 
 private:
   const bool exclusive;
+  const bool structural;
   bool expanded = false;
   var phi;
   // the resolvers for this flaw..
