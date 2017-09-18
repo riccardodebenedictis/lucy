@@ -44,7 +44,7 @@ void flaw::init()
     assert(!expanded);
 
     if (causes.empty())
-        // the flaw is necessarily phi..
+        // the flaw is necessarily active..
         phi = TRUE_var;
     else
     {
@@ -53,7 +53,7 @@ void flaw::init()
         for (const auto &c : causes)
             cs.push_back(c->rho);
 
-        // the flaw is phi if the conjunction of its causes is phi..
+        // the flaw is active if the conjunction of its causes is active..
         phi = graph.core::sat.new_conj(cs);
     }
 
@@ -62,7 +62,7 @@ void flaw::init()
         graph.flaws.insert(this);
     else
     {
-        // we listen for the flaw to become phi..
+        // we listen for the flaw to become active..
         graph.phis[phi].push_back(this);
         graph.bind(phi);
     }
