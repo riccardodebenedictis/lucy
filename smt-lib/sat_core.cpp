@@ -369,8 +369,6 @@ void sat_core::analyze(const std::vector<lit> &cnfl, std::vector<lit> &out_learn
     assert(value(p) == Undefined);
     assert(std::all_of(out_learnt.begin() + 1, out_learnt.end(), [&](const lit &lt) { return value(lt) == False; })); // all these literals must have been assigned as false for propagating 'p'..
     out_learnt[0] = !p;
-    // we sort literals according to descending order of variable assignment (except for 'p' which is now unassigned)..
-    std::sort(out_learnt.begin() + 1, out_learnt.end(), [&](lit &a, lit &b) { return level[a.v] > level[b.v]; });
 }
 
 void sat_core::record(const std::vector<lit> &lits)
@@ -387,12 +385,15 @@ void sat_core::record(const std::vector<lit> &lits)
     }
     else
     {
-        clause *c = new clause(*this, lits);
+        std::vector<lit> c_lits(lits.begin(), lits.end());
+        // we sort literals according to descending order of variable assignment (except for the first literal which is now unassigned)..
+        std::sort(c_lits.begin() + 1, c_lits.end(), [&](lit &a, lit &b) { return level[a.v] > level[b.v]; });
+        clause *c = new clause(*this, c_lits);
 #ifdef BUILD_GUI
         for (const auto &l : listeners)
             l->new_clause(*c);
 #endif
-        bool e = enqueue(lits[0], c);
+        bool e = enqueue(c_lits[0], c);
         assert(e);
         constrs.push_back(c);
     }
