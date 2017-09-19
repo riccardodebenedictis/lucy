@@ -124,7 +124,7 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
         bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            nc = sat.eq(vars.at(i), sat.new_eq(b->l, dynamic_cast<bool_item *>(vals.at(i))->l));
+            nc = sat.new_clause({lit(vars.at(i), false), sat.new_eq(dynamic_cast<bool_item *>(vals.at(i))->l, b->l)});
             assert(nc);
         }
         return b;
@@ -135,7 +135,7 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
         bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            nc = sat.eq(vars.at(i), sat.new_conj({la_th.new_leq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l)}));
+            nc = sat.new_clause({lit(vars.at(i), false), sat.new_conj({la_th.new_leq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l)})});
             assert(nc);
         }
         return ie;
@@ -146,7 +146,7 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
         bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            nc = sat.eq(vars.at(i), sat.new_conj({la_th.new_leq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l)}));
+            nc = sat.new_clause({lit(vars.at(i), false), sat.new_conj({la_th.new_leq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l)})});
             assert(nc);
         }
         return re;
