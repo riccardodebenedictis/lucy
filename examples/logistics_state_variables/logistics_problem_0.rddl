@@ -6,7 +6,7 @@ Truck tru2 = new Truck(3.0);
 Airport apt1 = new Airport(1.0, 1.0);
 Airport apt2 = new Airport(2.0, 2.0);
 Location pos1 = new Location(3.0, 1.0);
-Location pos2 = new Location(4.0, 1.0);
+Location pos2 = new Location(4.0, 2.0);
 
 Package obj11 = new Package(1.0);
 Package obj12 = new Package(2.0);

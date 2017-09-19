@@ -157,11 +157,15 @@ expr enum_item::get(const std::string &name) const
 		{
 			std::vector<var> c_vars;
 			std::vector<item *> c_vals;
+			std::unordered_set<item *> vals_set;
 			for (const auto &val : vs)
 			{
 				c_vars.push_back(cr.set_th.allows(ev, *val));
 				c_vals.push_back(&*static_cast<item *>(val)->get(name));
+				vals_set.insert(c_vals.back());
 			}
+			if (vals_set.size() == 1)
+			    return *vals_set.begin();
 			enum_expr e = cr.new_enum(tp.get_field(name).tp, c_vars, c_vals);
 			const_cast<enum_item *>(this)->items.insert({name, e});
 		}
