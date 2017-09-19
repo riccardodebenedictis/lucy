@@ -42,6 +42,8 @@ void local_field_statement::execute(const scope &scp, context &ctx) const
         else
             ctx->items.insert({name, t->new_existential()});
     }
+    if (const core *c = dynamic_cast<const core *>(&scp)) // we create fields for root items..
+        const_cast<core *>(c)->fields.insert({name, new field(ctx->items.at(name)->tp, name)});
 }
 
 expression_statement::expression_statement(const expression *const e) : xpr(e) {}

@@ -35,6 +35,7 @@ class class_declaration;
 class method_declaration;
 class predicate_declaration;
 class compilation_unit;
+class local_field_statement;
 class disjunction_statement;
 class formula_statement;
 }
@@ -64,6 +65,7 @@ class core : public scope, public env
   friend class ast::class_declaration;
   friend class ast::method_declaration;
   friend class ast::predicate_declaration;
+  friend class ast::local_field_statement;
   friend class ast::disjunction_statement;
   friend class ast::formula_statement;
 
