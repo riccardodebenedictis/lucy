@@ -1,0 +1,62 @@
+class Location {
+
+    real id;
+    real city;
+
+    Location(real id, real city) : id(id), city(city) {}
+}
+
+class Airport : Location {
+
+    Airport(real id, real city) : Location(id, city) {}
+}
+
+class Vehicle {
+    
+    real id;
+
+    Vehicle(real id) : id(id) {}
+}
+
+class Truck : Vehicle, StateVariable {
+
+    real id;
+
+    Truck(real id) : Vehicle(id) {}
+
+    predicate At(Location l) { goal dt = new DriveTo(l:l, end:start); }
+    
+    predicate DriveTo(Location l) { goal at = new At(end:start); at.l.city == l.city; }
+}
+
+class Airplane : Vehicle, StateVariable {
+
+    real id;
+
+    Airplane(real id) : Vehicle(id) {}
+
+    predicate At(Airport a) { goal dt = new FlyTo(a:a, end:start); }
+    
+    predicate FlyTo(Airport a) { goal at = new At(end:start); }
+}
+
+class Package : StateVariable {
+
+    real id;
+
+    Package(real id) : id(id) {}
+
+    predicate At(Location l) { goal li = new Unload(l:l, end:start); }
+
+    predicate Unload(Vehicle v, Location l) { 
+        goal at_v = new v.At(l:l); at_v.start <= start; at_v.end <= end;
+        goal i = new Into(v:v, end:start);
+    }
+    
+    predicate Into(Vehicle v) { goal lo = new Load(v:v, end:start); }
+    
+    predicate Load(Vehicle v, Location l) {
+        goal at_v = new v.At(l:l); at_v.start <= start; at_v.end <= end;
+        goal at = new At(l:l, end:start);
+    }
+}
