@@ -19,16 +19,26 @@ const var set_theory::new_var(const std::unordered_set<set_item *> &items)
     if (items.size() == 1)
         assigns.back().insert({*items.begin(), TRUE_var});
     else
-    {
-        std::vector<lit> lits;
         for (const auto &i : items)
         {
             const var bv = sat.new_var();
             assigns.back().insert({i, bv});
-            lits.push_back(bv);
             bind(bv);
-            is_contained_in.insert({bv, id});
+            is_contained_in[bv].push_back(id);
         }
+    return id;
+}
+
+const var set_theory::new_var(const std::vector<var> &vars, const std::vector<set_item *> &vals)
+{
+    assert(!vars.empty());
+    assert(std::all_of(vars.begin(), vars.end(), [&](var v) { return is_contained_in.find(v) != is_contained_in.end(); }));
+    const var id = assigns.size();
+    assigns.push_back(std::unordered_map<set_item *, var>());
+    for (size_t i = 0; i < vars.size(); ++i)
+    {
+        assigns.back().insert({vals[i], vars[i]});
+        is_contained_in.at(vars[i]).push_back(id);
     }
     return id;
 }
@@ -66,21 +76,17 @@ const var set_theory::eq(const var &left, const var &right)
         const var e = sat.new_var();
         bool nc;
         for (const auto &v : assigns[left])
-        {
             if (intersection.find(v.first) == intersection.end())
             {
                 nc = sat.new_clause({lit(e, false), lit(v.second, false)});
                 assert(nc);
             }
-        }
         for (const auto &v : assigns[right])
-        {
             if (intersection.find(v.first) == intersection.end())
             {
                 nc = sat.new_clause({lit(e, false), lit(v.second, false)});
                 assert(nc);
             }
-        }
         for (const auto &v : intersection)
         {
             nc = sat.new_clause({lit(e, false), lit(assigns[left].at(v), false), assigns[right].at(v)});
@@ -107,10 +113,10 @@ std::unordered_set<set_item *> set_theory::value(var v) const
 bool set_theory::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
-    var set_var = is_contained_in[p.v];
-    if (listening.find(set_var) != listening.end())
-        for (const auto &l : listening[set_var])
-            l->set_value_change(set_var);
+    for (const auto &v : is_contained_in.at(p.v))
+        if (listening.find(v) != listening.end())
+            for (const auto &l : listening[v])
+                l->set_value_change(v);
     return true;
 }
 
