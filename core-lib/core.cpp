@@ -121,9 +121,10 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
     if (tp.name.compare(BOOL_KEYWORD) == 0)
     {
         bool_expr b = new_bool();
+        bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            bool nc = sat.eq(vars.at(i), sat.new_eq(b->l, dynamic_cast<bool_item *>(vals.at(i))->l));
+            nc = sat.eq(vars.at(i), sat.new_eq(b->l, dynamic_cast<bool_item *>(vals.at(i))->l));
             assert(nc);
         }
         return b;
@@ -131,20 +132,24 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
     else if (tp.name.compare(INT_KEYWORD) == 0)
     {
         arith_expr ie = new_int();
+        bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            bool nc = sat.eq(vars.at(i), sat.new_conj({la_th.new_leq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l)}));
+            nc = sat.eq(vars.at(i), sat.new_conj({la_th.new_leq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l)}));
             assert(nc);
         }
+        return ie;
     }
     else if (tp.name.compare(REAL_KEYWORD) == 0)
     {
         arith_expr re = new_real();
+        bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            bool nc = sat.eq(vars.at(i), sat.new_conj({la_th.new_leq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l)}));
+            nc = sat.eq(vars.at(i), sat.new_conj({la_th.new_leq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l)}));
             assert(nc);
         }
+        return re;
     }
     else
         return new enum_item(*this, tp, set_th.new_var(vars, std::vector<set_item *>(vals.begin(), vals.end())));

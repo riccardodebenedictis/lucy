@@ -22,6 +22,7 @@ class arith_expr;
 class string_expr;
 class enum_expr;
 class atom;
+class enum_item;
 class disjunction;
 class atom_state;
 class parser;
@@ -57,6 +58,7 @@ public:
 class core : public scope, public env
 {
   friend class type;
+  friend class enum_item;
   friend class ast::typedef_declaration;
   friend class ast::enum_declaration;
   friend class ast::class_declaration;
