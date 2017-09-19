@@ -83,6 +83,10 @@ public:
   string_expr new_string(const std::string &val);
   virtual expr new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals);
 
+private:
+  expr new_enum(const type &tp, const std::vector<var> &vars, const std::vector<item *> &vals);
+
+public:
   bool_expr negate(bool_expr var);
   bool_expr eq(bool_expr left, bool_expr right);
   bool_expr conj(const std::vector<bool_expr> &exprs);
