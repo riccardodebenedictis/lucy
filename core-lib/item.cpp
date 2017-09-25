@@ -155,27 +155,18 @@ expr enum_item::get(const std::string &name) const
 			return (static_cast<item *>(*vs.begin()))->get(name);
 		else
 		{
+			std::vector<var> c_vars;
 			std::vector<item *> c_vals;
-			std::vector<item *> f_vals;
+			std::unordered_set<item *> vals_set;
 			for (const auto &val : vs)
 			{
-				c_vals.push_back(static_cast<item *>(val));
-				f_vals.push_back(&*static_cast<item *>(val)->get(name));
-				if (dynamic_cast<enum_item *>(f_vals.back()))
-					std::unexpected();
+				c_vars.push_back(cr.set_th.allows(ev, *val));
+				c_vals.push_back(&*static_cast<item *>(val)->get(name));
+				vals_set.insert(c_vals.back());
 			}
-
-			std::unordered_set<item *> vals;
-			for (unsigned int i = 0; i < c_vals.size(); i++)
-				vals.insert(f_vals[i]);
-			enum_expr e = cr.new_enum(tp.get_field(name).tp, vals);
-
-			for (unsigned int i = 0; i < c_vals.size(); i++)
-			{
-				bool af = cr.sat.eq(cr.set_th.allows(ev, *c_vals[i]), cr.set_th.allows(e->ev, *f_vals[i]));
-				assert(af);
-			}
-
+			if (vals_set.size() == 1)
+			    return *vals_set.begin();
+			enum_expr e = cr.new_enum(tp.get_field(name).tp, c_vars, c_vals);
 			const_cast<enum_item *>(this)->items.insert({name, e});
 		}
 	}

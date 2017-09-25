@@ -107,52 +107,52 @@ arith_expr core::new_real(const double &val) { return new arith_item(*this, *typ
 string_expr core::new_string() { return new string_item(*this, ""); }
 string_expr core::new_string(const std::string &val) { return new string_item(*this, val); }
 
-expr core::new_enum(const type &t, const std::unordered_set<item *> &allowed_vals)
+expr core::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
 {
     assert(allowed_vals.size() > 1);
-    std::unordered_set<set_item *> vals(allowed_vals.begin(), allowed_vals.end());
-    if (t.name.compare(BOOL_KEYWORD) == 0)
+    assert(tp.name.compare(BOOL_KEYWORD) != 0);
+    assert(tp.name.compare(INT_KEYWORD) != 0);
+    assert(tp.name.compare(REAL_KEYWORD) != 0);
+    return new enum_item(*this, tp, set_th.new_var(std::unordered_set<set_item *>(allowed_vals.begin(), allowed_vals.end())));
+}
+
+expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vector<item *> &vals)
+{
+    if (tp.name.compare(BOOL_KEYWORD) == 0)
     {
         bool_expr b = new_bool();
-        std::vector<lit> eqs;
-        for (const auto &v : allowed_vals)
-            eqs.push_back(sat.new_eq(b->l, dynamic_cast<bool_item *>(v)->l));
-        bool nc = sat.new_clause(eqs);
-        assert(nc);
+        bool nc;
+        for (size_t i = 0; i < vars.size(); ++i)
+        {
+            nc = sat.new_clause({lit(vars.at(i), false), sat.new_eq(dynamic_cast<bool_item *>(vals.at(i))->l, b->l)});
+            assert(nc);
+        }
         return b;
     }
-    else if (t.name.compare(INT_KEYWORD) == 0)
+    else if (tp.name.compare(INT_KEYWORD) == 0)
     {
-        arith_expr i = new_int();
-        std::vector<lit> eqs;
-        for (const auto &v : allowed_vals)
+        arith_expr ie = new_int();
+        bool nc;
+        for (size_t i = 0; i < vars.size(); ++i)
         {
-            var leq_v = la_th.new_leq(i->l, dynamic_cast<arith_item *>(v)->l);
-            var geq_v = la_th.new_geq(i->l, dynamic_cast<arith_item *>(v)->l);
-            var eq_v = sat.new_conj({leq_v, geq_v});
-            eqs.push_back(eq_v);
+            nc = sat.new_clause({lit(vars.at(i), false), sat.new_conj({la_th.new_leq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l)})});
+            assert(nc);
         }
-        bool nc = sat.new_clause(eqs);
-        assert(nc);
-        return i;
+        return ie;
     }
-    else if (t.name.compare(REAL_KEYWORD) == 0)
+    else if (tp.name.compare(REAL_KEYWORD) == 0)
     {
-        arith_expr r = new_real();
-        std::vector<lit> eqs;
-        for (const auto &v : allowed_vals)
+        arith_expr re = new_real();
+        bool nc;
+        for (size_t i = 0; i < vars.size(); ++i)
         {
-            var leq_v = la_th.new_leq(r->l, dynamic_cast<arith_item *>(v)->l);
-            var geq_v = la_th.new_geq(r->l, dynamic_cast<arith_item *>(v)->l);
-            var eq_v = sat.new_conj({leq_v, geq_v});
-            eqs.push_back(eq_v);
+            nc = sat.new_clause({lit(vars.at(i), false), sat.new_conj({la_th.new_leq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l)})});
+            assert(nc);
         }
-        bool nc = sat.new_clause(eqs);
-        assert(nc);
-        return r;
+        return re;
     }
     else
-        return new enum_item(*this, t, set_th.new_var(vals));
+        return new enum_item(*this, tp, set_th.new_var(vars, std::vector<set_item *>(vals.begin(), vals.end())));
 }
 
 bool_expr core::negate(bool_expr var) { return new bool_item(*this, !var->l); }

@@ -22,6 +22,7 @@ class arith_expr;
 class string_expr;
 class enum_expr;
 class atom;
+class enum_item;
 class disjunction;
 class atom_state;
 class parser;
@@ -34,6 +35,7 @@ class class_declaration;
 class method_declaration;
 class predicate_declaration;
 class compilation_unit;
+class local_field_statement;
 class disjunction_statement;
 class formula_statement;
 }
@@ -57,11 +59,13 @@ public:
 class core : public scope, public env
 {
   friend class type;
+  friend class enum_item;
   friend class ast::typedef_declaration;
   friend class ast::enum_declaration;
   friend class ast::class_declaration;
   friend class ast::method_declaration;
   friend class ast::predicate_declaration;
+  friend class ast::local_field_statement;
   friend class ast::disjunction_statement;
   friend class ast::formula_statement;
 
@@ -83,6 +87,10 @@ public:
   string_expr new_string(const std::string &val);
   virtual expr new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals);
 
+private:
+  expr new_enum(const type &tp, const std::vector<var> &vars, const std::vector<item *> &vals);
+
+public:
   bool_expr negate(bool_expr var);
   bool_expr eq(bool_expr left, bool_expr right);
   bool_expr conj(const std::vector<bool_expr> &exprs);

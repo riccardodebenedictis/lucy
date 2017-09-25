@@ -85,7 +85,7 @@ void atom_flaw::compute_resolvers()
                 unify_atom *u_res = new unify_atom(graph, *this, atm, c_atm, unif_lits);
                 add_resolver(*u_res);
                 graph.new_causal_link(*target, *u_res);
-                graph.set_cost(*this, target->get_cost());
+                graph.set_cost(*this, u_res->get_cost());
 
                 assert(graph.core::sat.value(u_res->get_rho()) != False);
                 if (graph.core::sat.value(u_res->get_rho()) != True)
@@ -118,7 +118,7 @@ void atom_flaw::expand_goal::apply()
     static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
 }
 
-atom_flaw::unify_atom::unify_atom(causal_graph &graph, atom_flaw &atm_flaw, atom &atm, atom &with, const std::vector<lit> &unif_lits) : resolver(graph, lin(0), atm_flaw), atm(atm), with(with), unif_lits(unif_lits) {}
+atom_flaw::unify_atom::unify_atom(causal_graph &graph, atom_flaw &atm_flaw, atom &atm, atom &with, const std::vector<lit> &unif_lits) : resolver(graph, lin(1), atm_flaw), atm(atm), with(with), unif_lits(unif_lits) {}
 atom_flaw::unify_atom::~unify_atom() {}
 
 void atom_flaw::unify_atom::apply()

@@ -28,6 +28,7 @@ public:
   virtual ~set_theory();
 
   const var new_var(const std::unordered_set<set_item *> &items);
+  const var new_var(const std::vector<var> &vars, const std::vector<set_item *> &vals);
 
   const var allows(const var &left, set_item &right) const;
   const var eq(const var &left, const var &right);
@@ -55,11 +56,12 @@ private:
     // the updated variables..
     std::unordered_set<var> vars;
   };
-  // the current assignments..
+  // the current assignments (val to bool variable)..
   std::vector<std::unordered_map<set_item *, var>> assigns;
   // the already existing expressions (string to bool variable)..
   std::unordered_map<std::string, var> exprs;
-  std::unordered_map<var, var> is_contained_in;
+  // the boolean variable contained in the set variables (bool variable to vector of set variables)..
+  std::unordered_map<var, std::vector<var>> is_contained_in;
   // we store the updated variables..
   std::vector<layer> layers;
   std::unordered_map<var, std::list<set_value_listener *>> listening;
