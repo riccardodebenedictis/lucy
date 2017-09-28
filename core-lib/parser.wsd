@@ -1,0 +1,394 @@
+@startuml parser
+page 4x2
+skinparam monochrome true
+skinparam handwritten true
+
+class expression
+expression : +evaluate(scp:scope,ctx:context):expr
+
+class cast_expression
+expression <|-- cast_expression
+cast_expression : -cast_to_type:vector<string>
+cast_expression : +cast_expression(tp:vector<string>,xpr:expression)
+cast_expression : +evaluate(scp:scope, ctx:context):expr
+cast_expression *--> "1" expression : xpr
+
+class constructor_expression
+expression <|-- constructor_expression
+constructor_expression : -instance_type:vector<string>
+constructor_expression : +constructor_expression(tp:vector<string>,es:vector<expression>)
+constructor_expression : +evaluate(scp:scope, ctx:context):expr
+constructor_expression *--> "*" expression : xprs
+
+class id_expression
+expression <|-- id_expression
+id_expression : -ids:vector<string>
+id_expression : +id_expression(is:vector<string>)
+id_expression : +evaluate(scp:scope, ctx:context):expr
+
+class function_expression
+expression <|-- function_expression
+function_expression : -ids:vector<string>
+function_expression : -function_name:string
+function_expression : +function_expression(is:vector<string>,fn:string,es:vector<expression>)
+function_expression : +evaluate(scp:scope, ctx:context):expr
+function_expression *--> "*" expression : xprs
+
+class bool_literal_expression
+expression <|-- bool_literal_expression
+bool_literal_expression : -literal:bool
+bool_literal_expression : +bool_literal_expression(l:bool)
+
+class int_literal_expression
+expression <|-- int_literal_expression
+int_literal_expression : -literal:long
+int_literal_expression : +int_literal_expression(l:long)
+
+class real_literal_expression
+expression <|-- real_literal_expression
+real_literal_expression : -literal:double
+real_literal_expression : +real_literal_expression(l:double)
+
+class string_literal_expression
+expression <|-- string_literal_expression
+string_literal_expression : -literal:string
+string_literal_expression : +string_literal_expression(l:string)
+
+class plus_expression
+expression <|-- plus_expression
+plus_expression : +plus_expression(e:expression)
+plus_expression : +evaluate(scp:scope, ctx:context):expr
+plus_expression *--> "1" expression : xpr
+
+class minus_expression
+expression <|-- minus_expression
+minus_expression : +minus_expression(e:expression)
+minus_expression : +evaluate(scp:scope, ctx:context):expr
+minus_expression *--> "1" expression : xpr
+
+class range_expression
+expression <|-- range_expression
+range_expression : +range_expression(min_e:expression,max_e:expression)
+range_expression : +evaluate(scp:scope, ctx:context):expr
+range_expression *--> "1" expression : min_xpr
+range_expression *--> "1" expression : max_xpr
+
+class addition_expression
+expression <|-- addition_expression
+addition_expression : +addition_expression(es:vector<expression>)
+addition_expression : +evaluate(scp:scope, ctx:context):expr
+addition_expression *--> "*" expression : xprs
+
+class subtraction_expression
+expression <|-- subtraction_expression
+subtraction_expression : +subtraction_expression(es:vector<expression>)
+subtraction_expression : +evaluate(scp:scope, ctx:context):expr
+subtraction_expression *--> "*" expression : xprs
+
+class multiplication_expression
+expression <|-- multiplication_expression
+multiplication_expression : +multiplication_expression(es:vector<expression>)
+multiplication_expression : +evaluate(scp:scope, ctx:context):expr
+multiplication_expression *--> "*" expression : xprs
+
+class division_expression
+expression <|-- division_expression
+division_expression : +division_expression(es:vector<expression>)
+division_expression : +evaluate(scp:scope, ctx:context):expr
+division_expression *--> "*" expression : xprs
+
+class lt_expression
+expression <|-- lt_expression
+lt_expression : +lt_expression(l:expression,r:expression)
+lt_expression : +evaluate(scp:scope, ctx:context):expr
+lt_expression *--> "1" expression : left
+lt_expression *--> "1" expression : right
+
+class leq_expression
+expression <|-- leq_expression
+leq_expression : +leq_expression(l:expression,r:expression)
+leq_expression : +evaluate(scp:scope, ctx:context):expr
+leq_expression *--> "1" expression : left
+leq_expression *--> "1" expression : right
+
+class eq_expression
+expression <|-- eq_expression
+eq_expression : +eq_expression(l:expression,r:expression)
+eq_expression : +evaluate(scp:scope, ctx:context):expr
+eq_expression *--> "1" expression : left
+eq_expression *--> "1" expression : right
+
+class geq_expression
+expression <|-- geq_expression
+geq_expression : +geq_expression(l:expression,r:expression)
+geq_expression : +evaluate(scp:scope, ctx:context):expr
+geq_expression *--> "1" expression : left
+geq_expression *--> "1" expression : right
+
+class gt_expression
+expression <|-- gt_expression
+gt_expression : +gt_expression(l:expression,r:expression)
+gt_expression : +evaluate(scp:scope, ctx:context):expr
+gt_expression *--> "1" expression : left
+gt_expression *--> "1" expression : right
+
+class implication_expression
+expression <|-- implication_expression
+implication_expression : +implication_expression(l:expression,r:expression)
+implication_expression : +evaluate(scp:scope, ctx:context):expr
+implication_expression *--> "1" expression : left
+implication_expression *--> "1" expression : right
+
+class disjunction_expression
+expression <|-- disjunction_expression
+disjunction_expression : +disjunction_expression(es:vector<expression>)
+disjunction_expression : +evaluate(scp:scope, ctx:context):expr
+disjunction_expression *--> "*" expression : xprs
+
+class conjunction_expression
+expression <|-- conjunction_expression
+conjunction_expression : +conjunction_expression(es:vector<expression>)
+conjunction_expression : +evaluate(scp:scope, ctx:context):expr
+conjunction_expression *--> "*" expression : xprs
+
+class exct_one_expression
+expression <|-- exct_one_expression
+exct_one_expression : +exct_one_expression(es:vector<expression>)
+exct_one_expression : +evaluate(scp:scope, ctx:context):expr
+exct_one_expression *--> "*" expression : xprs
+
+class not_expression
+expression <|-- not_expression
+not_expression : +not_expression(e:expression)
+not_expression : +evaluate(scp:scope, ctx:context):expr
+not_expression *--> "1" expression : xpr
+
+class statement
+statement : +execute(scp:scope,ctx:context):void
+
+class assignment_statement
+statement <|-- assignment_statement
+assignment_statement : -ids:vector<string>
+assignment_statement : -id:string
+assignment_statement : +assignment_statement(is:vector<string>,i:string,es:vector<expression>)
+assignment_statement : +execute(scp:scope,ctx:context):void
+assignment_statement *--> "*" expression : xprs
+
+class local_field_statement
+statement <|-- local_field_statement
+local_field_statement : -field_type:vector<string>
+local_field_statement : -name:string
+local_field_statement : +local_field_statement(fn:vector<string>,n:string,es:vector<expression>)
+local_field_statement : +execute(scp:scope,ctx:context):void
+local_field_statement *--> "*" expression : xprs
+
+class expression_statement
+statement <|-- expression_statement
+expression_statement : +expression_statement(e:expression)
+expression_statement : +execute(scp:scope,ctx:context):void
+expression_statement *--> "1" expression : xpr
+
+class block_statement
+statement <|-- block_statement
+block_statement : +block_statement(stmnts:vector<statement>)
+block_statement : +execute(scp:scope,ctx:context):void
+block_statement *--> "*" statement : statements
+
+class disjunction_statement
+statement <|-- disjunction_statement
+disjunction_statement : -conjunctions:vector<vector<statement>>
+disjunction_statement : +disjunction_statement(conjs:vector<vector<statement>>)
+disjunction_statement : +execute(scp:scope,ctx:context):void
+
+class formula_statement
+statement <|-- formula_statement
+formula_statement : -is_fact:bool
+formula_statement : -formula_name:string
+formula_statement : -formula_scope:vector<string>
+formula_statement : -predicate_name:string
+formula_statement : -assignments:vector<pair<string,expression>>
+formula_statement : +formula_statement(isf:bool,fn:string,scp:vector<string>,pn:string,assns:vector<pair<string,expression>>)
+formula_statement : +execute(scp:scope,ctx:context):void
+formula_statement *--> "*" expression : xprs
+
+class return_statement
+statement <|-- return_statement
+return_statement : +return_statement(e:expression)
+return_statement : +execute(scp:scope,ctx:context):void
+return_statement *--> "1" expression : xpr
+
+enum symbol {
+  BOOL_ID
+  INT_ID
+  REAL_ID
+  STRING_ID
+  TYPEDEF_ID
+  ENUM_ID
+  CLASS_ID
+  GOAL_ID
+  FACT_ID
+  PREDICATE_ID
+  NEW_ID
+  OR_ID
+  THIS_ID
+  VOID_ID
+  TRUE_ID
+  FALSE_ID
+  RETURN_ID
+  DOT_ID
+  COMMA_ID
+  COLON_ID
+  SEMICOLON_ID
+  LPAREN_ID
+  RPAREN_ID
+  LBRACKET_ID
+  RBRACKET_ID
+  LBRACE_ID
+  RBRACE_ID
+  PLUS_ID
+  MINUS_ID
+  STAR_ID
+  SLASH_ID
+  AMP_ID
+  BAR_ID
+  EQ_ID
+  GT_ID
+  LT_ID
+  BANG_ID
+  EQEQ_ID
+  LTEQ_ID
+  GTEQ_ID
+  BANGEQ_ID
+  IMPLICATION_ID
+  CARET_ID
+  ID_ID
+  IntLiteral_ID
+  RealLiteral_ID
+  StringLiteral_ID
+  EOF_ID
+}
+
+class token
+token : +start_line:int
+token : +start_pos:int
+token : +end_line:int
+token : +end_pos:int
+token : +token(sym:symbol,start_line:int,start_pos:int,end_line:int,end_pos:int)
+token *--> "1" symbol : sym
+
+class id_token
+token <|-- id_token
+id_token : +id:string
+id_token : +id_token(start_line:int,start_pos:int,end_line:int,end_pos:int,id:string)
+
+class int_token
+token <|-- int_token
+int_token : +val:long
+int_token : +id_token(start_line:int,start_pos:int,end_line:int,end_pos:int,val:long)
+
+class real_token
+token <|-- real_token
+real_token : +val:double
+real_token : +real_token(start_line:int,start_pos:int,end_line:int,end_pos:int,val:double)
+
+class string_token
+token <|-- string_token
+string_token : +str:string
+string_token : +string_token(start_line:int,start_pos:int,end_line:int,end_pos:int,str:string)
+
+class lexer
+lexer : -is:stream
+lexer : -ch:char
+lexer : -start_line:int
+lexer : -start_pos:int
+lexer : -end_line:int
+lexer : -end_pos:int
+lexer : +lexer(is:stream)
+lexer : +mk_token(sym:symbol):token
+lexer : +mk_id_token(id:string):token
+lexer : +mk_numeric_token(id:string):token
+lexer : +mk_string_token(id:string):token
+lexer : +finish_id(str:vector<char>):token
+lexer : +finish_whitespaces():token
+lexer : +error(err:string):void
+
+class type_declaration
+type_declaration : #name:string
+type_declaration : +type_declaration(n:string)
+type_declaration : +declare(scp:scope)
+type_declaration : +refine(scp:scope)
+
+class typedef_declaration
+type_declaration <|-- typedef_declaration
+typedef_declaration : -primitive_type:string
+typedef_declaration : +typedef_declaration(n:string,pt:string,e:expression)
+typedef_declaration : +declare(scp:scope)
+typedef_declaration *--> "1" expression : xpr
+
+class enum_declaration
+type_declaration <|-- enum_declaration
+enum_declaration : -enums:vector<string>
+enum_declaration : -type_refs:vector<vector<string>>
+enum_declaration : +enum_declaration(n:string,ex:vector<string>,trs:vector<vector<string>>)
+enum_declaration : +declare(scp:scope)
+enum_declaration : +refine(scp:scope)
+
+class variable_declaration
+variable_declaration : -name:string
+variable_declaration : +variable_declaration(n:string,e:expression)
+variable_declaration *--> "1" expression : xpr
+
+class field_declaration
+field_declaration : -field_type:vector<string>
+field_declaration : -type_refs:vector<vector<string>>
+field_declaration : +field_declaration(tp:vector<string>,ds:vector<variable_declaration>)
+field_declaration : +refine(scp:scope)
+field_declaration *--> "*" variable_declaration : declarations
+
+class constructor_declaration
+constructor_declaration : -parameters:vector<pair<vector<string>, string>>
+constructor_declaration : -init_list:vector<pair<string, vector<expression>>>
+constructor_declaration : +constructor_declaration(pars:vector<pair<vector<string>,string>>,il:vector<pair<string,vector<expression>>>,stmnts:vector<statement>)
+constructor_declaration : +refine(scp:scope)
+constructor_declaration *--> "*" statement : statements
+
+class method_declaration
+method_declaration : -return_type:vector<string>
+method_declaration : -name:string
+method_declaration : -parameters:vector<pair<vector<string>, string>>
+method_declaration : +method_declaration(rt:vector<string>,n:string,pars:vector<pair<vector<string>,string>>,stmnts:vector<statement>)
+method_declaration : +refine(scp:scope)
+method_declaration *--> "*" statement : statements
+
+class predicate_declaration
+predicate_declaration : -name:string
+predicate_declaration : -parameters:vector<pair<vector<string>, string>>
+predicate_declaration : -predicate_list:vector<vector<string>>
+predicate_declaration : +predicate_declaration(n:string,pars:vector<pair<vector<string>,string>>,pl:vector<vector<string>>,stmnts:vector<statement>)
+predicate_declaration : +refine(scp:scope)
+predicate_declaration *--> "*" statement : statements
+
+class class_declaration
+type_declaration <|-- class_declaration
+class_declaration : -base_classes:vector<vector<string>>
+class_declaration : +class_declaration(n:string,bcs:vector<vector<string>>,fs:vector<field_declaration>,cs:vector<constructor_declaration>,ms:vector<method_declaration>,ps:vector<predicate_declaration>,ts:vector<type_declaration>)
+class_declaration : +declare(scp:scope)
+class_declaration : +refine(scp:scope)
+class_declaration *--> "*" field_declaration : fields
+class_declaration *--> "*" constructor_declaration : constructors
+class_declaration *--> "*" method_declaration : methods
+class_declaration *--> "*" predicate_declaration : predicates
+class_declaration *--> "*" type_declaration : types
+
+class compilation_unit
+compilation_unit : +compilation_unit(ms:vector<method_declaration>,ps:vector<predicate_declaration>,ts:vector<type_declaration>,stmnts:vector<statement>)
+compilation_unit : +declare(scp:scope)
+compilation_unit : +refine(scp:scope)
+compilation_unit : +execute(scp:scope,ctx:context):void
+compilation_unit *--> "*" method_declaration : methods
+compilation_unit *--> "*" predicate_declaration : predicates
+compilation_unit *--> "*" type_declaration : types
+compilation_unit *--> "*" statement : statements
+
+class parser
+@enduml

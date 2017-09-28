@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scope.h"
-#include "la_theory.h"
+#include "lin.h"
 
 using namespace smt;
 

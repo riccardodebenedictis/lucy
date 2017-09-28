@@ -81,7 +81,7 @@ compilation_unit *parser::parse(std::istream &is)
         }
     }
 
-    return new compilation_unit(ts, ms, ps, ss);
+    return new compilation_unit(ms, ps, ts, ss);
 }
 
 token *parser::next()

@@ -251,7 +251,7 @@ void class_declaration::refine(scope &scp) const
         t->refine(tp);
 }
 
-compilation_unit::compilation_unit(const std::vector<type_declaration *> &ts, const std::vector<method_declaration *> &ms, const std::vector<predicate_declaration *> &ps, const std::vector<statement *> &stmnts) : types(ts), methods(ms), predicates(ps), statements(stmnts) {}
+compilation_unit::compilation_unit(const std::vector<method_declaration *> &ms, const std::vector<predicate_declaration *> &ps, const std::vector<type_declaration *> &ts, const std::vector<statement *> &stmnts) : methods(ms), predicates(ps), types(ts), statements(stmnts) {}
 compilation_unit::~compilation_unit()
 {
     for (const auto &t : types)

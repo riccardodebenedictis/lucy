@@ -1,0 +1,48 @@
+@startuml cg-lib
+skinparam monochrome true
+skinparam handwritten true
+
+class solver
+solver : +solver()
+solver : -new_fact(a:atom):void
+solver : -new_goal(a:atom):void
+solver : -new_disjunction(ctx:context,d:disjunction):void
+solver : +solve():void
+
+class flaw
+flaw : phi:var
+flaw : -compute_resolvers():void
+flaw o--> "*" resolver : resolvers
+flaw o--> "*" resolver : cause
+flaw o--> "*" resolver : supports
+
+class resolver
+resolver : rho:var
+resolver : -apply():void
+resolver o--> "*" flaw : preconditions
+resolver o--> "1" flaw : effect
+
+class enum_flaw
+flaw <|-- enum_flaw
+
+class choose_value
+resolver <|-- choose_value
+
+class disjunction_flaw
+flaw <|-- disjunction_flaw
+
+class choose_conjunction
+resolver <|-- choose_conjunction
+
+class support_flaw
+flaw <|-- support_flaw
+
+class activate_fact
+resolver <|-- activate_fact
+
+class activate_goal
+resolver <|-- activate_goal
+
+class unify_atom
+resolver <|-- unify_atom
+@enduml

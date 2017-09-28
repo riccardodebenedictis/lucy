@@ -155,7 +155,7 @@ private:
 class compilation_unit
 {
 public:
-  compilation_unit(const std::vector<type_declaration *> &ts, const std::vector<method_declaration *> &ms, const std::vector<predicate_declaration *> &ps, const std::vector<statement *> &stmnts);
+  compilation_unit(const std::vector<method_declaration *> &ms, const std::vector<predicate_declaration *> &ps, const std::vector<type_declaration *> &ts, const std::vector<statement *> &stmnts);
   compilation_unit(const compilation_unit &orig) = delete;
   virtual ~compilation_unit();
 
