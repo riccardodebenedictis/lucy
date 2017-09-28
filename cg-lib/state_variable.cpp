@@ -1,12 +1,12 @@
 #include "state_variable.h"
 #include "predicate.h"
 #include "combinations.h"
-#include "atom_flaw.h"
+#include "support_flaw.h"
 
 namespace cg
 {
 
-state_variable::state_variable(cg::causal_graph &g) : smart_type(g, g, STATE_VARIABLE_NAME) { constructors.push_back(new sv_constructor(*this)); }
+state_variable::state_variable(cg::solver &g) : smart_type(g, g, STATE_VARIABLE_NAME) { constructors.push_back(new sv_constructor(*this)); }
 
 state_variable::~state_variable()
 {
@@ -90,7 +90,7 @@ void state_variable::new_predicate(predicate &pred)
     add_field(pred, *new field(static_cast<type &>(pred.get_scope()), "scope"));
 }
 
-void state_variable::new_fact(atom_flaw &f)
+void state_variable::new_fact(support_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
     atom &atm = f.get_atom();
@@ -107,7 +107,7 @@ void state_variable::new_fact(atom_flaw &f)
         to_check.insert(&*c_scope);
 }
 
-void state_variable::new_goal(atom_flaw &f)
+void state_variable::new_goal(support_flaw &f)
 {
     atom &atm = f.get_atom();
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
@@ -132,7 +132,7 @@ void state_variable::sv_atom_listener::something_changed()
         sv.to_check.insert(&*c_scope);
 }
 
-state_variable::sv_flaw::sv_flaw(causal_graph &graph, const std::set<atom *> &overlapping_atoms) : flaw(graph), overlapping_atoms(overlapping_atoms) {}
+state_variable::sv_flaw::sv_flaw(solver &graph, const std::set<atom *> &overlapping_atoms) : flaw(graph), overlapping_atoms(overlapping_atoms) {}
 state_variable::sv_flaw::~sv_flaw() {}
 
 void state_variable::sv_flaw::compute_resolvers()
@@ -172,13 +172,13 @@ void state_variable::sv_flaw::compute_resolvers()
     }
 }
 
-state_variable::sv_resolver::sv_resolver(causal_graph &graph, const lin &cost, sv_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
+state_variable::sv_resolver::sv_resolver(solver &graph, const lin &cost, sv_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
 state_variable::sv_resolver::~sv_resolver() {}
 void state_variable::sv_resolver::apply() { graph.core::sat.new_clause({lit(rho, false), to_do}); }
 
-state_variable::order_resolver::order_resolver(causal_graph &graph, const lin &cost, sv_flaw &f, const atom &before, const atom &after, const lit &to_do) : sv_resolver(graph, cost, f, to_do), before(before), after(after) {}
+state_variable::order_resolver::order_resolver(solver &graph, const lin &cost, sv_flaw &f, const atom &before, const atom &after, const lit &to_do) : sv_resolver(graph, cost, f, to_do), before(before), after(after) {}
 state_variable::order_resolver::~order_resolver() {}
 
-state_variable::displace_resolver::displace_resolver(causal_graph &graph, const lin &cost, sv_flaw &f, const atom &a, const item &i, const lit &to_do) : sv_resolver(graph, cost, f, to_do), a(a), i(i) {}
+state_variable::displace_resolver::displace_resolver(solver &graph, const lin &cost, sv_flaw &f, const atom &a, const item &i, const lit &to_do) : sv_resolver(graph, cost, f, to_do), a(a), i(i) {}
 state_variable::displace_resolver::~displace_resolver() {}
 }

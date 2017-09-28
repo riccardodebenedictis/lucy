@@ -1,4 +1,4 @@
-#include "causal_graph.h"
+#include "solver.h"
 #ifdef BUILD_GUI
 #include "java_gui.h"
 #include "cg_java_listener.h"
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
         std::cout << " in debug mode";
 #endif
         std::cout << ".." << std::endl;
-        cg::causal_graph g;
+        cg::solver g;
 
 #ifdef BUILD_GUI
         gui::java_gui j_gui;

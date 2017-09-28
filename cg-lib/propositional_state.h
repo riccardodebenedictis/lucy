@@ -16,7 +16,7 @@ namespace cg
 class propositional_state : public smart_type
 {
 public:
-  propositional_state(causal_graph &g);
+  propositional_state(solver &g);
   propositional_state(const propositional_state &orig) = delete;
   virtual ~propositional_state();
 
@@ -24,8 +24,8 @@ private:
   std::vector<flaw *> get_flaws() override;
 
   void new_predicate(predicate &pred) override;
-  void new_fact(atom_flaw &f) override;
-  void new_goal(atom_flaw &f) override;
+  void new_fact(support_flaw &f) override;
+  void new_goal(support_flaw &f) override;
 
   class ps_constructor : public constructor
   {
@@ -64,7 +64,7 @@ private:
   class ps_flaw : public flaw
   {
   public:
-    ps_flaw(causal_graph &graph, const std::set<atom *> &overlapping_atoms);
+    ps_flaw(solver &graph, const std::set<atom *> &overlapping_atoms);
     ps_flaw(ps_flaw &&) = delete;
     virtual ~ps_flaw();
 
@@ -80,7 +80,7 @@ private:
   class ps_resolver : public resolver
   {
   public:
-    ps_resolver(causal_graph &graph, const lin &cost, ps_flaw &f, const lit &to_do);
+    ps_resolver(solver &graph, const lin &cost, ps_flaw &f, const lit &to_do);
     ps_resolver(const ps_resolver &that) = delete;
     virtual ~ps_resolver();
 
@@ -94,7 +94,7 @@ private:
   class order_resolver : public ps_resolver
   {
   public:
-    order_resolver(causal_graph &graph, const lin &cost, ps_flaw &f, const atom &before, const atom &after, const lit &to_do);
+    order_resolver(solver &graph, const lin &cost, ps_flaw &f, const atom &before, const atom &after, const lit &to_do);
     order_resolver(const order_resolver &that) = delete;
     virtual ~order_resolver();
 
@@ -108,7 +108,7 @@ private:
   class displace_resolver : public ps_resolver
   {
   public:
-    displace_resolver(causal_graph &graph, const lin &cost, ps_flaw &f, const atom &a, const std::string &f_name, const item &i, const lit &to_do);
+    displace_resolver(solver &graph, const lin &cost, ps_flaw &f, const atom &a, const std::string &f_name, const item &i, const lit &to_do);
     displace_resolver(const displace_resolver &that) = delete;
     virtual ~displace_resolver();
 

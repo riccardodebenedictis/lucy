@@ -12,7 +12,7 @@ namespace cg
 class enum_flaw : public flaw
 {
 public:
-  enum_flaw(causal_graph &graph, var_item &e_itm);
+  enum_flaw(solver &graph, var_item &e_itm);
   enum_flaw(const enum_flaw &orig) = delete;
   virtual ~enum_flaw();
 
@@ -24,7 +24,7 @@ private:
   class choose_value : public resolver
   {
   public:
-    choose_value(causal_graph &graph, enum_flaw &enm_flaw, set_item &val);
+    choose_value(solver &graph, enum_flaw &enm_flaw, set_item &val);
     choose_value(const choose_value &that) = delete;
     virtual ~choose_value();
 

@@ -173,7 +173,7 @@ predicate o--> "*" field : args
 class atom
 item <|-- atom
 atom : +atom(cr:core,ctx:context,pred:predicate)
-atom : state:var
+atom : sigma:var
 
 class constructor
 scope <|-- constructor

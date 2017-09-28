@@ -1,12 +1,12 @@
 #include "cg_java_listener.h"
 #include "java_gui.h"
-#include "causal_graph.h"
+#include "solver.h"
 #include "flaw.h"
 #include "resolver.h"
 
 namespace gui
 {
-cg_java_listener::cg_java_listener(java_gui &gui, cg::causal_graph &graph) : gui(gui), causal_graph_listener(graph) {}
+cg_java_listener::cg_java_listener(java_gui &gui, cg::solver &graph) : gui(gui), cg_listener(graph) {}
 cg_java_listener::~cg_java_listener() {}
 
 void cg_java_listener::flaw_created(const cg::flaw &f)

@@ -1,13 +1,13 @@
 #include "resolver.h"
-#include "causal_graph.h"
+#include "solver.h"
 #include "flaw.h"
 #include <cassert>
 
 namespace cg
 {
 
-resolver::resolver(causal_graph &graph, const var &r, const lin &cost, flaw &eff) : graph(graph), rho(r), cost(cost), effect(eff) {}
-resolver::resolver(causal_graph &graph, const lin &cost, flaw &eff) : resolver(graph, graph.core::sat.new_var(), cost, eff) {}
+resolver::resolver(solver &graph, const var &r, const lin &cost, flaw &eff) : graph(graph), rho(r), cost(cost), effect(eff) {}
+resolver::resolver(solver &graph, const lin &cost, flaw &eff) : resolver(graph, graph.core::sat.new_var(), cost, eff) {}
 resolver::~resolver() {}
 
 double resolver::get_cost() const

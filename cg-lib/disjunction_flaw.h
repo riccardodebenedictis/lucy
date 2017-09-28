@@ -13,7 +13,7 @@ namespace cg
 class disjunction_flaw : public flaw
 {
 public:
-  disjunction_flaw(causal_graph &graph, const context &ctx, const disjunction &disj);
+  disjunction_flaw(solver &graph, const context &ctx, const disjunction &disj);
   disjunction_flaw(const disjunction_flaw &orig) = delete;
   virtual ~disjunction_flaw();
 
@@ -25,7 +25,7 @@ private:
   class choose_conjunction : public resolver
   {
   public:
-    choose_conjunction(causal_graph &graph, disjunction_flaw &disj_flaw, const context &ctx, const conjunction &conj);
+    choose_conjunction(solver &graph, disjunction_flaw &disj_flaw, const context &ctx, const conjunction &conj);
     choose_conjunction(const choose_conjunction &that) = delete;
     virtual ~choose_conjunction();
 

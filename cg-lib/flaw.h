@@ -8,16 +8,16 @@ using namespace smt;
 namespace cg
 {
 
-class causal_graph;
+class solver;
 class resolver;
 
 class flaw
 {
-  friend class causal_graph;
+  friend class solver;
   friend class resolver;
 
 public:
-  flaw(causal_graph &graph, const bool &exclusive = false, const bool &structural = false);
+  flaw(solver &graph, const bool &exclusive = false, const bool &structural = false);
   flaw(const flaw &orig) = delete;
   virtual ~flaw();
 
@@ -38,7 +38,7 @@ protected:
   void add_resolver(resolver &r);
 
 protected:
-  causal_graph &graph;
+  solver &graph;
 
 private:
   const bool exclusive;

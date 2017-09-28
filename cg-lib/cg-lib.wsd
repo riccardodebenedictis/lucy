@@ -24,25 +24,33 @@ resolver o--> "1" flaw : effect
 
 class enum_flaw
 flaw <|-- enum_flaw
+enum_flaw : -compute_resolvers():void
 
 class choose_value
 resolver <|-- choose_value
+choose_value : -apply():void
 
 class disjunction_flaw
 flaw <|-- disjunction_flaw
+disjunction_flaw : -compute_resolvers():void
 
 class choose_conjunction
 resolver <|-- choose_conjunction
+choose_conjunction : -apply():void
 
 class support_flaw
 flaw <|-- support_flaw
+support_flaw : -compute_resolvers():void
 
 class activate_fact
 resolver <|-- activate_fact
+activate_fact : -apply():void
 
 class activate_goal
 resolver <|-- activate_goal
+activate_goal : -apply():void
 
 class unify_atom
 resolver <|-- unify_atom
+unify_atom : -apply():void
 @enduml

@@ -8,21 +8,21 @@ namespace cg
 {
 
 class flaw;
-class atom_flaw;
-class causal_graph_listener;
+class support_flaw;
+class cg_listener;
 
 class resolver;
 
-class causal_graph : public core, public theory
+class solver : public core, public theory
 {
   friend class flaw;
-  friend class atom_flaw;
-  friend class causal_graph_listener;
+  friend class support_flaw;
+  friend class cg_listener;
 
 public:
-  causal_graph();
-  causal_graph(const causal_graph &orig) = delete;
-  virtual ~causal_graph();
+  solver();
+  solver(const solver &orig) = delete;
+  virtual ~solver();
 
   expr new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals) override;
 
@@ -71,7 +71,7 @@ private:
 
   bool building_graph = false;
   // the reason for having introduced a flaw..
-  std::unordered_map<atom *, atom_flaw *> reason;
+  std::unordered_map<atom *, support_flaw *> reason;
   // the flaw queue..
   std::queue<flaw *> flaw_q;
   // the flaw costs queue (for flaw cost propagation)..
@@ -90,6 +90,6 @@ private:
   resolver *res = nullptr;
   // the list of resolvers in chronological order..
   std::vector<layer> trail;
-  std::vector<causal_graph_listener *> listeners;
+  std::vector<cg_listener *> listeners;
 };
 }

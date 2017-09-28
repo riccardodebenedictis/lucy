@@ -1,12 +1,12 @@
-#include "causal_graph.h"
+#include "solver.h"
 #include "enum_flaw.h"
-#include "atom_flaw.h"
+#include "support_flaw.h"
 #include "disjunction_flaw.h"
 #include "smart_type.h"
 #include "state_variable.h"
 #include "reusable_resource.h"
 #ifdef BUILD_GUI
-#include "causal_graph_listener.h"
+#include "cg_listener.h"
 #endif
 #include "propositional_state.h"
 #include "propositional_agent.h"
@@ -19,7 +19,7 @@
 namespace cg
 {
 
-causal_graph::causal_graph() : core(), theory(core::sat)
+solver::solver() : core(), theory(core::sat)
 {
     read(std::vector<std::string>({"init.rddl"}));
     types.insert({STATE_VARIABLE_NAME, new state_variable(*this)});
@@ -28,9 +28,9 @@ causal_graph::causal_graph() : core(), theory(core::sat)
     types.insert({PROPOSITIONAL_AGENT_NAME, new propositional_agent(*this)});
 }
 
-causal_graph::~causal_graph() {}
+solver::~solver() {}
 
-expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
+expr solver::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
 {
     assert(!allowed_vals.empty());
     // we create a new enum expression..
@@ -44,10 +44,10 @@ expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &al
     return c_e;
 }
 
-void causal_graph::new_fact(atom &atm)
+void solver::new_fact(atom &atm)
 {
     // we create a new atom flaw representing a fact..
-    atom_flaw *af = new atom_flaw(*this, atm, true);
+    support_flaw *af = new support_flaw(*this, atm, true);
     reason.insert({&atm, af});
     new_flaw(*af);
 
@@ -66,10 +66,10 @@ void causal_graph::new_fact(atom &atm)
     }
 }
 
-void causal_graph::new_goal(atom &atm)
+void solver::new_goal(atom &atm)
 {
     // we create a new atom flaw representing a goal..
-    atom_flaw *af = new atom_flaw(*this, atm, false);
+    support_flaw *af = new support_flaw(*this, atm, false);
     reason.insert({&atm, af});
     new_flaw(*af);
 
@@ -88,14 +88,14 @@ void causal_graph::new_goal(atom &atm)
     }
 }
 
-void causal_graph::new_disjunction(context &d_ctx, const disjunction &disj)
+void solver::new_disjunction(context &d_ctx, const disjunction &disj)
 {
     // we create a new disjunction flaw..
     disjunction_flaw *df = new disjunction_flaw(*this, d_ctx, disj);
     new_flaw(*df);
 }
 
-void causal_graph::solve()
+void solver::solve()
 {
     // we build the causal graph..
     build();
@@ -167,7 +167,7 @@ void causal_graph::solve()
     }
 }
 
-void causal_graph::new_flaw(flaw &f)
+void solver::new_flaw(flaw &f)
 {
     f.init();
     flaw_q.push(&f);
@@ -179,7 +179,7 @@ void causal_graph::new_flaw(flaw &f)
 #endif
 }
 
-void causal_graph::new_resolver(resolver &r)
+void solver::new_resolver(resolver &r)
 {
 #ifdef BUILD_GUI
     // we notify the listeners that a new resolver has arised..
@@ -188,7 +188,7 @@ void causal_graph::new_resolver(resolver &r)
 #endif
 }
 
-void causal_graph::new_causal_link(flaw &f, resolver &r)
+void solver::new_causal_link(flaw &f, resolver &r)
 {
     r.preconditions.push_back(&f);
     f.supports.push_back(&r);
@@ -202,7 +202,7 @@ void causal_graph::new_causal_link(flaw &f, resolver &r)
 #endif
 }
 
-bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
+bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (!building_graph)
@@ -251,13 +251,13 @@ bool causal_graph::propagate(const lit &p, std::vector<lit> &cnfl)
     return true;
 }
 
-bool causal_graph::check(std::vector<lit> &cnfl)
+bool solver::check(std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     return true;
 }
 
-void causal_graph::push()
+void solver::push()
 {
     trail.push_back(layer(res));
     if (res)
@@ -268,7 +268,7 @@ void causal_graph::push()
     }
 }
 
-void causal_graph::pop()
+void solver::pop()
 {
     // we reintroduce the solved flaw..
     for (const auto &f : trail.back().solved_flaws)
@@ -296,7 +296,7 @@ void causal_graph::pop()
     trail.pop_back();
 }
 
-void causal_graph::build()
+void solver::build()
 {
 #ifndef NDEBUG
     std::cout << "building the causal graph.." << std::endl;
@@ -370,7 +370,7 @@ void causal_graph::build()
     building_graph = false;
 }
 
-void causal_graph::add_layer()
+void solver::add_layer()
 {
 #ifndef NDEBUG
     std::cout << "adding a layer to the causal graph.." << std::endl;
@@ -448,7 +448,7 @@ void causal_graph::add_layer()
     building_graph = false;
 }
 
-bool causal_graph::is_deferrable(flaw &f)
+bool solver::is_deferrable(flaw &f)
 {
     std::queue<flaw *> q;
     q.push(&f);
@@ -466,7 +466,7 @@ bool causal_graph::is_deferrable(flaw &f)
     return false;
 }
 
-void causal_graph::set_cost(flaw &f, double cost)
+void solver::set_cost(flaw &f, double cost)
 {
     if (f.cost != cost)
     {
@@ -487,7 +487,7 @@ void causal_graph::set_cost(flaw &f, double cost)
     }
 }
 
-void causal_graph::propagate_costs()
+void solver::propagate_costs()
 {
     while (!flaw_costs_q.empty())
     {
@@ -517,7 +517,7 @@ void causal_graph::propagate_costs()
     }
 }
 
-bool causal_graph::has_inconsistencies()
+bool solver::has_inconsistencies()
 {
 #ifndef NDEBUG
     std::cout << "checking for inconsistencies.." << std::endl;
@@ -600,7 +600,7 @@ bool causal_graph::has_inconsistencies()
         return false;
 }
 
-flaw *causal_graph::select_flaw()
+flaw *solver::select_flaw()
 {
     assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return f->expanded && core::sat.value(f->phi) == True; }));
     // this is the next flaw to be solved (i.e., the most expensive one)..
@@ -638,7 +638,7 @@ flaw *causal_graph::select_flaw()
     return f_next;
 }
 
-resolver &causal_graph::select_resolver(flaw &f)
+resolver &solver::select_resolver(flaw &f)
 {
     double r_cost = std::numeric_limits<double>::infinity();
     resolver *r_next = nullptr; // this is the next resolver to be rho (i.e., the cheapest one)..

@@ -7,20 +7,20 @@ using namespace smt;
 namespace cg
 {
 
-class causal_graph;
+class solver;
 class flaw;
 class resolver;
 
-class causal_graph_listener
+class cg_listener
 {
-  friend class causal_graph;
+  friend class solver;
 
 public:
-  causal_graph_listener(causal_graph &graph);
-  causal_graph_listener(const causal_graph_listener &orig) = delete;
-  virtual ~causal_graph_listener();
+  cg_listener(solver &graph);
+  cg_listener(const cg_listener &orig) = delete;
+  virtual ~cg_listener();
 
-  causal_graph &get_graph() const { return graph; }
+  solver &get_graph() const { return graph; }
 
 private:
   void new_flaw(const flaw &f);
@@ -43,7 +43,7 @@ private:
   class flaw_listener : public sat_value_listener
   {
   public:
-    flaw_listener(causal_graph_listener &l, const flaw &f);
+    flaw_listener(cg_listener &l, const flaw &f);
     flaw_listener(const flaw_listener &orig) = delete;
     virtual ~flaw_listener();
 
@@ -51,14 +51,14 @@ private:
     void sat_value_change(const var &v) override;
 
   protected:
-    causal_graph_listener &listener;
+    cg_listener &listener;
     const flaw &f;
   };
 
   class resolver_listener : public sat_value_listener
   {
   public:
-    resolver_listener(causal_graph_listener &l, const resolver &r);
+    resolver_listener(cg_listener &l, const resolver &r);
     resolver_listener(const resolver_listener &orig) = delete;
     virtual ~resolver_listener();
 
@@ -66,12 +66,12 @@ private:
     void sat_value_change(const var &v) override;
 
   protected:
-    causal_graph_listener &listener;
+    cg_listener &listener;
     const resolver &r;
   };
 
 protected:
-  causal_graph &graph;
+  solver &graph;
 
 private:
   std::unordered_map<const flaw *, flaw_listener *> flaw_listeners;

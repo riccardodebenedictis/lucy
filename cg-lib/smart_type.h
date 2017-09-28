@@ -1,7 +1,7 @@
 #pragma once
 
 #include "type.h"
-#include "causal_graph.h"
+#include "solver.h"
 #include "atom.h"
 #include "field.h"
 
@@ -14,21 +14,21 @@ class flaw;
 
 class smart_type : public type
 {
-  friend class causal_graph;
+  friend class solver;
 
 public:
-  smart_type(causal_graph &graph, scope &scp, const std::string &name) : type(graph, scp, name, false), graph(graph) {}
+  smart_type(solver &graph, scope &scp, const std::string &name) : type(graph, scp, name, false), graph(graph) {}
   smart_type(const smart_type &that) = delete;
 
   virtual ~smart_type() {}
 
 private:
   virtual std::vector<flaw *> get_flaws() = 0;
-  virtual void new_fact(atom_flaw &) {}
-  virtual void new_goal(atom_flaw &) {}
+  virtual void new_fact(support_flaw &) {}
+  virtual void new_goal(support_flaw &) {}
 
 protected:
-  causal_graph &graph;
+  solver &graph;
 };
 
 class atom_listener : public sat_value_listener, public la_value_listener, public set_value_listener

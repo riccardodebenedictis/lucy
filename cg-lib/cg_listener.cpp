@@ -1,5 +1,5 @@
-#include "causal_graph_listener.h"
-#include "causal_graph.h"
+#include "cg_listener.h"
+#include "solver.h"
 #include "flaw.h"
 #include "resolver.h"
 #include <algorithm>
@@ -9,44 +9,44 @@
 namespace cg
 {
 
-causal_graph_listener::causal_graph_listener(causal_graph &graph) : graph(graph)
+cg_listener::cg_listener(solver &graph) : graph(graph)
 {
     graph.listeners.push_back(this);
 }
 
-causal_graph_listener::~causal_graph_listener() { graph.listeners.erase(std::find(graph.listeners.begin(), graph.listeners.end(), this)); }
+cg_listener::~cg_listener() { graph.listeners.erase(std::find(graph.listeners.begin(), graph.listeners.end(), this)); }
 
-void causal_graph_listener::new_flaw(const flaw &f)
+void cg_listener::new_flaw(const flaw &f)
 {
     flaw_listeners.insert({&f, new flaw_listener(*this, f)});
     flaw_created(f);
 }
 
-void causal_graph_listener::flaw_created(const flaw &) {}
-void causal_graph_listener::flaw_state_changed(const flaw &) {}
-void causal_graph_listener::flaw_cost_changed(const flaw &) {}
-void causal_graph_listener::current_flaw(const flaw &) {}
+void cg_listener::flaw_created(const flaw &) {}
+void cg_listener::flaw_state_changed(const flaw &) {}
+void cg_listener::flaw_cost_changed(const flaw &) {}
+void cg_listener::current_flaw(const flaw &) {}
 
-void causal_graph_listener::new_resolver(const resolver &r)
+void cg_listener::new_resolver(const resolver &r)
 {
     resolver_listeners.insert({&r, new resolver_listener(*this, r)});
     resolver_created(r);
 }
 
-void causal_graph_listener::resolver_created(const resolver &) {}
-void causal_graph_listener::resolver_state_changed(const resolver &) {}
-void causal_graph_listener::current_resolver(const resolver &) {}
+void cg_listener::resolver_created(const resolver &) {}
+void cg_listener::resolver_state_changed(const resolver &) {}
+void cg_listener::current_resolver(const resolver &) {}
 
-void causal_graph_listener::causal_link_added(const flaw &, const resolver &) {}
+void cg_listener::causal_link_added(const flaw &, const resolver &) {}
 
-std::string causal_graph_listener::to_string()
+std::string cg_listener::to_string()
 {
     std::string g;
     g += "{ ";
     if (!flaw_listeners.empty())
     {
         g += "\"flaws\" : [";
-        for (std::unordered_map<const flaw *, causal_graph_listener::flaw_listener *>::const_iterator fs_it = flaw_listeners.begin(); fs_it != flaw_listeners.end(); ++fs_it)
+        for (std::unordered_map<const flaw *, cg_listener::flaw_listener *>::const_iterator fs_it = flaw_listeners.begin(); fs_it != flaw_listeners.end(); ++fs_it)
         {
             if (fs_it != flaw_listeners.begin())
                 g += ", ";
@@ -74,7 +74,7 @@ std::string causal_graph_listener::to_string()
         if (!flaw_listeners.empty())
             g += ", ";
         g += "\"resolvers\" : [";
-        for (std::unordered_map<const resolver *, causal_graph_listener::resolver_listener *>::const_iterator rs_it = resolver_listeners.begin(); rs_it != resolver_listeners.end(); ++rs_it)
+        for (std::unordered_map<const resolver *, cg_listener::resolver_listener *>::const_iterator rs_it = resolver_listeners.begin(); rs_it != resolver_listeners.end(); ++rs_it)
         {
             if (rs_it != resolver_listeners.begin())
                 g += ", ";
@@ -114,11 +114,11 @@ std::string causal_graph_listener::to_string()
     return g;
 }
 
-causal_graph_listener::flaw_listener::flaw_listener(causal_graph_listener &listener, const flaw &f) : sat_value_listener(listener.get_graph().core::sat), listener(listener), f(f) { listen_sat(f.get_phi()); }
-causal_graph_listener::flaw_listener::~flaw_listener() {}
-void causal_graph_listener::flaw_listener::sat_value_change(const var &) { listener.flaw_state_changed(f); }
+cg_listener::flaw_listener::flaw_listener(cg_listener &listener, const flaw &f) : sat_value_listener(listener.get_graph().core::sat), listener(listener), f(f) { listen_sat(f.get_phi()); }
+cg_listener::flaw_listener::~flaw_listener() {}
+void cg_listener::flaw_listener::sat_value_change(const var &) { listener.flaw_state_changed(f); }
 
-causal_graph_listener::resolver_listener::resolver_listener(causal_graph_listener &listener, const resolver &r) : sat_value_listener(listener.get_graph().core::sat), listener(listener), r(r) { listen_sat(r.get_rho()); }
-causal_graph_listener::resolver_listener::~resolver_listener() {}
-void causal_graph_listener::resolver_listener::sat_value_change(const var &) { listener.resolver_state_changed(r); }
+cg_listener::resolver_listener::resolver_listener(cg_listener &listener, const resolver &r) : sat_value_listener(listener.get_graph().core::sat), listener(listener), r(r) { listen_sat(r.get_rho()); }
+cg_listener::resolver_listener::~resolver_listener() {}
+void cg_listener::resolver_listener::sat_value_change(const var &) { listener.resolver_state_changed(r); }
 }

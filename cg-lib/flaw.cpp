@@ -1,13 +1,13 @@
 #include "flaw.h"
 #include "resolver.h"
-#include "causal_graph.h"
+#include "solver.h"
 #include <algorithm>
 #include <cassert>
 
 namespace cg
 {
 
-flaw::flaw(causal_graph &graph, const bool &exclusive, const bool &structural) : graph(graph), exclusive(exclusive), structural(structural), supports(graph.resolvers.begin(), graph.resolvers.end())
+flaw::flaw(solver &graph, const bool &exclusive, const bool &structural) : graph(graph), exclusive(exclusive), structural(structural), supports(graph.resolvers.begin(), graph.resolvers.end())
 {
     // the cuases for this flaw is the current resolvers of the causal graph..
     for (const auto &r : graph.resolvers)

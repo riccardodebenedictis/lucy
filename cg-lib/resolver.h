@@ -7,17 +7,17 @@ using namespace smt;
 namespace cg
 {
 
-class causal_graph;
+class solver;
 class flaw;
 
 class resolver
 {
-  friend class causal_graph;
+  friend class solver;
   friend class flaw;
 
 public:
-  resolver(causal_graph &graph, const var &r, const lin &cost, flaw &eff);
-  resolver(causal_graph &graph, const lin &cost, flaw &eff);
+  resolver(solver &graph, const var &r, const lin &cost, flaw &eff);
+  resolver(solver &graph, const lin &cost, flaw &eff);
   resolver(const resolver &orig) = delete;
   virtual ~resolver();
 
@@ -31,7 +31,7 @@ public:
   virtual std::string get_label() const;
 
 protected:
-  causal_graph &graph;
+  solver &graph;
   const var rho;
   const lin cost;
   // the preconditions of this resolver..

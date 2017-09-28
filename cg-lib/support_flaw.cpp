@@ -1,15 +1,15 @@
-#include "atom_flaw.h"
-#include "causal_graph.h"
+#include "support_flaw.h"
+#include "solver.h"
 #include "predicate.h"
 #include <cassert>
 
 namespace cg
 {
 
-atom_flaw::atom_flaw(causal_graph &graph, atom &atm, bool is_fact) : flaw(graph, true, true), atm(atm), is_fact(is_fact) {}
-atom_flaw::~atom_flaw() {}
+support_flaw::support_flaw(solver &graph, atom &atm, bool is_fact) : flaw(graph, true, true), atm(atm), is_fact(is_fact) {}
+support_flaw::~support_flaw() {}
 
-void atom_flaw::compute_resolvers()
+void support_flaw::compute_resolvers()
 {
     assert(graph.core::sat.value(get_phi()) != False);
     assert(graph.core::sat.value(atm.sigma) != False);
@@ -40,7 +40,7 @@ void atom_flaw::compute_resolvers()
             atom &c_atm = static_cast<atom &>(*i);
 
             // this is the target flaw (i.e. the one we are checking for unification) and cannot be in the current flaw's causes' effects..
-            atom_flaw *target = graph.reason.at(&c_atm);
+            support_flaw *target = graph.reason.at(&c_atm);
 
             if (!target->is_expanded() ||                      // the target flaw must hav been already expanded..
                 ancestors.find(target) != ancestors.end() ||   // unifying with the target atom would introduce cyclic causality..
@@ -104,24 +104,24 @@ void atom_flaw::compute_resolvers()
         add_resolver(*new expand_goal(graph, *this, atm));
 }
 
-atom_flaw::add_fact::add_fact(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(0), atm_flaw), atm(atm) {}
-atom_flaw::add_fact::~add_fact() {}
+support_flaw::add_fact::add_fact(solver &graph, support_flaw &atm_flaw, atom &atm) : resolver(graph, lin(0), atm_flaw), atm(atm) {}
+support_flaw::add_fact::~add_fact() {}
 
-void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(rho, false), atm.sigma}); }
+void support_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(rho, false), atm.sigma}); }
 
-atom_flaw::expand_goal::expand_goal(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(1), atm_flaw), atm(atm) {}
-atom_flaw::expand_goal::~expand_goal() {}
+support_flaw::expand_goal::expand_goal(solver &graph, support_flaw &atm_flaw, atom &atm) : resolver(graph, lin(1), atm_flaw), atm(atm) {}
+support_flaw::expand_goal::~expand_goal() {}
 
-void atom_flaw::expand_goal::apply()
+void support_flaw::expand_goal::apply()
 {
     graph.core::sat.new_clause({lit(rho, false), atm.sigma});
     static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
 }
 
-atom_flaw::unify_atom::unify_atom(causal_graph &graph, atom_flaw &atm_flaw, atom &atm, atom &with, const std::vector<lit> &unif_lits) : resolver(graph, lin(1), atm_flaw), atm(atm), with(with), unif_lits(unif_lits) {}
-atom_flaw::unify_atom::~unify_atom() {}
+support_flaw::unify_atom::unify_atom(solver &graph, support_flaw &atm_flaw, atom &atm, atom &with, const std::vector<lit> &unif_lits) : resolver(graph, lin(1), atm_flaw), atm(atm), with(with), unif_lits(unif_lits) {}
+support_flaw::unify_atom::~unify_atom() {}
 
-void atom_flaw::unify_atom::apply()
+void support_flaw::unify_atom::apply()
 {
     for (const auto &v : unif_lits)
         graph.core::sat.new_clause({lit(rho, false), v});

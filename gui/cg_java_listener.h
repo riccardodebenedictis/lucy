@@ -1,17 +1,17 @@
 #pragma once
 
-#include "causal_graph_listener.h"
+#include "cg_listener.h"
 
 namespace gui
 {
 
 class java_gui;
 
-class cg_java_listener : public cg::causal_graph_listener
+class cg_java_listener : public cg::cg_listener
 {
 
 public:
-  cg_java_listener(java_gui &gui, cg::causal_graph &graph);
+  cg_java_listener(java_gui &gui, cg::solver &graph);
   cg_java_listener(const cg_java_listener &orig) = delete;
   virtual ~cg_java_listener();
 

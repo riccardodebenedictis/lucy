@@ -2,12 +2,12 @@
 #include "combinations.h"
 #include "statement.h"
 #include "expression.h"
-#include "atom_flaw.h"
+#include "support_flaw.h"
 
 namespace cg
 {
 
-reusable_resource::reusable_resource(cg::causal_graph &g) : smart_type(g, g, REUSABLE_RESOURCE_NAME)
+reusable_resource::reusable_resource(cg::solver &g) : smart_type(g, g, REUSABLE_RESOURCE_NAME)
 {
     add_field(*this, *new field(g.get_type("real"), REUSABLE_RESOURCE_CAPACITY));
     constructors.push_back(new rr_constructor(*this));
@@ -93,7 +93,7 @@ std::vector<flaw *> reusable_resource::get_flaws()
     }
 }
 
-void reusable_resource::new_fact(atom_flaw &f)
+void reusable_resource::new_fact(support_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
     atom &atm = f.get_atom();
@@ -114,7 +114,7 @@ void reusable_resource::new_fact(atom_flaw &f)
         to_check.insert(&*c_scope);
 }
 
-void reusable_resource::new_goal(atom_flaw &) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
+void reusable_resource::new_goal(support_flaw &) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
 
 reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_CAPACITY)}, {{REUSABLE_RESOURCE_CAPACITY, {new ast::id_expression({REUSABLE_RESOURCE_CAPACITY})}}}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}), new ast::real_literal_expression(0)))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
@@ -135,7 +135,7 @@ void reusable_resource::rr_atom_listener::something_changed()
         rr.to_check.insert(&*c_scope);
 }
 
-reusable_resource::rr_flaw::rr_flaw(causal_graph &graph, const std::set<atom *> &overlapping_atoms) : flaw(graph), overlapping_atoms(overlapping_atoms) {}
+reusable_resource::rr_flaw::rr_flaw(solver &graph, const std::set<atom *> &overlapping_atoms) : flaw(graph), overlapping_atoms(overlapping_atoms) {}
 reusable_resource::rr_flaw::~rr_flaw() {}
 
 void reusable_resource::rr_flaw::compute_resolvers()
@@ -175,13 +175,13 @@ void reusable_resource::rr_flaw::compute_resolvers()
     }
 }
 
-reusable_resource::rr_resolver::rr_resolver(causal_graph &graph, const lin &cost, rr_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
+reusable_resource::rr_resolver::rr_resolver(solver &graph, const lin &cost, rr_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
 reusable_resource::rr_resolver::~rr_resolver() {}
 void reusable_resource::rr_resolver::apply() { graph.core::sat.new_clause({lit(rho, false), to_do}); }
 
-reusable_resource::order_resolver::order_resolver(causal_graph &graph, const lin &cost, rr_flaw &f, const atom &before, const atom &after, const lit &to_do) : rr_resolver(graph, cost, f, to_do), before(before), after(after) {}
+reusable_resource::order_resolver::order_resolver(solver &graph, const lin &cost, rr_flaw &f, const atom &before, const atom &after, const lit &to_do) : rr_resolver(graph, cost, f, to_do), before(before), after(after) {}
 reusable_resource::order_resolver::~order_resolver() {}
 
-reusable_resource::displace_resolver::displace_resolver(causal_graph &graph, const lin &cost, rr_flaw &f, const atom &a, const item &i, const lit &to_do) : rr_resolver(graph, cost, f, to_do), a(a), i(i) {}
+reusable_resource::displace_resolver::displace_resolver(solver &graph, const lin &cost, rr_flaw &f, const atom &a, const item &i, const lit &to_do) : rr_resolver(graph, cost, f, to_do), a(a), i(i) {}
 reusable_resource::displace_resolver::~displace_resolver() {}
 }

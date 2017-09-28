@@ -1,7 +1,7 @@
 #include "java_gui.h"
 
 #include "cg_java_listener.h"
-#include "causal_graph.h"
+#include "solver.h"
 #include "flaw.h"
 #include "resolver.h"
 

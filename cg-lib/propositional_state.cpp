@@ -1,11 +1,11 @@
 #include "propositional_state.h"
 #include "predicate.h"
-#include "atom_flaw.h"
+#include "support_flaw.h"
 
 namespace cg
 {
 
-propositional_state::propositional_state(causal_graph &graph) : smart_type(graph, graph, PROPOSITIONAL_STATE_NAME)
+propositional_state::propositional_state(solver &graph) : smart_type(graph, graph, PROPOSITIONAL_STATE_NAME)
 {
     constructors.push_back(new ps_constructor(*this));
     predicates.insert({PROPOSITIONAL_STATE_PREDICATE_NAME, new ps_predicate(*this)});
@@ -33,7 +33,7 @@ void propositional_state::new_predicate(predicate &pred)
     add_field(pred, *new field(static_cast<type &>(pred.get_scope()), "scope"));
 }
 
-void propositional_state::new_fact(atom_flaw &f)
+void propositional_state::new_fact(support_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
     atom &atm = f.get_atom();
@@ -45,7 +45,7 @@ void propositional_state::new_fact(atom_flaw &f)
     to_check.insert(&atm);
 }
 
-void propositional_state::new_goal(atom_flaw &f)
+void propositional_state::new_goal(support_flaw &f)
 {
     atom &atm = f.get_atom();
     atoms.push_back({&atm, new ps_atom_listener(*this, atm)});
@@ -59,17 +59,17 @@ propositional_state::ps_atom_listener::ps_atom_listener(propositional_state &ps,
 propositional_state::ps_atom_listener::~ps_atom_listener() {}
 void propositional_state::ps_atom_listener::something_changed() { ps.to_check.insert(&atm); }
 
-propositional_state::ps_flaw::ps_flaw(causal_graph &g, const std::set<atom *> &overlapping_atoms) : flaw(g), overlapping_atoms(overlapping_atoms) {}
+propositional_state::ps_flaw::ps_flaw(solver &g, const std::set<atom *> &overlapping_atoms) : flaw(g), overlapping_atoms(overlapping_atoms) {}
 propositional_state::ps_flaw::~ps_flaw() {}
 void propositional_state::ps_flaw::compute_resolvers() {}
 
-propositional_state::ps_resolver::ps_resolver(causal_graph &graph, const lin &cost, ps_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
+propositional_state::ps_resolver::ps_resolver(solver &graph, const lin &cost, ps_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
 propositional_state::ps_resolver::~ps_resolver() {}
 void propositional_state::ps_resolver::apply() { graph.core::sat.new_clause({lit(rho, false), to_do}); }
 
-propositional_state::order_resolver::order_resolver(causal_graph &graph, const lin &cost, ps_flaw &f, const atom &before, const atom &after, const lit &to_do) : ps_resolver(graph, cost, f, to_do), before(before), after(after) {}
+propositional_state::order_resolver::order_resolver(solver &graph, const lin &cost, ps_flaw &f, const atom &before, const atom &after, const lit &to_do) : ps_resolver(graph, cost, f, to_do), before(before), after(after) {}
 propositional_state::order_resolver::~order_resolver() {}
 
-propositional_state::displace_resolver::displace_resolver(causal_graph &graph, const lin &cost, ps_flaw &f, const atom &a, const std::string &f_name, const item &i, const lit &to_do) : ps_resolver(graph, cost, f, to_do), a(a), f_name(f_name), i(i) {}
+propositional_state::displace_resolver::displace_resolver(solver &graph, const lin &cost, ps_flaw &f, const atom &a, const std::string &f_name, const item &i, const lit &to_do) : ps_resolver(graph, cost, f, to_do), a(a), f_name(f_name), i(i) {}
 propositional_state::displace_resolver::~displace_resolver() {}
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-  <Type Name="cg::causal_graph">
+  <Type Name="cg::solver">
     <DisplayString>{{causal graph}}</DisplayString>
   </Type>
   <Type Name="lucy::core">
