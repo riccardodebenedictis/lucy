@@ -14,7 +14,7 @@
 namespace lucy
 {
 
-core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), set_th(sat)
+core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), ov_th(sat)
 {
     types.insert({BOOL_KEYWORD, new bool_type(*this)});
     types.insert({INT_KEYWORD, new int_type(*this)});
@@ -113,7 +113,7 @@ expr core::new_enum(const type &tp, const std::unordered_set<item *> &allowed_va
     assert(tp.name.compare(BOOL_KEYWORD) != 0);
     assert(tp.name.compare(INT_KEYWORD) != 0);
     assert(tp.name.compare(REAL_KEYWORD) != 0);
-    return new var_item(*this, tp, set_th.new_var(std::unordered_set<set_item *>(allowed_vals.begin(), allowed_vals.end())));
+    return new var_item(*this, tp, ov_th.new_var(std::unordered_set<set_item *>(allowed_vals.begin(), allowed_vals.end())));
 }
 
 expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vector<item *> &vals)
@@ -152,7 +152,7 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
         return re;
     }
     else
-        return new var_item(*this, tp, set_th.new_var(vars, std::vector<set_item *>(vals.begin(), vals.end())));
+        return new var_item(*this, tp, ov_th.new_var(vars, std::vector<set_item *>(vals.begin(), vals.end())));
 }
 
 bool_expr core::negate(bool_expr var) { return new bool_item(*this, !var->l); }
@@ -319,7 +319,7 @@ interval core::arith_bounds(const arith_expr &x) const noexcept { return la_th.b
 
 double core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
 
-std::unordered_set<set_item *> core::enum_value(const var_expr &x) const noexcept { return set_th.value(x->ev); }
+std::unordered_set<set_item *> core::enum_value(const var_expr &x) const noexcept { return ov_th.value(x->ev); }
 
 std::string core::to_string(const std::map<std::string, expr> &c_items) const noexcept
 {
@@ -360,7 +360,7 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const no
         else if (var_item *ei = dynamic_cast<var_item *>(&*is_it->second))
         {
             iss += "{ \"var\" : \"e" + std::to_string(ei->ev) + "\", \"vals\" : [ ";
-            std::unordered_set<set_item *> vals = set_th.value(ei->ev);
+            std::unordered_set<set_item *> vals = ov_th.value(ei->ev);
             for (std::unordered_set<set_item *>::iterator vals_it = vals.begin(); vals_it != vals.end(); ++vals_it)
             {
                 if (vals_it != vals.begin())

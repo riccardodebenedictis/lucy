@@ -5,7 +5,7 @@
 #include "parser.h"
 #include "sat_core.h"
 #include "la_theory.h"
-#include "set_theory.h"
+#include "ov_theory.h"
 
 #define BOOL_KEYWORD "bool"
 #define INT_KEYWORD "int"
@@ -166,9 +166,9 @@ private:
   std::vector<ast::compilation_unit *> cus;
 
 public:
-  sat_core sat;      // the sat core..
-  la_theory la_th;   // the linear arithmetic theory..
-  set_theory set_th; // the set theory..
+  sat_core sat;    // the sat core..
+  la_theory la_th; // the linear-arithmetic theory..
+  ov_theory ov_th; // the object-variable theory..
 
 private:
   var tmp_var;

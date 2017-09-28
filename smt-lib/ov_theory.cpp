@@ -1,4 +1,4 @@
-#include "set_theory.h"
+#include "ov_theory.h"
 #include "sat_core.h"
 #include <cassert>
 #include <algorithm>
@@ -6,11 +6,11 @@
 namespace smt
 {
 
-set_theory::set_theory(sat_core &sat) : theory(sat) {}
+ov_theory::ov_theory(sat_core &sat) : theory(sat) {}
 
-set_theory::~set_theory() {}
+ov_theory::~ov_theory() {}
 
-const var set_theory::new_var(const std::unordered_set<set_item *> &items)
+const var ov_theory::new_var(const std::unordered_set<set_item *> &items)
 {
     assert(!items.empty());
     const var id = assigns.size();
@@ -28,7 +28,7 @@ const var set_theory::new_var(const std::unordered_set<set_item *> &items)
     return id;
 }
 
-const var set_theory::new_var(const std::vector<var> &vars, const std::vector<set_item *> &vals)
+const var ov_theory::new_var(const std::vector<var> &vars, const std::vector<set_item *> &vals)
 {
     assert(!vars.empty());
     assert(std::all_of(vars.begin(), vars.end(), [&](var v) { return is_contained_in.find(v) != is_contained_in.end(); }));
@@ -42,7 +42,7 @@ const var set_theory::new_var(const std::vector<var> &vars, const std::vector<se
     return id;
 }
 
-const var set_theory::allows(const var &left, set_item &right) const
+const var ov_theory::allows(const var &left, set_item &right) const
 {
     if (assigns[left].find(&right) != assigns[left].end())
         return assigns[left].at(&right);
@@ -50,7 +50,7 @@ const var set_theory::allows(const var &left, set_item &right) const
         return FALSE_var;
 }
 
-const var set_theory::eq(const var &left, const var &right)
+const var ov_theory::eq(const var &left, const var &right)
 {
     if (left == right)
         return TRUE_var;
@@ -100,7 +100,7 @@ const var set_theory::eq(const var &left, const var &right)
     }
 }
 
-std::unordered_set<set_item *> set_theory::value(var v) const
+std::unordered_set<set_item *> ov_theory::value(var v) const
 {
     std::unordered_set<set_item *> vals;
     for (const auto &val : assigns[v])
@@ -109,7 +109,7 @@ std::unordered_set<set_item *> set_theory::value(var v) const
     return vals;
 }
 
-bool set_theory::propagate(const lit &p, std::vector<lit> &cnfl)
+bool ov_theory::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     for (const auto &v : is_contained_in.at(p.v))
@@ -119,15 +119,15 @@ bool set_theory::propagate(const lit &p, std::vector<lit> &cnfl)
     return true;
 }
 
-bool set_theory::check(std::vector<lit> &cnfl)
+bool ov_theory::check(std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     return true;
 }
 
-void set_theory::push() { layers.push_back(layer()); }
+void ov_theory::push() { layers.push_back(layer()); }
 
-void set_theory::pop()
+void ov_theory::pop()
 {
     for (const auto &v : layers.back().vars)
         if (listening.find(v) != listening.end())
@@ -136,9 +136,9 @@ void set_theory::pop()
     layers.pop_back();
 }
 
-void set_theory::listen(const var &v, set_value_listener *const l) { listening[v].push_back(l); }
+void ov_theory::listen(const var &v, set_value_listener *const l) { listening[v].push_back(l); }
 
-void set_theory::forget(const var &v, set_value_listener *const l)
+void ov_theory::forget(const var &v, set_value_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())

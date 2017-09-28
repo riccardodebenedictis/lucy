@@ -27,7 +27,7 @@
   <Type Name="smt::la_theory">
     <DisplayString>{{linear arithmetic theory}}</DisplayString>
   </Type>
-  <Type Name="smt::set_theory">
+  <Type Name="smt::ov_theory">
     <DisplayString>{{set theory}}</DisplayString>
   </Type>
 </AutoVisualizer>

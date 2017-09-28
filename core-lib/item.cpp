@@ -2,7 +2,7 @@
 #include "core.h"
 #include "type.h"
 #include "field.h"
-#include "set_theory.h"
+#include "ov_theory.h"
 #include <cassert>
 
 namespace lucy
@@ -150,7 +150,7 @@ expr var_item::get(const std::string &name) const
 {
 	if (items.find(name) == items.end())
 	{
-		std::unordered_set<set_item *> vs = cr.set_th.value(ev);
+		std::unordered_set<set_item *> vs = cr.ov_th.value(ev);
 		if (vs.size() == 1)
 			return (static_cast<item *>(*vs.begin()))->get(name);
 		else
@@ -160,7 +160,7 @@ expr var_item::get(const std::string &name) const
 			std::unordered_set<item *> vals_set;
 			for (const auto &val : vs)
 			{
-				c_vars.push_back(cr.set_th.allows(ev, *val));
+				c_vars.push_back(cr.ov_th.allows(ev, *val));
 				c_vals.push_back(&*static_cast<item *>(val)->get(name));
 				vals_set.insert(c_vals.back());
 			}
@@ -179,9 +179,9 @@ var var_item::eq(item &i) noexcept
 	if (this == &i)
 		return TRUE_var;
 	else if (var_item *ee = dynamic_cast<var_item *>(&i))
-		return cr.set_th.eq(ev, ee->ev);
+		return cr.ov_th.eq(ev, ee->ev);
 	else
-		return cr.set_th.allows(ev, i);
+		return cr.ov_th.allows(ev, i);
 }
 
 bool var_item::equates(const item &i) const noexcept
@@ -190,8 +190,8 @@ bool var_item::equates(const item &i) const noexcept
 		return true;
 	else if (const var_item *ei = dynamic_cast<const var_item *>(&i))
 	{
-		std::unordered_set<set_item *> c_vals = cr.set_th.value(ev);
-		std::unordered_set<set_item *> i_vals = cr.set_th.value(ei->ev);
+		std::unordered_set<set_item *> c_vals = cr.ov_th.value(ev);
+		std::unordered_set<set_item *> i_vals = cr.ov_th.value(ei->ev);
 		for (const auto &c_v : c_vals)
 			if (i_vals.find(c_v) != i_vals.end())
 				return true;
@@ -199,7 +199,7 @@ bool var_item::equates(const item &i) const noexcept
 	}
 	else
 	{
-		std::unordered_set<set_item *> c_vals = cr.set_th.value(ev);
+		std::unordered_set<set_item *> c_vals = cr.ov_th.value(ev);
 		return c_vals.find(const_cast<set_item *>(static_cast<const set_item *>(&i))) != c_vals.end();
 	}
 }

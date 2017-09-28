@@ -18,14 +18,14 @@ public:
   virtual ~set_item() {}
 };
 
-class set_theory : public theory
+class ov_theory : public theory
 {
   friend class set_value_listener;
 
 public:
-  set_theory(sat_core &sat);
-  set_theory(const set_theory &orig) = delete;
-  virtual ~set_theory();
+  ov_theory(sat_core &sat);
+  ov_theory(const ov_theory &orig) = delete;
+  virtual ~ov_theory();
 
   const var new_var(const std::unordered_set<set_item *> &items);
   const var new_var(const std::vector<var> &vars, const std::vector<set_item *> &vals);
@@ -69,10 +69,10 @@ private:
 
 class set_value_listener
 {
-  friend class set_theory;
+  friend class ov_theory;
 
 public:
-  set_value_listener(set_theory &s) : th(s) {}
+  set_value_listener(ov_theory &s) : th(s) {}
   set_value_listener(const set_value_listener &that) = delete;
 
   virtual ~set_value_listener()
@@ -92,7 +92,7 @@ private:
   virtual void set_value_change(const var &) {}
 
 private:
-  set_theory &th;
+  ov_theory &th;
   std::vector<var> la_vars;
 };
 }

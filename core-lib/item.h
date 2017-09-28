@@ -3,7 +3,7 @@
 #include "env.h"
 #include "sat_core.h"
 #include "la_theory.h"
-#include "set_theory.h"
+#include "ov_theory.h"
 
 using namespace smt;
 
