@@ -20,9 +20,9 @@ namespace lucy
 class bool_expr;
 class arith_expr;
 class string_expr;
-class enum_expr;
+class var_expr;
 class atom;
-class enum_item;
+class var_item;
 class disjunction;
 class atom_state;
 class parser;
@@ -59,7 +59,7 @@ public:
 class core : public scope, public env
 {
   friend class type;
-  friend class enum_item;
+  friend class var_item;
   friend class ast::typedef_declaration;
   friend class ast::enum_declaration;
   friend class ast::class_declaration;
@@ -124,18 +124,18 @@ public:
     return c_methods;
   }
 
-  predicate &get_predicate(const std::string &name) const override;
-  std::map<std::string, predicate *> get_predicates() const noexcept override { return predicates; }
-
   type &get_type(const std::string &name) const override;
   std::map<std::string, type *> get_types() const noexcept override { return types; }
+
+  predicate &get_predicate(const std::string &name) const override;
+  std::map<std::string, predicate *> get_predicates() const noexcept override { return predicates; }
 
   expr get(const std::string &name) const override;
 
   lbool bool_value(const bool_expr &x) const noexcept;
   interval arith_bounds(const arith_expr &x) const noexcept;
   double arith_value(const arith_expr &x) const noexcept;
-  std::unordered_set<set_item *> enum_value(const enum_expr &x) const noexcept;
+  std::unordered_set<set_item *> enum_value(const var_expr &x) const noexcept;
 
   virtual void solve() = 0;
 
@@ -154,12 +154,12 @@ protected:
   void restore_var() { ctr_var = tmp_var; }
 
 public:
-  std::string to_string() const;
+  std::string to_string() const noexcept;
 
 private:
-  std::string to_string(const item *const i) const;
-  std::string to_string(const atom *const i) const;
-  std::string to_string(const std::map<std::string, expr> &items) const;
+  std::string to_string(const item *const i) const noexcept;
+  std::string to_string(const atom *const i) const noexcept;
+  std::string to_string(const std::map<std::string, expr> &items) const noexcept;
 
 private:
   parser prs;

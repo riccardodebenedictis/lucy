@@ -42,9 +42,9 @@ private:
   private:
     void something_changed();
 
-    void sat_value_change(const var &v) override { something_changed(); }
-    void la_value_change(const var &v) override { something_changed(); }
-    void set_value_change(const var &v) override { something_changed(); }
+    void sat_value_change(const var &) override { something_changed(); }
+    void la_value_change(const var &) override { something_changed(); }
+    void set_value_change(const var &) override { something_changed(); }
 
   protected:
     state_variable &sv;
@@ -87,7 +87,7 @@ private:
     order_resolver(const order_resolver &that) = delete;
     virtual ~order_resolver();
 
-    std::string get_label() const override { return "ρ" + std::to_string(rho) + " σ" + std::to_string(before.state) + " <= σ" + std::to_string(after.state); }
+    std::string get_label() const override { return "ρ" + std::to_string(rho) + " σ" + std::to_string(before.sigma) + " <= σ" + std::to_string(after.sigma); }
 
   private:
     const atom &before;
@@ -104,7 +104,7 @@ private:
     std::string get_label() const override
     {
       // this should be an enumerative expression (or the resolver should not have been created)..
-      enum_expr c_scp = a.get("scope");
+      var_expr c_scp = a.get("scope");
       return "ρ" + std::to_string(rho) + " scope (τ" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }
 

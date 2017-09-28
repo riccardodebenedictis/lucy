@@ -20,11 +20,15 @@ class expr;
 namespace ast
 {
 class field_declaration;
+class local_field_statement;
 }
 
 class scope
 {
+  friend class core;
+  friend class type;
   friend class ast::field_declaration;
+  friend class ast::local_field_statement;
 
 public:
   scope(core &cr, scope &scp);
@@ -52,6 +56,8 @@ protected:
 protected:
   core &cr;
   scope &scp;
+
+private:
   std::map<std::string, field *> fields;
 };
 }

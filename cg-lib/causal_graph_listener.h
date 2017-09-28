@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sat_value_listener.h"
+#include "sat_core.h"
 
 using namespace smt;
 

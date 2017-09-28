@@ -2,6 +2,8 @@
 #include "field.h"
 #include "type.h"
 #include "item.h"
+#include "statement.h"
+#include "expression.h"
 #include <cassert>
 
 namespace lucy
@@ -9,9 +11,9 @@ namespace lucy
 
 constructor::constructor(core &cr, scope &scp, const std::vector<field *> &args, const std::vector<std::pair<std::string, std::vector<ast::expression *>>> &il, const std::vector<ast::statement *> &stmnts) : scope(cr, scp), args(args), init_list(il), statements(stmnts)
 {
-    fields.insert({THIS_KEYWORD, new field(static_cast<type &>(scp), THIS_KEYWORD, nullptr, true)});
+    add_field(*this, *new field(static_cast<type &>(scp), THIS_KEYWORD, nullptr, true));
     for (const auto &arg : args)
-        fields.insert({arg->name, new field(arg->tp, arg->name)});
+        add_field(*this, *arg);
 }
 
 constructor::~constructor() {}
@@ -38,7 +40,6 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
     // we initialize the supertypes..
     size_t il_idx = 0;
     for (const auto &st : static_cast<type &>(scp).get_supertypes())
-    {
         if (il_idx < init_list.size() && init_list[il_idx].first.compare(st->name) == 0) // explicit supertype constructor invocation..
         {
             std::vector<expr> c_exprs;
@@ -59,7 +60,6 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
             // we assume that the default constructor exists..
             st->get_constructor({}).invoke(itm, {});
         }
-    }
 
     // we procede with the assignment list..
     for (; il_idx < init_list.size(); il_idx++)
@@ -70,7 +70,6 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
 
     // we instantiate the uninstantiated fields..
     for (const auto &f : scp.get_fields())
-    {
         if (!f.second->synthetic && itm.items.find((f.second->name)) == itm.items.end())
         {
             // the field is uninstantiated..
@@ -85,7 +84,6 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
                     itm.items.insert({f.second->name, tp.new_existential()});
             }
         }
-    }
 
     // finally, we execute the constructor body..
     for (const auto &s : statements)

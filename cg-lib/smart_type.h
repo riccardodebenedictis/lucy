@@ -4,9 +4,6 @@
 #include "causal_graph.h"
 #include "atom.h"
 #include "field.h"
-#include "sat_value_listener.h"
-#include "la_value_listener.h"
-#include "set_value_listener.h"
 
 using namespace lucy;
 
@@ -27,8 +24,8 @@ public:
 
 private:
   virtual std::vector<flaw *> get_flaws() = 0;
-  virtual void new_fact(atom_flaw &f) {}
-  virtual void new_goal(atom_flaw &f) {}
+  virtual void new_fact(atom_flaw &) {}
+  virtual void new_goal(atom_flaw &) {}
 
 protected:
   causal_graph &graph;
@@ -52,7 +49,7 @@ public:
           else if (arith_item *ae = dynamic_cast<arith_item *>(i))
             for (const auto &term : ae->l.vars)
               listen_la(term.first);
-          else if (enum_item *ee = dynamic_cast<enum_item *>(i))
+          else if (var_item *ee = dynamic_cast<var_item *>(i))
             listen_set(ee->ev);
         }
 

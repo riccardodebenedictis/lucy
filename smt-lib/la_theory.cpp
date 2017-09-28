@@ -1,7 +1,6 @@
 #include "la_theory.h"
 #include "sat_core.h"
 #include "la_constr.h"
-#include "la_value_listener.h"
 #include <algorithm>
 #include <cassert>
 

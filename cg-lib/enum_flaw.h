@@ -12,7 +12,7 @@ namespace cg
 class enum_flaw : public flaw
 {
 public:
-  enum_flaw(causal_graph &graph, enum_item &e_itm);
+  enum_flaw(causal_graph &graph, var_item &e_itm);
   enum_flaw(const enum_flaw &orig) = delete;
   virtual ~enum_flaw();
 
@@ -39,6 +39,6 @@ private:
   };
 
 private:
-  enum_item &e_itm;
+  var_item &e_itm;
 };
 }

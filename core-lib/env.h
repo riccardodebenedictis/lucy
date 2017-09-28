@@ -20,10 +20,12 @@ class return_statement;
 class env
 {
   friend class context;
+  friend class core;
   friend class scope;
   friend class method;
   friend class predicate;
   friend class constructor;
+  friend class var_item;
   friend class ast::assignment_statement;
   friend class ast::local_field_statement;
   friend class ast::formula_statement;
@@ -35,7 +37,6 @@ public:
   virtual ~env();
 
   core &get_core() const { return cr; }
-
   context get_ctx() const { return ctx; }
 
   virtual expr get(const std::string &name) const;
@@ -46,6 +47,8 @@ private:
 
 protected:
   core &cr;
+
+private:
   const context ctx;
   std::map<std::string, expr> items;
 };

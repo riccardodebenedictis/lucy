@@ -18,7 +18,7 @@
   <Type Name="lucy::string_item">
     <DisplayString>{{string}}</DisplayString>
   </Type>
-  <Type Name="lucy::enum_item">
+  <Type Name="lucy::var_item">
     <DisplayString>{{enum}}</DisplayString>
   </Type>
   <Type Name="smt::sat_core">

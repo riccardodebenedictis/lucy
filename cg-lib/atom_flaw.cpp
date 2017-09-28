@@ -12,8 +12,8 @@ atom_flaw::~atom_flaw() {}
 void atom_flaw::compute_resolvers()
 {
     assert(graph.core::sat.value(get_phi()) != False);
-    assert(graph.core::sat.value(atm.state) != False);
-    if (graph.core::sat.value(atm.state) == Undefined) // we check if the atom can unify..
+    assert(graph.core::sat.value(atm.sigma) != False);
+    if (graph.core::sat.value(atm.sigma) == Undefined) // we check if the atom can unify..
     {
         // we collect the ancestors of this flaw, so as to avoid cyclic causality..
         std::unordered_set<const flaw *> ancestors;
@@ -44,7 +44,7 @@ void atom_flaw::compute_resolvers()
 
             if (!target->is_expanded() ||                      // the target flaw must hav been already expanded..
                 ancestors.find(target) != ancestors.end() ||   // unifying with the target atom would introduce cyclic causality..
-                graph.core::sat.value(c_atm.state) == False || // the target atom is unified with some other atom..
+                graph.core::sat.value(c_atm.sigma) == False || // the target atom is unified with some other atom..
                 !atm.equates(c_atm))                           // the atom does not equate with the target target..
                 continue;
 
@@ -58,8 +58,8 @@ void atom_flaw::compute_resolvers()
             std::vector<lit> unif_lits;
             q.push(this);
             q.push(target);
-            unif_lits.push_back(lit(atm.state, false)); // we force the state of this atom to be 'unified' within the unification literals..
-            unif_lits.push_back(c_atm.state);           // we force the state of the target atom to be 'active' within the unification literals..
+            unif_lits.push_back(lit(atm.sigma, false)); // we force the state of this atom to be 'unified' within the unification literals..
+            unif_lits.push_back(c_atm.sigma);           // we force the state of the target atom to be 'active' within the unification literals..
             std::unordered_set<const flaw *> seen;
             while (!q.empty())
             {
@@ -107,14 +107,14 @@ void atom_flaw::compute_resolvers()
 atom_flaw::add_fact::add_fact(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(0), atm_flaw), atm(atm) {}
 atom_flaw::add_fact::~add_fact() {}
 
-void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(rho, false), atm.state}); }
+void atom_flaw::add_fact::apply() { graph.core::sat.new_clause({lit(rho, false), atm.sigma}); }
 
 atom_flaw::expand_goal::expand_goal(causal_graph &graph, atom_flaw &atm_flaw, atom &atm) : resolver(graph, lin(1), atm_flaw), atm(atm) {}
 atom_flaw::expand_goal::~expand_goal() {}
 
 void atom_flaw::expand_goal::apply()
 {
-    graph.core::sat.new_clause({lit(rho, false), atm.state});
+    graph.core::sat.new_clause({lit(rho, false), atm.sigma});
     static_cast<const predicate *>(&atm.tp)->apply_rule(atm);
 }
 

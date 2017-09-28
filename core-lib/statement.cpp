@@ -113,7 +113,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
             c_scope = &*c_scope->get(s);
         p = &static_cast<item *>(c_scope)->tp.get_predicate(predicate_name);
 
-        if (enum_item *ee = dynamic_cast<enum_item *>(c_scope)) // the scope is an enumerative expression..
+        if (var_item *ee = dynamic_cast<var_item *>(c_scope)) // the scope is an enumerative expression..
             assgnments.insert({"scope", ee});
         else // the scope is a single item..
             assgnments.insert({"scope", context(c_scope)});
@@ -132,7 +132,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
         if (tt.is_assignable_from(e->tp))          // the target type is a superclass of the assignment..
             assgnments.insert({a.first, e});
         else if (e->tp.is_assignable_from(tt))                  // the target type is a subclass of the assignment..
-            if (enum_item *ae = dynamic_cast<enum_item *>(&*e)) // some of the allowed values might be inhibited..
+            if (var_item *ae = dynamic_cast<var_item *>(&*e)) // some of the allowed values might be inhibited..
             {
                 std::unordered_set<set_item *> alwd_vals = scp.get_core().set_th.value(ae->ev); // the allowed values..
                 std::vector<lit> not_alwd_vals;                                                 // the not allowed values..

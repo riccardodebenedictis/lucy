@@ -8,13 +8,13 @@ class item;
 class bool_item;
 class arith_item;
 class string_item;
-class enum_item;
+class var_item;
 
 class expr;
 class bool_expr;
 class arith_expr;
 class string_expr;
-class enum_expr;
+class var_expr;
 
 class context
 {
@@ -30,7 +30,7 @@ public:
   operator bool_expr() const;
   operator arith_expr() const;
   operator string_expr() const;
-  operator enum_expr() const;
+  operator var_expr() const;
 
   bool operator==(const context &right) const { return ptr == right.ptr; }
   bool operator!=(const context &right) const { return !(*this == right); }
@@ -83,14 +83,14 @@ public:
   string_item *operator->() const;
 };
 
-class enum_expr : public expr
+class var_expr : public expr
 {
 public:
-  enum_expr(enum_item *const ptr);
-  enum_expr(const enum_expr &orig);
-  virtual ~enum_expr() {}
+  var_expr(var_item *const ptr);
+  var_expr(const var_expr &orig);
+  virtual ~var_expr() {}
 
-  enum_item &operator*() const;
-  enum_item *operator->() const;
+  var_item &operator*() const;
+  var_item *operator->() const;
 };
 }

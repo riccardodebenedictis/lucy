@@ -46,18 +46,4 @@ bool clause::propagate(const lit &p)
     s.watches[s.index(p)].push_back(this);
     return s.enqueue(lits[0], this);
 }
-
-std::string clause::to_string() const
-{
-    std::string c;
-    c += "{ \"lits\" : [";
-    for (std::vector<lit>::const_iterator it = lits.begin(); it != lits.end(); ++it)
-    {
-        if (it != lits.begin())
-            c += ", ";
-        c += (*it).to_string();
-    }
-    c += "]}";
-    return c;
-}
 }

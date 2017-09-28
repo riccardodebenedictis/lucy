@@ -9,7 +9,7 @@ namespace cg
 
 reusable_resource::reusable_resource(cg::causal_graph &g) : smart_type(g, g, REUSABLE_RESOURCE_NAME)
 {
-    fields.insert({REUSABLE_RESOURCE_CAPACITY, new field(g.get_type("real"), REUSABLE_RESOURCE_CAPACITY)});
+    add_field(*this, *new field(g.get_type("real"), REUSABLE_RESOURCE_CAPACITY));
     constructors.push_back(new rr_constructor(*this));
     predicates.insert({REUSABLE_RESOURCE_USE_PREDICATE_NAME, new use_predicate(*this)});
 }
@@ -28,10 +28,10 @@ std::vector<flaw *> reusable_resource::get_flaws()
         for (const auto &a : atoms)
         {
             // we filter out those which are not strictly active..
-            if (graph.core::sat.value(a.first->state) == True)
+            if (graph.core::sat.value(a.first->sigma) == True)
             {
                 expr c_scope = a.first->get("scope");
-                if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
+                if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
                 {
                     for (const auto &val : graph.set_th.value(enum_scope->ev))
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
@@ -97,24 +97,24 @@ void reusable_resource::new_fact(atom_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
     atom &atm = f.get_atom();
-    set_var(atm.state);
+    set_var(atm.sigma);
     static_cast<predicate &>(get_predicate(REUSABLE_RESOURCE_USE_PREDICATE_NAME)).apply_rule(atm);
     restore_var();
 
     // we avoid unification..
-    if (!graph.core::sat.new_clause({lit(f.get_phi(), false), atm.state}))
+    if (!graph.core::sat.new_clause({lit(f.get_phi(), false), atm.sigma}))
         throw unsolvable_exception();
 
     atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
     expr c_scope = atm.get("scope");
-    if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
+    if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : graph.set_th.value(enum_scope->ev))
             to_check.insert(static_cast<item *>(val));
     else
         to_check.insert(&*c_scope);
 }
 
-void reusable_resource::new_goal(atom_flaw &f) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
+void reusable_resource::new_goal(atom_flaw &) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
 
 reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_CAPACITY)}, {{REUSABLE_RESOURCE_CAPACITY, {new ast::id_expression({REUSABLE_RESOURCE_CAPACITY})}}}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}), new ast::real_literal_expression(0)))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
@@ -128,7 +128,7 @@ reusable_resource::rr_atom_listener::~rr_atom_listener() {}
 void reusable_resource::rr_atom_listener::something_changed()
 {
     expr c_scope = atm.get("scope");
-    if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
+    if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : atm.get_core().set_th.value(enum_scope->ev))
             rr.to_check.insert(static_cast<item *>(val));
     else
@@ -156,7 +156,7 @@ void reusable_resource::rr_flaw::compute_resolvers()
             add_resolver(*new order_resolver(graph, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
 
         expr a0_scope = as[0]->get("scope");
-        if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a0_scope))
+        if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
             std::unordered_set<set_item *> a0_scopes = graph.set_th.value(enum_scope->ev);
             if (a0_scopes.size() > 1)
@@ -165,7 +165,7 @@ void reusable_resource::rr_flaw::compute_resolvers()
         }
 
         expr a1_scope = as[1]->get("scope");
-        if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a1_scope))
+        if (var_item *enum_scope = dynamic_cast<var_item *>(&*a1_scope))
         {
             std::unordered_set<set_item *> a1_scopes = graph.set_th.value(enum_scope->ev);
             if (a1_scopes.size() > 1)

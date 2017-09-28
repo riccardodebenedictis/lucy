@@ -11,7 +11,6 @@ namespace smt
 
 class clause;
 class theory;
-class sat_listener;
 class sat_value_listener;
 
 static const var FALSE_var = 0;
@@ -28,7 +27,6 @@ class sat_core
 {
     friend class clause;
     friend class theory;
-    friend class sat_listener;
     friend class sat_value_listener;
 
   public:
@@ -110,9 +108,6 @@ class sat_core
     void listen(const var &v, sat_value_listener *const l);
     void forget(const var &v, sat_value_listener *const l);
 
-  public:
-    std::string to_string();
-
   private:
     // collection of problem constraints..
     std::vector<clause *> constrs;
@@ -137,7 +132,34 @@ class sat_core
     std::vector<theory *> theories;
     std::unordered_map<var, std::list<theory *>> bounds;
     std::unordered_map<var, std::list<sat_value_listener *>> listening;
+};
 
-    std::vector<sat_listener *> listeners;
+class sat_value_listener
+{
+    friend class sat_core;
+
+  public:
+    sat_value_listener(sat_core &s) : sat(s) {}
+    sat_value_listener(const sat_value_listener &that) = delete;
+
+    virtual ~sat_value_listener()
+    {
+        for (const auto &v : sat_vars)
+            sat.forget(v, this);
+    }
+
+  protected:
+    void listen_sat(var v)
+    {
+        sat.listen(v, this);
+        sat_vars.push_back(v);
+    }
+
+  private:
+    virtual void sat_value_change(const var &) {}
+
+  private:
+    sat_core &sat;
+    std::vector<var> sat_vars;
 };
 }

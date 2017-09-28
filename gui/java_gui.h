@@ -5,13 +5,11 @@
 namespace gui
 {
 
-class sat_java_listener;
 class cg_java_listener;
 
 class java_gui
 {
 
-  friend class sat_java_listener;
   friend class cg_java_listener;
 
 public:
@@ -22,18 +20,6 @@ public:
 private:
   JavaVM *jvm; // denotes a Java VM..
   JNIEnv *env; // pointer to native method interface..
-
-  jobject false_obj;
-  jobject true_obj;
-  jobject undefined_obj;
-
-  jclass lit_cls;
-  jmethodID lit_cstr;
-
-  jobject sat_object; // the SATCore Java object..
-  jmethodID n_var;    // the new variable method..
-  jmethodID n_value;  // the value changed method..
-  jmethodID n_clause; // the new clause method..
 
   jobject cg_object;         // the CausalGraph Java object..
   jmethodID f_created;       // the new flaw method..

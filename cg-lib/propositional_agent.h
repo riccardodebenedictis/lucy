@@ -41,9 +41,9 @@ private:
   private:
     void something_changed();
 
-    void sat_value_change(const var &v) override { something_changed(); }
-    void la_value_change(const var &v) override { something_changed(); }
-    void set_value_change(const var &v) override { something_changed(); }
+    void sat_value_change(const var &) override { something_changed(); }
+    void la_value_change(const var &) override { something_changed(); }
+    void set_value_change(const var &) override { something_changed(); }
 
   protected:
     propositional_agent &agnt;
@@ -72,7 +72,7 @@ private:
     agnt_resolver(const agnt_resolver &that) = delete;
     virtual ~agnt_resolver();
 
-    std::string get_label() const override { return "σ" + std::to_string(before.state) + " <= σ" + std::to_string(after.state); }
+    std::string get_label() const override { return "σ" + std::to_string(before.sigma) + " <= σ" + std::to_string(after.sigma); }
 
   private:
     void apply() override;

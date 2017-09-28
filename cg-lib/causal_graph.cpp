@@ -34,7 +34,7 @@ expr causal_graph::new_enum(const type &tp, const std::unordered_set<item *> &al
 {
     assert(!allowed_vals.empty());
     // we create a new enum expression..
-    enum_expr c_e = core::new_enum(tp, allowed_vals);
+    var_expr c_e = core::new_enum(tp, allowed_vals);
     if (allowed_vals.size() > 1)
     {
         // we create a new enum flaw..

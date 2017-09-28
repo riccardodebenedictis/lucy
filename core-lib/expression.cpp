@@ -45,7 +45,7 @@ expr constructor_expression::evaluate(const scope &scp, context &ctx) const
 
 id_expression::id_expression(const std::vector<std::string> &is) : ids(is) {}
 id_expression::~id_expression() {}
-expr id_expression::evaluate(const scope &scp, context &ctx) const
+expr id_expression::evaluate(const scope &, context &ctx) const
 {
     env *c_e = &*ctx;
     for (const auto &id : ids)
@@ -90,15 +90,15 @@ expr function_expression::evaluate(const scope &scp, context &ctx) const
 
 string_literal_expression::string_literal_expression(const std::string &l) : literal(l) {}
 string_literal_expression::~string_literal_expression() {}
-expr string_literal_expression::evaluate(const scope &scp, context &ctx) const { return scp.get_core().new_string(literal); }
+expr string_literal_expression::evaluate(const scope &scp, context &) const { return scp.get_core().new_string(literal); }
 
 int_literal_expression::int_literal_expression(const long &l) : literal(l) {}
 int_literal_expression::~int_literal_expression() {}
-expr int_literal_expression::evaluate(const scope &scp, context &ctx) const { return scp.get_core().new_int(literal); }
+expr int_literal_expression::evaluate(const scope &scp, context &) const { return scp.get_core().new_int(literal); }
 
 real_literal_expression::real_literal_expression(const double &l) : literal(l) {}
 real_literal_expression::~real_literal_expression() {}
-expr real_literal_expression::evaluate(const scope &scp, context &ctx) const { return scp.get_core().new_real(literal); }
+expr real_literal_expression::evaluate(const scope &scp, context &) const { return scp.get_core().new_real(literal); }
 
 plus_expression::plus_expression(const expression *const e) : xpr(e) {}
 plus_expression::~plus_expression() { delete xpr; }
@@ -181,7 +181,7 @@ expr division_expression::evaluate(const scope &scp, context &ctx) const
 
 bool_literal_expression::bool_literal_expression(const bool &l) : literal(l) {}
 bool_literal_expression::~bool_literal_expression() {}
-expr bool_literal_expression::evaluate(const scope &scp, context &ctx) const { return scp.get_core().new_bool(literal); }
+expr bool_literal_expression::evaluate(const scope &scp, context &) const { return scp.get_core().new_bool(literal); }
 
 eq_expression::eq_expression(const expression *const l, const expression *const r) : left(l), right(r) {}
 eq_expression::~eq_expression()

@@ -1,14 +1,19 @@
 #pragma once
 
 #include "scope.h"
-#include "expression.h"
-#include "statement.h"
 
 namespace lucy
 {
 
+class expr;
 class context;
 class item;
+
+namespace ast
+{
+class expression;
+class statement;
+}
 
 class constructor : public scope
 {

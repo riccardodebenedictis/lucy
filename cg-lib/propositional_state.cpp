@@ -37,7 +37,7 @@ void propositional_state::new_fact(atom_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
     atom &atm = f.get_atom();
-    set_var(atm.state);
+    set_var(atm.sigma);
     static_cast<predicate &>(get_predicate(PROPOSITIONAL_STATE_PREDICATE_NAME)).apply_rule(atm);
     restore_var();
 

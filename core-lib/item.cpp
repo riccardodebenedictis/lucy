@@ -16,7 +16,7 @@ var item::eq(item &i) noexcept
 {
 	if (this == &i)
 		return TRUE_var;
-	else if (enum_item *ei = dynamic_cast<enum_item *>(&i))
+	else if (var_item *ei = dynamic_cast<var_item *>(&i))
 		return ei->eq(*this);
 	else
 	{
@@ -46,7 +46,7 @@ bool item::equates(const item &i) const noexcept
 {
 	if (this == &i)
 		return true;
-	else if (const enum_item *ei = dynamic_cast<const enum_item *>(&i))
+	else if (const var_item *ei = dynamic_cast<const var_item *>(&i))
 		return ei->equates(*this);
 	else
 	{
@@ -143,10 +143,10 @@ bool string_item::equates(const item &i) const noexcept
 		return false;
 }
 
-enum_item::enum_item(core &cr, const type &t, var ev) : item(cr, &cr, t), ev(ev) {}
-enum_item::~enum_item() {}
+var_item::var_item(core &cr, const type &t, var ev) : item(cr, &cr, t), ev(ev) {}
+var_item::~var_item() {}
 
-expr enum_item::get(const std::string &name) const
+expr var_item::get(const std::string &name) const
 {
 	if (items.find(name) == items.end())
 	{
@@ -166,29 +166,29 @@ expr enum_item::get(const std::string &name) const
 			}
 			if (vals_set.size() == 1)
 			    return *vals_set.begin();
-			enum_expr e = cr.new_enum(tp.get_field(name).tp, c_vars, c_vals);
-			const_cast<enum_item *>(this)->items.insert({name, e});
+			var_expr e = cr.new_enum(tp.get_field(name).tp, c_vars, c_vals);
+			const_cast<var_item *>(this)->items.insert({name, e});
 		}
 	}
 
 	return items.at(name);
 }
 
-var enum_item::eq(item &i) noexcept
+var var_item::eq(item &i) noexcept
 {
 	if (this == &i)
 		return TRUE_var;
-	else if (enum_item *ee = dynamic_cast<enum_item *>(&i))
+	else if (var_item *ee = dynamic_cast<var_item *>(&i))
 		return cr.set_th.eq(ev, ee->ev);
 	else
 		return cr.set_th.allows(ev, i);
 }
 
-bool enum_item::equates(const item &i) const noexcept
+bool var_item::equates(const item &i) const noexcept
 {
 	if (this == &i)
 		return true;
-	else if (const enum_item *ei = dynamic_cast<const enum_item *>(&i))
+	else if (const var_item *ei = dynamic_cast<const var_item *>(&i))
 	{
 		std::unordered_set<set_item *> c_vals = cr.set_th.value(ev);
 		std::unordered_set<set_item *> i_vals = cr.set_th.value(ei->ev);

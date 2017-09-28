@@ -22,8 +22,8 @@ public:
   type_declaration(const type_declaration &orig) = delete;
   virtual ~type_declaration();
 
-  virtual void declare(scope &scp) const {}
-  virtual void refine(scope &scp) const {}
+  virtual void declare(scope &) const {}
+  virtual void refine(scope &) const {}
 
 protected:
   const std::string name;

@@ -2,14 +2,13 @@
 #ifdef BUILD_GUI
 #include "java_gui.h"
 #include "cg_java_listener.h"
-#include "sat_java_listener.h"
 #endif
 #include <iostream>
 #include <fstream>
 
 using namespace smt;
 
-int main(int argc, char *argv[], char *envp[])
+int main(int argc, char *argv[])
 {
     std::vector<std::string> prob_names;
     for (int i = 1; i < argc - 1; i++)
@@ -28,7 +27,6 @@ int main(int argc, char *argv[], char *envp[])
 
 #ifdef BUILD_GUI
         gui::java_gui j_gui;
-        gui::sat_java_listener satl(j_gui, g.core::sat);
         gui::cg_java_listener gl(j_gui, g);
 #endif
 

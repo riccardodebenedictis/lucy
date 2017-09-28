@@ -8,10 +8,10 @@ namespace lucy
 predicate::predicate(core &cr, scope &scp, const std::string &name, const std::vector<field *> &args, const std::vector<ast::statement *> &stmnts) : type(cr, scp, name), args(args), statements(stmnts)
 {
 	if (type *t = dynamic_cast<type *>(&scp))
-		fields.insert({THIS_KEYWORD, new field(*t, THIS_KEYWORD, nullptr, true)});
+		add_field(*this, *new field(*t, THIS_KEYWORD, nullptr, true));
 
 	for (const auto &arg : args)
-		fields.insert({arg->name, arg});
+		add_field(*this, *arg);
 }
 
 predicate::~predicate() {}

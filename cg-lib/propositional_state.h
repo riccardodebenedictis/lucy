@@ -53,9 +53,9 @@ private:
   private:
     void something_changed();
 
-    void sat_value_change(const var &v) override { something_changed(); }
-    void la_value_change(const var &v) override { something_changed(); }
-    void set_value_change(const var &v) override { something_changed(); }
+    void sat_value_change(const var &) override { something_changed(); }
+    void la_value_change(const var &) override { something_changed(); }
+    void set_value_change(const var &) override { something_changed(); }
 
   protected:
     propositional_state &ps;
@@ -98,7 +98,7 @@ private:
     order_resolver(const order_resolver &that) = delete;
     virtual ~order_resolver();
 
-    std::string get_label() const override { return "ρ" + std::to_string(rho) + " σ" + std::to_string(before.state) + " <= σ" + std::to_string(after.state); }
+    std::string get_label() const override { return "ρ" + std::to_string(rho) + " σ" + std::to_string(before.sigma) + " <= σ" + std::to_string(after.sigma); }
 
   private:
     const atom &before;
@@ -114,7 +114,7 @@ private:
 
     std::string get_label() const override
     {
-      enum_expr c_scp = a.get(f_name);
+      var_expr c_scp = a.get(f_name);
       return "ρ" + std::to_string(rho) + " " + f_name + " (τ" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }
 

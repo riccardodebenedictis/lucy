@@ -27,10 +27,10 @@ std::vector<flaw *> state_variable::get_flaws()
         for (const auto &atm : atoms)
         {
             // we filter out those which are not strictly active..
-            if (graph.core::sat.value(atm.first->state) == True)
+            if (graph.core::sat.value(atm.first->sigma) == True)
             {
                 expr c_scope = atm.first->get("scope");
-                if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
+                if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
                 {
                     for (const auto &val : graph.set_th.value(enum_scope->ev))
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
@@ -94,13 +94,13 @@ void state_variable::new_fact(atom_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
     atom &atm = f.get_atom();
-    set_var(atm.state);
+    set_var(atm.sigma);
     static_cast<predicate &>(graph.get_predicate("IntervalPredicate")).apply_rule(atm);
     restore_var();
 
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
     expr c_scope = atm.get("scope");
-    if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
+    if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : graph.set_th.value(enum_scope->ev))
             to_check.insert(static_cast<item *>(val));
     else
@@ -112,7 +112,7 @@ void state_variable::new_goal(atom_flaw &f)
     atom &atm = f.get_atom();
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
     expr c_scope = atm.get("scope");
-    if (enum_item *multi_scope = dynamic_cast<enum_item *>(&*c_scope))
+    if (var_item *multi_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : graph.set_th.value(multi_scope->ev))
             to_check.insert(static_cast<item *>(val));
     else
@@ -125,7 +125,7 @@ state_variable::sv_atom_listener::~sv_atom_listener() {}
 void state_variable::sv_atom_listener::something_changed()
 {
     expr c_scope = atm.get("scope");
-    if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*c_scope))
+    if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : atm.get_core().set_th.value(enum_scope->ev))
             sv.to_check.insert(static_cast<item *>(val));
     else
@@ -153,7 +153,7 @@ void state_variable::sv_flaw::compute_resolvers()
             add_resolver(*new order_resolver(graph, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
 
         expr a0_scope = as[0]->get("scope");
-        if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a0_scope))
+        if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
             std::unordered_set<set_item *> a0_scopes = graph.set_th.value(enum_scope->ev);
             if (a0_scopes.size() > 1)
@@ -162,7 +162,7 @@ void state_variable::sv_flaw::compute_resolvers()
         }
 
         expr a1_scope = as[1]->get("scope");
-        if (enum_item *enum_scope = dynamic_cast<enum_item *>(&*a0_scope))
+        if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
             std::unordered_set<set_item *> a1_scopes = graph.set_th.value(enum_scope->ev);
             if (a1_scopes.size() > 1)

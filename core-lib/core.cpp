@@ -48,9 +48,9 @@ void core::read(const std::string &script)
     ast::compilation_unit *cu = prs.parse(ss);
     cus.push_back(cu);
 
-    context c_ctx(this);
     cu->declare(*this);
     cu->refine(*this);
+    context c_ctx(this);
     cu->execute(*this, c_ctx);
 
     if (!sat.check())
@@ -74,11 +74,11 @@ void core::read(const std::vector<std::string> &files)
             throw std::invalid_argument("file not found: " + f);
     }
 
-    context c_ctx(this);
     for (const auto &cu : c_cus)
         cu->declare(*this);
     for (const auto &cu : c_cus)
         cu->refine(*this);
+    context c_ctx(this);
     for (const auto &cu : c_cus)
         cu->execute(*this, c_ctx);
 
@@ -113,7 +113,7 @@ expr core::new_enum(const type &tp, const std::unordered_set<item *> &allowed_va
     assert(tp.name.compare(BOOL_KEYWORD) != 0);
     assert(tp.name.compare(INT_KEYWORD) != 0);
     assert(tp.name.compare(REAL_KEYWORD) != 0);
-    return new enum_item(*this, tp, set_th.new_var(std::unordered_set<set_item *>(allowed_vals.begin(), allowed_vals.end())));
+    return new var_item(*this, tp, set_th.new_var(std::unordered_set<set_item *>(allowed_vals.begin(), allowed_vals.end())));
 }
 
 expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vector<item *> &vals)
@@ -152,7 +152,7 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
         return re;
     }
     else
-        return new enum_item(*this, tp, set_th.new_var(vars, std::vector<set_item *>(vals.begin(), vals.end())));
+        return new var_item(*this, tp, set_th.new_var(vars, std::vector<set_item *>(vals.begin(), vals.end())));
 }
 
 bool_expr core::negate(bool_expr var) { return new bool_item(*this, !var->l); }
@@ -319,9 +319,9 @@ interval core::arith_bounds(const arith_expr &x) const noexcept { return la_th.b
 
 double core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
 
-std::unordered_set<set_item *> core::enum_value(const enum_expr &x) const noexcept { return set_th.value(x->ev); }
+std::unordered_set<set_item *> core::enum_value(const var_expr &x) const noexcept { return set_th.value(x->ev); }
 
-std::string core::to_string(const std::map<std::string, expr> &c_items) const
+std::string core::to_string(const std::map<std::string, expr> &c_items) const noexcept
 {
     std::string iss;
     for (std::map<std::string, expr>::const_iterator is_it = c_items.begin(); is_it != c_items.end(); ++is_it)
@@ -357,7 +357,7 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const
                 iss += ", \"ub\" : " + std::to_string(bnds.ub);
             iss += " }";
         }
-        else if (enum_item *ei = dynamic_cast<enum_item *>(&*is_it->second))
+        else if (var_item *ei = dynamic_cast<var_item *>(&*is_it->second))
         {
             iss += "{ \"var\" : \"e" + std::to_string(ei->ev) + "\", \"vals\" : [ ";
             std::unordered_set<set_item *> vals = set_th.value(ei->ev);
@@ -376,7 +376,7 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const
     return iss;
 }
 
-std::string core::to_string(const item *const i) const
+std::string core::to_string(const item *const i) const noexcept
 {
     std::string is;
     is += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(i)) + "\", \"type\" : \"" + i->tp.name + "\"";
@@ -387,11 +387,11 @@ std::string core::to_string(const item *const i) const
     return is;
 }
 
-std::string core::to_string(const atom *const a) const
+std::string core::to_string(const atom *const a) const noexcept
 {
     std::string as;
     as += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(a)) + "\", \"predicate\" : \"" + a->tp.name + "\", \"state\" : ";
-    switch (sat.value(a->state))
+    switch (sat.value(a->sigma))
     {
     case True:
         as += "\"Active\"";
@@ -410,7 +410,7 @@ std::string core::to_string(const atom *const a) const
     return as;
 }
 
-std::string core::to_string() const
+std::string core::to_string() const noexcept
 {
     std::set<item *> all_items;
     std::set<atom *> all_atoms;

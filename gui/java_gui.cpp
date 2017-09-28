@@ -23,21 +23,6 @@ java_gui::java_gui()
     vm_args.ignoreUnrecognized = false;
     JNI_CreateJavaVM(&jvm, (void **)&env, &vm_args);
 
-    jclass lbool_class = env->FindClass("SATCore$LBool");
-    false_obj = env->GetStaticObjectField(lbool_class, env->GetStaticFieldID(lbool_class, "False", "LSATCore$LBool;"));
-    true_obj = env->GetStaticObjectField(lbool_class, env->GetStaticFieldID(lbool_class, "True", "LSATCore$LBool;"));
-    undefined_obj = env->GetStaticObjectField(lbool_class, env->GetStaticFieldID(lbool_class, "Undefined", "LSATCore$LBool;"));
-
-    lit_cls = static_cast<jclass>(env->NewGlobalRef(env->FindClass("SATCore$Lit")));
-    lit_cstr = env->GetMethodID(lit_cls, "<init>", "(JZ)V");
-
-    jclass sat_cls = env->FindClass("SATCore");
-    jmethodID sat_cstr = env->GetMethodID(sat_cls, "<init>", "()V");
-    sat_object = env->NewObject(sat_cls, sat_cstr);
-    n_var = env->GetMethodID(sat_cls, "new_var", "(J)V");
-    n_value = env->GetMethodID(sat_cls, "new_value", "(JLSATCore$LBool;)V");
-    n_clause = env->GetMethodID(sat_cls, "new_clause", "(J[LSATCore$Lit;)V");
-
     jclass cg_cls = env->FindClass("CausalGraph");
     jmethodID cg_cstr = env->GetMethodID(cg_cls, "<init>", "()V");
     cg_object = env->NewObject(cg_cls, cg_cstr);

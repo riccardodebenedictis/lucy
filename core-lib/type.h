@@ -74,7 +74,7 @@ protected:
   void restore_var();
 
 private:
-  virtual void new_predicate(predicate &p) {}
+  virtual void new_predicate(predicate &) {}
 
 public:
   const std::string name;

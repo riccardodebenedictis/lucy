@@ -18,7 +18,7 @@ std::vector<flaw *> propositional_agent::get_flaws()
         return flaws;
 }
 
-void propositional_agent::new_fact(atom_flaw &f) { throw std::logic_error("it is not possible to define facts on propositional agents.."); }
+void propositional_agent::new_fact(atom_flaw &) { throw std::logic_error("it is not possible to define facts on propositional agents.."); }
 
 void propositional_agent::new_goal(atom_flaw &f)
 {

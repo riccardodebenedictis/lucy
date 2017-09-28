@@ -1,10 +1,6 @@
 #include "sat_core.h"
 #include "clause.h"
 #include "theory.h"
-#ifdef BUILD_GUI
-#include "sat_listener.h"
-#endif
-#include "sat_value_listener.h"
 #include <cassert>
 #include <algorithm>
 
@@ -38,10 +34,6 @@ const var sat_core::new_var()
     exprs.insert({"b" + std::to_string(id), id});
     level.push_back(0);
     reason.push_back(nullptr);
-#ifdef BUILD_GUI
-    for (const auto &l : listeners)
-        l->new_var(id);
-#endif
     return id;
 }
 
@@ -78,10 +70,6 @@ bool sat_core::new_clause(const std::vector<lit> &lits)
     else
     {
         clause *c = new clause(*this, c_lits);
-#ifdef BUILD_GUI
-        for (const auto &l : listeners)
-            l->new_clause(*c);
-#endif
         constrs.push_back(c);
     }
     return true;
@@ -389,10 +377,6 @@ void sat_core::record(const std::vector<lit> &lits)
         // we sort literals according to descending order of variable assignment (except for the first literal which is now unassigned)..
         std::sort(c_lits.begin() + 1, c_lits.end(), [&](lit &a, lit &b) { return level[a.v] > level[b.v]; });
         clause *c = new clause(*this, c_lits);
-#ifdef BUILD_GUI
-        for (const auto &l : listeners)
-            l->new_clause(*c);
-#endif
         bool e = enqueue(c_lits[0], c);
         assert(e);
         constrs.push_back(c);
@@ -416,10 +400,6 @@ bool sat_core::enqueue(const lit &p, clause *const c)
         if (listening.find(p.v) != listening.end())
             for (const auto &l : listening[p.v])
                 l->sat_value_change(p.v);
-#ifdef BUILD_GUI
-        for (const auto &l : listeners)
-            l->new_value(p.v);
-#endif
         return true;
     default:
         std::unexpected();
@@ -436,10 +416,6 @@ void sat_core::pop_one()
     if (listening.find(v) != listening.end())
         for (const auto &l : listening[v])
             l->sat_value_change(v);
-#ifdef BUILD_GUI
-    for (const auto &l : listeners)
-        l->new_value(v);
-#endif
 }
 
 void sat_core::add_theory(theory &th) { theories.push_back(&th); }
@@ -472,46 +448,5 @@ void sat_core::forget(const var &v, sat_value_listener *const l)
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())
         listening.erase(v);
-}
-
-std::string sat_core::to_string()
-{
-    std::string s;
-    s += "{";
-    s += "\"vars\" : [";
-    for (size_t i = 0; i < assigns.size(); i++)
-    {
-        if (!i)
-            s += ", ";
-        s += "{ \"name\" : \"b" + std::to_string(i) + "\", \"value\" : ";
-        switch (value(i))
-        {
-        case True:
-            s += "\"True\"";
-            break;
-        case False:
-            s += "\"False\"";
-            break;
-        case Undefined:
-            s += "\"Undefined\"";
-            break;
-        }
-        if (level[i] > 0)
-            s += ", \"level\" : " + std::to_string(level[i]);
-        s += "}";
-    }
-    s += "]";
-
-    s += "\"clauses\" : [";
-    for (std::vector<clause *>::const_iterator it = constrs.begin(); it != constrs.end(); ++it)
-    {
-        if (it != constrs.begin())
-            s += ", ";
-        s += (*it)->to_string();
-    }
-    s += "]";
-
-    s += "}";
-    return s;
 }
 }

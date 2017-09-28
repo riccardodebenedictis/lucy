@@ -18,7 +18,7 @@ public:
   virtual ~atom_flaw();
 
   atom &get_atom() const { return atm; }
-  std::string get_label() const override { return "φ" + std::to_string(get_phi()) + (is_fact ? " fact σ" : " goal σ") + std::to_string(atm.state) + " " + atm.tp.name; }
+  std::string get_label() const override { return "φ" + std::to_string(get_phi()) + (is_fact ? " fact σ" : " goal σ") + std::to_string(atm.sigma) + " " + atm.tp.name; }
 
 private:
   void compute_resolvers() override;
