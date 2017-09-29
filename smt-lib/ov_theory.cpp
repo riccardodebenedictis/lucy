@@ -10,11 +10,11 @@ ov_theory::ov_theory(sat_core &sat) : theory(sat) {}
 
 ov_theory::~ov_theory() {}
 
-const var ov_theory::new_var(const std::unordered_set<set_item *> &items)
+const var ov_theory::new_var(const std::unordered_set<var_value *> &items)
 {
     assert(!items.empty());
     const var id = assigns.size();
-    assigns.push_back(std::unordered_map<set_item *, var>());
+    assigns.push_back(std::unordered_map<var_value *, var>());
     if (items.size() == 1)
         assigns.back().insert({*items.begin(), TRUE_var});
     else
@@ -28,12 +28,12 @@ const var ov_theory::new_var(const std::unordered_set<set_item *> &items)
     return id;
 }
 
-const var ov_theory::new_var(const std::vector<var> &vars, const std::vector<set_item *> &vals)
+const var ov_theory::new_var(const std::vector<var> &vars, const std::vector<var_value *> &vals)
 {
     assert(!vars.empty());
     assert(std::all_of(vars.begin(), vars.end(), [&](var v) { return is_contained_in.find(v) != is_contained_in.end(); }));
     const var id = assigns.size();
-    assigns.push_back(std::unordered_map<set_item *, var>());
+    assigns.push_back(std::unordered_map<var_value *, var>());
     for (size_t i = 0; i < vars.size(); ++i)
     {
         assigns.back().insert({vals[i], vars[i]});
@@ -42,7 +42,7 @@ const var ov_theory::new_var(const std::vector<var> &vars, const std::vector<set
     return id;
 }
 
-const var ov_theory::allows(const var &left, set_item &right) const
+const var ov_theory::allows(const var &left, var_value &right) const
 {
     if (assigns[left].find(&right) != assigns[left].end())
         return assigns[left].at(&right);
@@ -63,7 +63,7 @@ const var ov_theory::eq(const var &left, const var &right)
         return exprs.at(s_expr);
     else
     {
-        std::unordered_set<set_item *> intersection;
+        std::unordered_set<var_value *> intersection;
         for (const auto &v : assigns[left])
             if (assigns[right].find(v.first) != assigns[right].end())
                 intersection.insert(v.first);
@@ -100,9 +100,9 @@ const var ov_theory::eq(const var &left, const var &right)
     }
 }
 
-std::unordered_set<set_item *> ov_theory::value(var v) const
+std::unordered_set<var_value *> ov_theory::value(var v) const
 {
-    std::unordered_set<set_item *> vals;
+    std::unordered_set<var_value *> vals;
     for (const auto &val : assigns[v])
         if (sat.value(val.second) != False)
             vals.insert(val.first);
@@ -136,9 +136,9 @@ void ov_theory::pop()
     layers.pop_back();
 }
 
-void ov_theory::listen(const var &v, set_value_listener *const l) { listening[v].push_back(l); }
+void ov_theory::listen(const var &v, ov_value_listener *const l) { listening[v].push_back(l); }
 
-void ov_theory::forget(const var &v, set_value_listener *const l)
+void ov_theory::forget(const var &v, ov_value_listener *const l)
 {
     listening.at(v).erase(std::find(listening.at(v).begin(), listening.at(v).end(), l));
     if (listening.at(v).empty())

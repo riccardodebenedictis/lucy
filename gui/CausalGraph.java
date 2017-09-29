@@ -96,8 +96,9 @@ public class CausalGraph extends Display {
         // set up the renderers
         // draw the nodes as basic shapes
         LabelRenderer flaw_renderer = new LabelRenderer(VisualItem.LABEL);
-        flaw_renderer.setRoundedCorner(8, 8);
+        flaw_renderer.setRoundedCorner(4, 4);
         LabelRenderer resolver_renderer = new LabelRenderer(VisualItem.LABEL);
+        resolver_renderer.setRoundedCorner(15, 15);
 
         DefaultRendererFactory drf = new DefaultRendererFactory();
         drf.setDefaultRenderer(flaw_renderer);

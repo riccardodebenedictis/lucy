@@ -3,54 +3,105 @@ skinparam monochrome true
 skinparam handwritten true
 
 class solver
+core <|-- solver
+solver : -phis:map<var,vector<flaw>>
+solver : -rhos:map<var,vector<resolver>>
 solver : +solver()
 solver : -new_fact(a:atom):void
 solver : -new_goal(a:atom):void
 solver : -new_disjunction(ctx:context,d:disjunction):void
 solver : +solve():void
+solver : +get_support_flaw(a:atom):support_flaw
 
 class flaw
-flaw : phi:var
+flaw : -phi:var
+flaw : -cost:double
+flaw : -exclusive:bool
+flaw : -structural:bool
+flaw : -expanded:bool
+flaw : +flaw(s:solver,exclusive:bool,structural:bool)
+flaw : +is_expanded():bool
+flaw : -init():void
+flaw : -expand():void
 flaw : -compute_resolvers():void
+flaw : #add_resolver(r:resolver):void
 flaw o--> "*" resolver : resolvers
 flaw o--> "*" resolver : cause
 flaw o--> "*" resolver : supports
 
 class resolver
-resolver : rho:var
+resolver : -rho:var
+resolver : +resolver(s:solver,cost:lin,eff:flaw)
+resolver : +resolver(s:solver,r:var,cost:lin,eff:flaw)
 resolver : -apply():void
 resolver o--> "*" flaw : preconditions
 resolver o--> "1" flaw : effect
 
 class enum_flaw
 flaw <|-- enum_flaw
+enum_flaw : -vi:var_item
+enum_flaw : +enum_flaw(s:solver,vi:var_item)
 enum_flaw : -compute_resolvers():void
 
 class choose_value
 resolver <|-- choose_value
+choose_value : +choose_value(s:solver,f:enum_flaw,v:var_value)
 choose_value : -apply():void
 
 class disjunction_flaw
 flaw <|-- disjunction_flaw
+disjunction_flaw : -disj:disjunction
+disjunction_flaw : +enum_flaw(s:solver,ctx:context,d:disjunction)
 disjunction_flaw : -compute_resolvers():void
 
 class choose_conjunction
 resolver <|-- choose_conjunction
+choose_conjunction : -choose_conjunction:conjunction
+choose_conjunction : +choose_conjunction(s:solver,f:disjunction_flaw,c:conjunction)
 choose_conjunction : -apply():void
 
 class support_flaw
 flaw <|-- support_flaw
+support_flaw : -atm:atom
+support_flaw : -is_fact:bool
+support_flaw : +support_flaw(s:solver,atm:atom,is_fact:bool)
 support_flaw : -compute_resolvers():void
 
 class activate_fact
 resolver <|-- activate_fact
+activate_fact : -atm:atom
+activate_fact : +activate_fact(s:solver,f:disjunction_flaw,atm:atom)
 activate_fact : -apply():void
 
 class activate_goal
 resolver <|-- activate_goal
+activate_goal : -atm:atom
+activate_goal : +activate_goal(s:solver,f:disjunction_flaw,atm:atom)
 activate_goal : -apply():void
 
 class unify_atom
 resolver <|-- unify_atom
+unify_atom : -atm:atom
+unify_atom : -trgt:atom
+unify_atom : +unify_atom(s:solver,f:disjunction_flaw,atm:atom,trgt:atom)
 unify_atom : -apply():void
+
+class atom_listener
+sat_value_listener <|-- atom_listener
+la_value_listener <|-- atom_listener
+ov_value_listener <|-- atom_listener
+
+class smart_type
+type <|-- smart_type
+smart_type : +smart_type(s:solver,scp:scope,name:string)
+smart_type : -get_flaws():vector<flaw>
+smart_type : -new_fact(atm:atom):void
+smart_type : -new_goal(atm:atom):void
+
+class state_variable
+smart_type <|-- state_variable
+
+class reusable_resource
+smart_type <|-- reusable_resource
+
 @enduml

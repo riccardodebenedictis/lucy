@@ -24,7 +24,7 @@ private:
   class choose_value : public resolver
   {
   public:
-    choose_value(solver &graph, enum_flaw &enm_flaw, set_item &val);
+    choose_value(solver &graph, enum_flaw &enm_flaw, var_value &val);
     choose_value(const choose_value &that) = delete;
     virtual ~choose_value();
 
@@ -35,7 +35,7 @@ private:
 
   private:
     var v;
-    set_item &val;
+    var_value &val;
   };
 
 private:

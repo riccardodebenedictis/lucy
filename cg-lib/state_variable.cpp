@@ -155,7 +155,7 @@ void state_variable::sv_flaw::compute_resolvers()
         expr a0_scope = as[0]->get("scope");
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
-            std::unordered_set<set_item *> a0_scopes = graph.ov_th.value(enum_scope->ev);
+            std::unordered_set<var_value *> a0_scopes = graph.ov_th.value(enum_scope->ev);
             if (a0_scopes.size() > 1)
                 for (const auto &sc : a0_scopes)
                     add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(graph.ov_th.allows(enum_scope->ev, *sc), false)));
@@ -164,7 +164,7 @@ void state_variable::sv_flaw::compute_resolvers()
         expr a1_scope = as[1]->get("scope");
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
-            std::unordered_set<set_item *> a1_scopes = graph.ov_th.value(enum_scope->ev);
+            std::unordered_set<var_value *> a1_scopes = graph.ov_th.value(enum_scope->ev);
             if (a1_scopes.size() > 1)
                 for (const auto &sc : a1_scopes)
                     add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(graph.ov_th.allows(enum_scope->ev, *sc), false)));

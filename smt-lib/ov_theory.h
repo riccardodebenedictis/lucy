@@ -8,32 +8,32 @@
 namespace smt
 {
 
-class set_value_listener;
+class ov_value_listener;
 
-class set_item
+class var_value
 {
 public:
-  set_item() {}
+  var_value() {}
 
-  virtual ~set_item() {}
+  virtual ~var_value() {}
 };
 
 class ov_theory : public theory
 {
-  friend class set_value_listener;
+  friend class ov_value_listener;
 
 public:
   ov_theory(sat_core &sat);
   ov_theory(const ov_theory &orig) = delete;
   virtual ~ov_theory();
 
-  const var new_var(const std::unordered_set<set_item *> &items);
-  const var new_var(const std::vector<var> &vars, const std::vector<set_item *> &vals);
+  const var new_var(const std::unordered_set<var_value *> &items);
+  const var new_var(const std::vector<var> &vars, const std::vector<var_value *> &vals);
 
-  const var allows(const var &left, set_item &right) const;
+  const var allows(const var &left, var_value &right) const;
   const var eq(const var &left, const var &right);
 
-  std::unordered_set<set_item *> value(var v) const;
+  std::unordered_set<var_value *> value(var v) const;
 
 private:
   bool propagate(const lit &p, std::vector<lit> &cnfl) override;
@@ -43,8 +43,8 @@ private:
 
   void pop() override;
 
-  void listen(const var &v, set_value_listener *const l);
-  void forget(const var &v, set_value_listener *const l);
+  void listen(const var &v, ov_value_listener *const l);
+  void forget(const var &v, ov_value_listener *const l);
 
 private:
   class layer
@@ -57,25 +57,25 @@ private:
     std::unordered_set<var> vars;
   };
   // the current assignments (val to bool variable)..
-  std::vector<std::unordered_map<set_item *, var>> assigns;
+  std::vector<std::unordered_map<var_value *, var>> assigns;
   // the already existing expressions (string to bool variable)..
   std::unordered_map<std::string, var> exprs;
   // the boolean variable contained in the set variables (bool variable to vector of set variables)..
   std::unordered_map<var, std::vector<var>> is_contained_in;
   // we store the updated variables..
   std::vector<layer> layers;
-  std::unordered_map<var, std::list<set_value_listener *>> listening;
+  std::unordered_map<var, std::list<ov_value_listener *>> listening;
 };
 
-class set_value_listener
+class ov_value_listener
 {
   friend class ov_theory;
 
 public:
-  set_value_listener(ov_theory &s) : th(s) {}
-  set_value_listener(const set_value_listener &that) = delete;
+  ov_value_listener(ov_theory &s) : th(s) {}
+  ov_value_listener(const ov_value_listener &that) = delete;
 
-  virtual ~set_value_listener()
+  virtual ~ov_value_listener()
   {
     for (const auto &v : la_vars)
       th.forget(v, this);

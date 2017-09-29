@@ -150,7 +150,7 @@ expr var_item::get(const std::string &name) const
 {
 	if (items.find(name) == items.end())
 	{
-		std::unordered_set<set_item *> vs = cr.ov_th.value(ev);
+		std::unordered_set<var_value *> vs = cr.ov_th.value(ev);
 		if (vs.size() == 1)
 			return (static_cast<item *>(*vs.begin()))->get(name);
 		else
@@ -190,8 +190,8 @@ bool var_item::equates(const item &i) const noexcept
 		return true;
 	else if (const var_item *ei = dynamic_cast<const var_item *>(&i))
 	{
-		std::unordered_set<set_item *> c_vals = cr.ov_th.value(ev);
-		std::unordered_set<set_item *> i_vals = cr.ov_th.value(ei->ev);
+		std::unordered_set<var_value *> c_vals = cr.ov_th.value(ev);
+		std::unordered_set<var_value *> i_vals = cr.ov_th.value(ei->ev);
 		for (const auto &c_v : c_vals)
 			if (i_vals.find(c_v) != i_vals.end())
 				return true;
@@ -199,8 +199,8 @@ bool var_item::equates(const item &i) const noexcept
 	}
 	else
 	{
-		std::unordered_set<set_item *> c_vals = cr.ov_th.value(ev);
-		return c_vals.find(const_cast<set_item *>(static_cast<const set_item *>(&i))) != c_vals.end();
+		std::unordered_set<var_value *> c_vals = cr.ov_th.value(ev);
+		return c_vals.find(const_cast<var_value *>(static_cast<const var_value *>(&i))) != c_vals.end();
 	}
 }
 }

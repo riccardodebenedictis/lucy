@@ -520,7 +520,7 @@ void solver::propagate_costs()
 bool solver::has_inconsistencies()
 {
 #ifndef NDEBUG
-    std::cout << "checking for inconsistencies.." << std::endl;
+    std::cout << " (checking for inconsistencies..) ";
 #endif
     std::vector<flaw *> incs;
     std::queue<type *> q;

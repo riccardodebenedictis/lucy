@@ -12,7 +12,7 @@ namespace lucy
 
 class type;
 
-class item : public env, public set_item
+class item : public env, public var_value
 {
   public:
 	item(core &cr, const context ctx, const type &tp);
