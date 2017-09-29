@@ -14,7 +14,7 @@
 namespace lucy
 {
 
-core::core() : scope(*this, *this), env(*this, this), sat(), la_th(sat), ov_th(sat)
+core::core() : scope(*this, *this), env(*this, this), sat_cr(), la_th(sat_cr), ov_th(sat_cr)
 {
     types.insert({BOOL_KEYWORD, new bool_type(*this)});
     types.insert({INT_KEYWORD, new int_type(*this)});
@@ -53,7 +53,7 @@ void core::read(const std::string &script)
     context c_ctx(this);
     cu->execute(*this, c_ctx);
 
-    if (!sat.check())
+    if (!sat_cr.check())
         throw unsolvable_exception("the input problem is inconsistent");
 }
 
@@ -82,11 +82,11 @@ void core::read(const std::vector<std::string> &files)
     for (const auto &cu : c_cus)
         cu->execute(*this, c_ctx);
 
-    if (!sat.check())
+    if (!sat_cr.check())
         throw unsolvable_exception("the input problem is inconsistent");
 }
 
-bool_expr core::new_bool() { return new bool_item(*this, sat.new_var()); }
+bool_expr core::new_bool() { return new bool_item(*this, sat_cr.new_var()); }
 bool_expr core::new_bool(const bool &val) { return new bool_item(*this, val); }
 
 arith_expr core::new_int()
@@ -124,7 +124,7 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
         bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            nc = sat.new_clause({lit(vars.at(i), false), sat.new_eq(dynamic_cast<bool_item *>(vals.at(i))->l, b->l)});
+            nc = sat_cr.new_clause({lit(vars.at(i), false), sat_cr.new_eq(dynamic_cast<bool_item *>(vals.at(i))->l, b->l)});
             assert(nc);
         }
         return b;
@@ -135,7 +135,7 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
         bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            nc = sat.new_clause({lit(vars.at(i), false), sat.new_conj({la_th.new_leq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l)})});
+            nc = sat_cr.new_clause({lit(vars.at(i), false), sat_cr.new_conj({la_th.new_leq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(ie->l, dynamic_cast<arith_item *>(vals.at(i))->l)})});
             assert(nc);
         }
         return ie;
@@ -146,7 +146,7 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
         bool nc;
         for (size_t i = 0; i < vars.size(); ++i)
         {
-            nc = sat.new_clause({lit(vars.at(i), false), sat.new_conj({la_th.new_leq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l)})});
+            nc = sat_cr.new_clause({lit(vars.at(i), false), sat_cr.new_conj({la_th.new_leq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l), la_th.new_geq(re->l, dynamic_cast<arith_item *>(vals.at(i))->l)})});
             assert(nc);
         }
         return re;
@@ -156,14 +156,14 @@ expr core::new_enum(const type &tp, const std::vector<var> &vars, const std::vec
 }
 
 bool_expr core::negate(bool_expr var) { return new bool_item(*this, !var->l); }
-bool_expr core::eq(bool_expr left, bool_expr right) { return new bool_item(*this, sat.new_eq(left->l, right->l)); }
+bool_expr core::eq(bool_expr left, bool_expr right) { return new bool_item(*this, sat_cr.new_eq(left->l, right->l)); }
 
 bool_expr core::conj(const std::vector<bool_expr> &exprs)
 {
     std::vector<lit> lits;
     for (const auto &bex : exprs)
         lits.push_back(bex->l);
-    return new bool_item(*this, sat.new_conj(lits));
+    return new bool_item(*this, sat_cr.new_conj(lits));
 }
 
 bool_expr core::disj(const std::vector<bool_expr> &exprs)
@@ -171,7 +171,7 @@ bool_expr core::disj(const std::vector<bool_expr> &exprs)
     std::vector<lit> lits;
     for (const auto &bex : exprs)
         lits.push_back(bex->l);
-    return new bool_item(*this, sat.new_disj(lits));
+    return new bool_item(*this, sat_cr.new_disj(lits));
 }
 
 bool_expr core::exct_one(const std::vector<bool_expr> &exprs)
@@ -179,7 +179,7 @@ bool_expr core::exct_one(const std::vector<bool_expr> &exprs)
     std::vector<lit> lits;
     for (const auto &bex : exprs)
         lits.push_back(bex->l);
-    return new bool_item(*this, sat.new_exct_one(lits));
+    return new bool_item(*this, sat_cr.new_exct_one(lits));
 }
 
 arith_expr core::add(const std::vector<arith_expr> &exprs)
@@ -236,7 +236,7 @@ bool_expr core::lt(arith_expr left, arith_expr right)
 }
 
 bool_expr core::leq(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_leq(left->l, right->l)); }
-bool_expr core::eq(arith_expr left, arith_expr right) { return new bool_item(*this, sat.new_conj({la_th.new_leq(left->l, right->l), la_th.new_geq(left->l, right->l)})); }
+bool_expr core::eq(arith_expr left, arith_expr right) { return new bool_item(*this, sat_cr.new_conj({la_th.new_leq(left->l, right->l), la_th.new_geq(left->l, right->l)})); }
 bool_expr core::geq(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_geq(left->l, right->l)); }
 
 bool_expr core::gt(arith_expr left, arith_expr right)
@@ -250,7 +250,7 @@ bool_expr core::eq(expr left, expr right) { return new bool_item(*this, left->eq
 void core::assert_facts(const std::vector<lit> &facts)
 {
     for (const auto &f : facts)
-        if (!sat.new_clause({lit(ctr_var, false), f}))
+        if (!sat_cr.new_clause({lit(ctr_var, false), f}))
             throw unsolvable_exception();
 }
 
@@ -313,7 +313,7 @@ expr core::get(const std::string &name) const
     throw std::out_of_range(name);
 }
 
-lbool core::bool_value(const bool_expr &x) const noexcept { return sat.value(x->l); }
+lbool core::bool_value(const bool_expr &x) const noexcept { return sat_cr.value(x->l); }
 
 interval core::arith_bounds(const arith_expr &x) const noexcept { return la_th.bounds(x->l); }
 
@@ -333,7 +333,7 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const no
         {
             std::string sign_s = bi->l.sign ? "b" : "!b";
             iss += "{ \"lit\" : \"" + sign_s + std::to_string(bi->l.v) + "\", \"val\" : ";
-            switch (sat.value(bi->l))
+            switch (sat_cr.value(bi->l))
             {
             case True:
                 iss += "\"True\"";
@@ -391,7 +391,7 @@ std::string core::to_string(const atom *const a) const noexcept
 {
     std::string as;
     as += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(a)) + "\", \"predicate\" : \"" + a->tp.name + "\", \"state\" : ";
-    switch (sat.value(a->sigma))
+    switch (sat_cr.value(a->sigma))
     {
     case True:
         as += "\"Active\"";

@@ -4,7 +4,7 @@
 namespace cg
 {
 
-solver::solver() : core(), theory(core::sat) { read(std::vector<std::string>({"init.rddl"})); }
+solver::solver() : core(), theory(sat_cr) { read(std::vector<std::string>({"init.rddl"})); }
 
 solver::~solver() {}
 

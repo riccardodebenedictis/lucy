@@ -49,7 +49,7 @@ std::string cg_listener::to_string() const
             if (fs_it != flaw_listeners.begin())
                 g += ", ";
             g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(fs_it->first)) + "\", \"label\" : \"" + fs_it->first->get_label() + "\", \"phi_var\" : \"b" + std::to_string(fs_it->first->get_phi()) + "\", \"phi_val\" : ";
-            switch (slv.core::sat.value(fs_it->first->get_phi()))
+            switch (slv.sat_cr.value(fs_it->first->get_phi()))
             {
             case True:
                 g += "\"True\"";
@@ -77,7 +77,7 @@ std::string cg_listener::to_string() const
             if (rs_it != resolver_listeners.begin())
                 g += ", ";
             g += "{ \"id\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(rs_it->first)) + "\", \"label\" : \"" + rs_it->first->get_label() + "\", \"rho_var\" : \"b" + std::to_string(rs_it->first->get_rho()) + "\", \"rho_val\" : ";
-            switch (slv.core::sat.value(rs_it->first->get_rho()))
+            switch (slv.sat_cr.value(rs_it->first->get_rho()))
             {
             case True:
                 g += "\"True\"";
@@ -112,11 +112,11 @@ std::string cg_listener::to_string() const
     return g;
 }
 
-cg_listener::flaw_listener::flaw_listener(cg_listener &listener, const flaw &f) : sat_value_listener(listener.slv.core::sat), listener(listener), f(f) { listen_sat(f.get_phi()); }
+cg_listener::flaw_listener::flaw_listener(cg_listener &listener, const flaw &f) : sat_value_listener(listener.slv.sat_cr), listener(listener), f(f) { listen_sat(f.get_phi()); }
 cg_listener::flaw_listener::~flaw_listener() {}
 void cg_listener::flaw_listener::sat_value_change(const var &) { listener.flaw_state_changed(f); }
 
-cg_listener::resolver_listener::resolver_listener(cg_listener &listener, const resolver &r) : sat_value_listener(listener.slv.core::sat), listener(listener), r(r) { listen_sat(r.get_rho()); }
+cg_listener::resolver_listener::resolver_listener(cg_listener &listener, const resolver &r) : sat_value_listener(listener.slv.sat_cr), listener(listener), r(r) { listen_sat(r.get_rho()); }
 cg_listener::resolver_listener::~resolver_listener() {}
 void cg_listener::resolver_listener::sat_value_change(const var &) { listener.resolver_state_changed(r); }
 }

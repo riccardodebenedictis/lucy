@@ -166,7 +166,7 @@ private:
   std::vector<ast::compilation_unit *> cus;
 
 public:
-  sat_core sat;    // the sat core..
+  sat_core sat_cr; // the sat core..
   la_theory la_th; // the linear-arithmetic theory..
   ov_theory ov_th; // the object-variable theory..
 

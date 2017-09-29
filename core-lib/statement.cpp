@@ -51,7 +51,7 @@ expression_statement::~expression_statement() { delete xpr; }
 void expression_statement::execute(const scope &scp, context &ctx) const
 {
     bool_expr be = xpr->evaluate(scp, ctx);
-    if (scp.get_core().sat.value(be->l) != False)
+    if (scp.get_core().sat_cr.value(be->l) != False)
         scp.get_core().assert_facts({be->l});
     else
         throw inconsistency_exception();
@@ -131,7 +131,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
         const type &tt = p->get_field(a.first).tp; // the target type..
         if (tt.is_assignable_from(e->tp))          // the target type is a superclass of the assignment..
             assgnments.insert({a.first, e});
-        else if (e->tp.is_assignable_from(tt))                  // the target type is a subclass of the assignment..
+        else if (e->tp.is_assignable_from(tt))                // the target type is a subclass of the assignment..
             if (var_item *ae = dynamic_cast<var_item *>(&*e)) // some of the allowed values might be inhibited..
             {
                 std::unordered_set<var_value *> alwd_vals = scp.get_core().ov_th.value(ae->ev); // the allowed values..
