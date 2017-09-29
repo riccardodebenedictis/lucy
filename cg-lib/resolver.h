@@ -1,6 +1,7 @@
 #pragma once
 
 #include "la_theory.h"
+#include <limits>
 
 using namespace smt;
 
@@ -16,8 +17,8 @@ class resolver
   friend class flaw;
 
 public:
-  resolver(solver &graph, const var &r, const lin &cost, flaw &eff);
-  resolver(solver &graph, const lin &cost, flaw &eff);
+  resolver(solver &slv, const var &r, const lin &cost, flaw &eff);
+  resolver(solver &slv, const lin &cost, flaw &eff);
   resolver(const resolver &orig) = delete;
   virtual ~resolver();
 
@@ -31,12 +32,11 @@ public:
   virtual std::string get_label() const;
 
 protected:
-  solver &graph;
-  const var rho;
-  const lin cost;
-  // the preconditions of this resolver..
-  std::vector<flaw *> preconditions;
-  // the flaw solved by this resolver..
-  flaw &effect;
+  solver &slv;                                               // the solver this resolver belongs to..
+  const var rho;                                             // the propositional variable indicates whether the flaw is active or not..
+  const lin cost;                                            // the intrinsic cost of the resolver..
+  std::vector<flaw *> preconditions;                         // the preconditions of this resolver..
+  flaw &effect;                                              // the flaw solved by this resolver..
+  double est_cost = std::numeric_limits<double>::infinity(); // the estimated cost of the resolver..
 };
 }

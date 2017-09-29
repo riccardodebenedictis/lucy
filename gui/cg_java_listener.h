@@ -11,7 +11,7 @@ class cg_java_listener : public cg::cg_listener
 {
 
 public:
-  cg_java_listener(java_gui &gui, cg::solver &graph);
+  cg_java_listener(java_gui &gui, cg::solver &slv);
   cg_java_listener(const cg_java_listener &orig) = delete;
   virtual ~cg_java_listener();
 

@@ -10,17 +10,19 @@ namespace cg
 class solver;
 class flaw;
 class resolver;
+class flaw_listener;
+class resolver_listener;
 
 class cg_listener
 {
   friend class solver;
+  friend class flaw_listener;
+  friend class resolver_listener;
 
 public:
-  cg_listener(solver &graph);
+  cg_listener(solver &s);
   cg_listener(const cg_listener &orig) = delete;
   virtual ~cg_listener();
-
-  solver &get_graph() const { return graph; }
 
 private:
   void new_flaw(const flaw &f);
@@ -38,7 +40,7 @@ private:
 
   virtual void causal_link_added(const flaw &f, const resolver &r);
 
-  std::string to_string();
+  std::string to_string() const;
 
   class flaw_listener : public sat_value_listener
   {
@@ -71,7 +73,7 @@ private:
   };
 
 protected:
-  solver &graph;
+  solver &slv;
 
 private:
   std::unordered_map<const flaw *, flaw_listener *> flaw_listeners;

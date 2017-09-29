@@ -6,8 +6,6 @@
 #include <iostream>
 #include <fstream>
 
-using namespace smt;
-
 int main(int argc, char *argv[])
 {
     std::vector<std::string> prob_names;
@@ -23,23 +21,23 @@ int main(int argc, char *argv[])
         std::cout << " in debug mode";
 #endif
         std::cout << ".." << std::endl;
-        cg::solver g;
+        cg::solver s;
 
 #ifdef BUILD_GUI
         gui::java_gui j_gui;
-        gui::cg_java_listener gl(j_gui, g);
+        gui::cg_java_listener gl(j_gui, s);
 #endif
 
         std::cout << "parsing input files.." << std::endl;
-        g.read(prob_names);
+        s.read(prob_names);
 
         std::cout << "solving the problem.." << std::endl;
-        g.solve();
+        s.solve();
 
         std::cout << "hurray!! we have found a solution.." << std::endl;
         std::ofstream sol_file;
         sol_file.open(sol_name);
-        sol_file << g.to_string();
+        sol_file << s.to_string();
         sol_file.close();
     }
     catch (const std::exception &ex)
