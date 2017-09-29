@@ -15,7 +15,6 @@ solver : +get_support_flaw(a:atom):support_flaw
 
 class flaw
 flaw : -phi:var
-flaw : -cost:double
 flaw : -exclusive:bool
 flaw : -structural:bool
 flaw : -expanded:bool
@@ -24,6 +23,8 @@ flaw : +is_expanded():bool
 flaw : -init():void
 flaw : -expand():void
 flaw : -compute_resolvers():void
+flaw : +get_cost():double
+flaw : +get_label():string
 flaw : #add_resolver(r:resolver):void
 flaw o--> "*" resolver : resolvers
 flaw o--> "*" resolver : cause
@@ -31,9 +32,12 @@ flaw o--> "*" resolver : supports
 
 class resolver
 resolver : -rho:var
+resolver : -cost:double
 resolver : +resolver(s:solver,cost:lin,eff:flaw)
 resolver : +resolver(s:solver,r:var,cost:lin,eff:flaw)
 resolver : -apply():void
+resolver : +get_cost():double
+resolver : +get_label():string
 resolver o--> "*" flaw : preconditions
 resolver o--> "1" flaw : effect
 
