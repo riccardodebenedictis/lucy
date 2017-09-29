@@ -22,7 +22,6 @@ void cg_listener::new_flaw(const flaw &f)
 
 void cg_listener::flaw_created(const flaw &) {}
 void cg_listener::flaw_state_changed(const flaw &) {}
-void cg_listener::flaw_cost_changed(const flaw &) {}
 void cg_listener::current_flaw(const flaw &) {}
 
 void cg_listener::new_resolver(const resolver &r)
@@ -33,6 +32,7 @@ void cg_listener::new_resolver(const resolver &r)
 
 void cg_listener::resolver_created(const resolver &) {}
 void cg_listener::resolver_state_changed(const resolver &) {}
+void cg_listener::resolver_cost_changed(const resolver &) {}
 void cg_listener::current_resolver(const resolver &) {}
 
 void cg_listener::causal_link_added(const flaw &, const resolver &) {}

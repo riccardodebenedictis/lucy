@@ -18,11 +18,11 @@ public:
 private:
   void flaw_created(const cg::flaw &f) override;
   void flaw_state_changed(const cg::flaw &f) override;
-  void flaw_cost_changed(const cg::flaw &f) override;
   void current_flaw(const cg::flaw &f) override;
 
   void resolver_created(const cg::resolver &r) override;
   void resolver_state_changed(const cg::resolver &r) override;
+  void resolver_cost_changed(const cg::resolver &r) override;
   void current_resolver(const cg::resolver &r) override;
 
   void causal_link_added(const cg::flaw &f, const cg::resolver &r) override;

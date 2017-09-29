@@ -29,13 +29,13 @@ private:
 
   virtual void flaw_created(const flaw &f);
   virtual void flaw_state_changed(const flaw &f);
-  virtual void flaw_cost_changed(const flaw &f);
   virtual void current_flaw(const flaw &f);
 
   void new_resolver(const resolver &r);
 
   virtual void resolver_created(const resolver &r);
   virtual void resolver_state_changed(const resolver &r);
+  virtual void resolver_cost_changed(const resolver &r);
   virtual void current_resolver(const resolver &r);
 
   virtual void causal_link_added(const flaw &f, const resolver &r);
