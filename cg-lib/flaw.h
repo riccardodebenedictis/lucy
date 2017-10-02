@@ -1,7 +1,6 @@
 #pragma once
 
 #include "la_theory.h"
-#include <limits>
 
 using namespace smt;
 
@@ -17,7 +16,7 @@ class flaw
   friend class resolver;
 
 public:
-  flaw(solver &slv, const bool &exclusive = false, const bool &structural = false);
+  flaw(solver &slv, const std::vector<resolver *> &causes, const bool &exclusive = false, const bool &structural = false);
   flaw(const flaw &orig) = delete;
   virtual ~flaw();
 
@@ -25,9 +24,9 @@ public:
   const var &get_phi() const { return phi; }
   std::vector<resolver *> get_causes() const { return causes; }
   std::vector<resolver *> get_supports() const { return supports; }
-  double get_cost() const { return std::numeric_limits<double>::infinity(); }
+  double get_cost() const;
 
-  virtual std::string get_label() const;
+  virtual std::string get_label() const = 0;
 
 private:
   virtual void init();

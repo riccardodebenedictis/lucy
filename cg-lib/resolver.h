@@ -29,7 +29,7 @@ public:
   std::vector<flaw *> get_preconditions() const { return preconditions; }
   double get_cost() const;
 
-  virtual std::string get_label() const;
+  virtual std::string get_label() const = 0;
 
 protected:
   solver &slv;                                               // the solver this resolver belongs to..

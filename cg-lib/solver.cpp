@@ -25,6 +25,41 @@ void solver::new_disjunction(context &d_ctx, const disjunction &disj) {}
 
 void solver::solve() {}
 
+void solver::new_flaw(flaw &f)
+{
+    f.init();
+    flaw_q.push(&f);
+
+#ifdef BUILD_GUI
+    // we notify the listeners that a new flaw has arised..
+    for (const auto &l : listeners)
+        l->new_flaw(f);
+#endif
+}
+
+void solver::new_resolver(resolver &r)
+{
+#ifdef BUILD_GUI
+    // we notify the listeners that a new resolver has arised..
+    for (const auto &l : listeners)
+        l->new_resolver(r);
+#endif
+}
+
+void solver::new_causal_link(flaw &f, resolver &r)
+{
+    r.preconditions.push_back(&f);
+    f.supports.push_back(&r);
+    bool new_clause = sat_cr.new_clause({lit(r.rho, false), f.phi});
+    assert(new_clause);
+
+#ifdef BUILD_GUI
+    // we notify the listeners that a new causal link has been created..
+    for (const auto &l : listeners)
+        l->causal_link_added(f, r);
+#endif
+}
+
 bool solver::propagate(const lit &p, std::vector<lit> &cnfl) { return false; }
 
 bool solver::check(std::vector<lit> &cnfl)

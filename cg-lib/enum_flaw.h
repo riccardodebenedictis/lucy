@@ -12,7 +12,7 @@ namespace cg
 class enum_flaw : public flaw
 {
 public:
-  enum_flaw(solver &slv, var_item &e_itm);
+  enum_flaw(solver &slv, resolver *const cause, var_item &e_itm);
   enum_flaw(const enum_flaw &orig) = delete;
   virtual ~enum_flaw();
 

@@ -2,10 +2,10 @@
 
 #include "flaw.h"
 #include "resolver.h"
+#include "context.h"
 
 namespace lucy
 {
-class context;
 class disjunction;
 class conjunction;
 }
@@ -18,7 +18,7 @@ namespace cg
 class disjunction_flaw : public flaw
 {
 public:
-  disjunction_flaw(solver &slv, const context &ctx, const disjunction &disj);
+  disjunction_flaw(solver &slv, resolver *const cause, const context &ctx, const disjunction &disj);
   disjunction_flaw(const disjunction_flaw &orig) = delete;
   virtual ~disjunction_flaw();
 

@@ -13,7 +13,7 @@ namespace cg
 class support_flaw : public flaw
 {
 public:
-  support_flaw(solver &slv, atom &a, const bool is_fact);
+  support_flaw(solver &slv, resolver *const cause, atom &a, const bool is_fact);
   support_flaw(const support_flaw &orig) = delete;
   virtual ~support_flaw();
 
