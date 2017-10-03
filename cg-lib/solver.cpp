@@ -284,10 +284,14 @@ bool solver::has_inconsistencies()
 
 void solver::expand_flaw(flaw &f)
 {
+    building_graph = true;
     // we expand the flaw..
     f.expand();
     if (!sat_cr.check())
+    {
+        building_graph = false;
         throw unsolvable_exception();
+    }
 
     for (const auto &r : f.resolvers)
     {
@@ -300,17 +304,24 @@ void solver::expand_flaw(flaw &f)
         catch (const inconsistency_exception &)
         {
             if (!sat_cr.new_clause({lit(r->rho, false)}))
+            {
+                building_graph = false;
                 throw unsolvable_exception();
+            }
         }
 
         if (!sat_cr.check())
+        {
+            building_graph = false;
             throw unsolvable_exception();
+        }
 
         restore_var();
         res = nullptr;
         if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
             set_cost(*r, std::min(r->est_cost, la_th.value(r->cost)));
     }
+    building_graph = false;
 }
 
 void solver::new_flaw(flaw &f)
@@ -463,7 +474,51 @@ resolver &solver::select_resolver(flaw &f)
     return *r_next;
 }
 
-bool solver::propagate(const lit &p, std::vector<lit> &cnfl) { return false; }
+bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
+{
+    assert(cnfl.empty());
+    if (!building_graph)
+    {
+        if (phis.find(p.v) != phis.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
+            for (const auto &f : phis.at(p.v))
+                if (p.sign) // this flaw has been added to the current partial solution..
+                {
+                    flaws.insert(f);
+                    if (!trail.empty())
+                        trail.back().new_flaws.insert(f);
+#ifdef BUILD_GUI
+                    // we notify the listeners that the state of the flaw has changed..
+                    for (const auto &l : listeners)
+                        l->flaw_state_changed(*f);
+#endif
+                }
+                else // this flaw has been removed from the current partial solution..
+                    assert(flaws.find(f) == flaws.end());
+
+        if (rhos.find(p.v) != rhos.end()) // a decision has been taken about the presence of some resolvers within the current partial solution..
+            for (const auto &r : rhos.at(p.v))
+                if (!p.sign) // this resolver has been removed from the current partial solution..
+                {
+                    set_cost(*r, std::numeric_limits<double>::infinity());
+#ifdef BUILD_GUI
+                    // we notify the listeners that the state of the flaw has changed..
+                    for (const auto &l : listeners)
+                        l->resolver_cost_changed(*r);
+#endif
+                }
+
+        if (std::any_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); })) // we have made the heuristic blind..
+        {
+            for (const auto &r : rhos)
+                if (sat_cr.value(r.first) == False)
+                    cnfl.push_back(r.first);
+            cnfl.push_back(lit(gamma, false));
+            return false;
+        }
+    }
+
+    return true;
+}
 
 bool solver::check(std::vector<lit> &cnfl)
 {

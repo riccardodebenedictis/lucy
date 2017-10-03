@@ -72,6 +72,7 @@ private:
   std::vector<cg_listener *> listeners;                  // the causal-graph listeners..
   resolver *res = nullptr;                               // the current resolver (will be into the trail)..
   var gamma;                                             // this variable represents the validity of the current graph..
+  bool building_graph = false;                           // we are either in a building graph phase or in a solving phase..
   std::queue<flaw *> flaw_q;                             // the flaw queue (for graph building procedure)..
   std::queue<resolver *> resolver_q;                     // the resolver costs queue (for resolver cost propagation)..
   std::unordered_set<flaw *> flaws;                      // the current active flaws..
