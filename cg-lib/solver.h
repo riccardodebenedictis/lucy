@@ -36,6 +36,10 @@ public:
   atom_flaw &get_flaw(const atom &atm) const { return *reason.at(&atm); } // returns the flaw which has given rise to the atom..
 
 private:
+  void build();                // builds the planning graph..
+  bool is_deferrable(flaw &f); // checks whether the given flaw is deferrable..
+  void add_layer();            // adds a layer to the current planning graph..
+
   void new_flaw(flaw &f);
   void new_resolver(resolver &r);
   void new_causal_link(flaw &f, resolver &r);

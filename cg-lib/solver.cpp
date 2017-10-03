@@ -2,8 +2,14 @@
 #include "enum_flaw.h"
 #include "disjunction_flaw.h"
 #include "atom_flaw.h"
+#include "smart_type.h"
+#include "state_variable.h"
+#include "reusable_resource.h"
 #ifdef BUILD_GUI
 #include "cg_listener.h"
+#endif
+#ifndef NDEBUG
+#include <iostream>
 #endif
 #include <algorithm>
 #include <cassert>
@@ -11,19 +17,108 @@
 namespace cg
 {
 
-solver::solver() : core(), theory(sat_cr) { read(std::vector<std::string>({"init.rddl"})); }
+solver::solver() : core(), theory(sat_cr)
+{
+    read(std::vector<std::string>({"init.rddl"}));
+    types.insert({STATE_VARIABLE_NAME, new state_variable(*this)});
+    types.insert({REUSABLE_RESOURCE_NAME, new reusable_resource(*this)});
+}
 
 solver::~solver() {}
 
-expr solver::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals) { return nullptr; }
+expr solver::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
+{
+    assert(!allowed_vals.empty());
+    // we create a new enum expression..
+    var_expr c_e = core::new_enum(tp, allowed_vals);
+    if (allowed_vals.size() > 1)
+    {
+        // we create a new enum flaw..
+        enum_flaw *ef = new enum_flaw(*this, res, *c_e);
+        new_flaw(*ef);
+    }
+    return c_e;
+}
 
-void solver::new_fact(atom &atm) {}
+void solver::new_fact(atom &atm)
+{
+    // we create a new atom flaw representing a fact..
+    atom_flaw *af = new atom_flaw(*this, res, atm, true);
+    reason.insert({&atm, af});
+    new_flaw(*af);
 
-void solver::new_goal(atom &atm) {}
+    if (&atm.tp.get_scope() != this)
+    {
+        std::queue<type *> q;
+        q.push(static_cast<type *>(&atm.tp.get_scope()));
+        while (!q.empty())
+        {
+            if (smart_type *st = dynamic_cast<smart_type *>(q.front()))
+                st->new_fact(*af);
+            for (const auto &st : q.front()->get_supertypes())
+                q.push(st);
+            q.pop();
+        }
+    }
+}
 
-void solver::new_disjunction(context &d_ctx, const disjunction &disj) {}
+void solver::new_goal(atom &atm)
+{
+    // we create a new atom flaw representing a goal..
+    atom_flaw *af = new atom_flaw(*this, res, atm, false);
+    reason.insert({&atm, af});
+    new_flaw(*af);
+
+    if (&atm.tp.get_scope() != this)
+    {
+        std::queue<type *> q;
+        q.push(static_cast<type *>(&atm.tp.get_scope()));
+        while (!q.empty())
+        {
+            if (smart_type *st = dynamic_cast<smart_type *>(q.front()))
+                st->new_goal(*af);
+            for (const auto &st : q.front()->get_supertypes())
+                q.push(st);
+            q.pop();
+        }
+    }
+}
+
+void solver::new_disjunction(context &d_ctx, const disjunction &disj)
+{
+    // we create a new disjunction flaw..
+    disjunction_flaw *df = new disjunction_flaw(*this, res, d_ctx, disj);
+    new_flaw(*df);
+}
 
 void solver::solve() {}
+
+void solver::build()
+{
+#ifndef NDEBUG
+    std::cout << "building the causal graph.." << std::endl;
+#endif
+    assert(sat_cr.root_level());
+}
+
+bool solver::is_deferrable(flaw &f)
+{
+    std::queue<flaw *> q;
+    q.push(&f);
+    while (!q.empty())
+    {
+        assert(sat_cr.value(q.front()->phi) != False);
+        if (q.front()->get_cost() < std::numeric_limits<double>::infinity()) // we already have a possible solution for this flaw, thus we defer..
+            return true;
+        for (const auto &r : q.front()->causes)
+            q.push(&r->effect);
+        q.pop();
+    }
+    // we cannot defer this flaw..
+    return false;
+}
+
+void solver::add_layer() {}
 
 void solver::new_flaw(flaw &f)
 {
