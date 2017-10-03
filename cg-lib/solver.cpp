@@ -99,6 +99,48 @@ void solver::build()
     std::cout << "building the causal graph.." << std::endl;
 #endif
     assert(sat_cr.root_level());
+
+    while (std::any_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); }))
+    {
+        if (flaw_q.empty())
+            throw unsolvable_exception();
+        assert(!flaw_q.front()->expanded);
+        if (sat_cr.value(flaw_q.front()->phi) != False)
+        {
+            if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
+                flaw_q.push(flaw_q.front());
+            else
+            {
+                flaw_q.front()->expand();
+                if (!sat_cr.check())
+                    throw unsolvable_exception();
+
+                for (const auto &r : flaw_q.front()->resolvers)
+                {
+                    res = r;
+                    set_var(r->rho);
+                    try
+                    {
+                        r->apply();
+                    }
+                    catch (const inconsistency_exception &)
+                    {
+                        if (!sat_cr.new_clause({lit(r->rho, false)}))
+                            throw unsolvable_exception();
+                    }
+
+                    if (!sat_cr.check())
+                        throw unsolvable_exception();
+
+                    restore_var();
+                    res = nullptr;
+                    if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
+                        set_cost(*r, std::min(r->est_cost, la_th.value(r->cost)));
+                }
+            }
+        }
+        flaw_q.pop();
+    }
 }
 
 bool solver::is_deferrable(flaw &f)
@@ -118,7 +160,61 @@ bool solver::is_deferrable(flaw &f)
     return false;
 }
 
-void solver::add_layer() {}
+void solver::add_layer()
+{
+#ifndef NDEBUG
+    std::cout << "adding a layer to the causal graph.." << std::endl;
+#endif
+    assert(sat_cr.root_level());
+
+    std::unordered_set<resolver *> rs;
+    std::vector<flaw *> fs;
+    while (!flaw_q.empty())
+    {
+        fs.push_back(flaw_q.front());
+        rs.insert(flaw_q.front()->get_causes().begin(), flaw_q.front()->get_causes().end());
+        flaw_q.pop();
+    }
+    for (const auto &f : fs)
+        flaw_q.push(f);
+
+    while (std::all_of(rs.begin(), rs.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }))
+    {
+        if (flaw_q.empty())
+            throw unsolvable_exception();
+        assert(!flaw_q.front()->expanded);
+        if (sat_cr.value(flaw_q.front()->phi) != False)
+        {
+            flaw_q.front()->expand();
+            if (!sat_cr.check())
+                throw unsolvable_exception();
+
+            for (const auto &r : flaw_q.front()->resolvers)
+            {
+                res = r;
+                set_var(r->rho);
+                try
+                {
+                    r->apply();
+                }
+                catch (const inconsistency_exception &)
+                {
+                    if (!sat_cr.new_clause({lit(r->rho, false)}))
+                        throw unsolvable_exception();
+                }
+
+                if (!sat_cr.check())
+                    throw unsolvable_exception();
+
+                restore_var();
+                res = nullptr;
+                if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
+                    set_cost(*r, std::min(r->est_cost, la_th.value(r->cost)));
+            }
+        }
+        flaw_q.pop();
+    }
+}
 
 void solver::new_flaw(flaw &f)
 {
