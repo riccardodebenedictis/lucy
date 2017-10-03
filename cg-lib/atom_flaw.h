@@ -10,12 +10,12 @@ using namespace lucy;
 namespace cg
 {
 
-class support_flaw : public flaw
+class atom_flaw : public flaw
 {
 public:
-  support_flaw(solver &slv, resolver *const cause, atom &a, const bool is_fact);
-  support_flaw(const support_flaw &orig) = delete;
-  virtual ~support_flaw();
+  atom_flaw(solver &slv, resolver *const cause, atom &a, const bool is_fact);
+  atom_flaw(const atom_flaw &orig) = delete;
+  virtual ~atom_flaw();
 
   atom &get_atom() const { return atm; }
   std::string get_label() const override { return "φ" + std::to_string(get_phi()) + (is_fact ? " fact σ" : " goal σ") + std::to_string(atm.sigma) + " " + atm.tp.name; }
@@ -26,7 +26,7 @@ private:
   class activate_fact : public resolver
   {
   public:
-    activate_fact(solver &slv, support_flaw &f, atom &a);
+    activate_fact(solver &slv, atom_flaw &f, atom &a);
     activate_fact(const activate_fact &that) = delete;
     virtual ~activate_fact();
 
@@ -42,7 +42,7 @@ private:
   class activate_goal : public resolver
   {
   public:
-    activate_goal(solver &slv, support_flaw &f, atom &a);
+    activate_goal(solver &slv, atom_flaw &f, atom &a);
     activate_goal(const activate_goal &that) = delete;
     virtual ~activate_goal();
 
@@ -58,7 +58,7 @@ private:
   class unify_atom : public resolver
   {
   public:
-    unify_atom(solver &slv, support_flaw &atm_flaw, atom &atm, atom &trgt, const std::vector<lit> &unif_vars);
+    unify_atom(solver &slv, atom_flaw &atm_flaw, atom &atm, atom &trgt, const std::vector<lit> &unif_lits);
     unify_atom(const unify_atom &that) = delete;
     virtual ~unify_atom();
 

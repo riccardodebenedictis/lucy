@@ -18,12 +18,26 @@ class solver
 core <|-- solver
 solver : -phis:map<var,vector<flaw>>
 solver : -rhos:map<var,vector<resolver>>
+solver : -flaw_w:queue<flaw>
+solver : -flaw_costs_w:queue<flaw>
 solver : +solver()
+solver : +new_enum(tp:type,allowed_vals:set<item>):expr
 solver : -new_fact(a:atom):void
 solver : -new_goal(a:atom):void
 solver : -new_disjunction(ctx:context,d:disjunction):void
 solver : +solve():void
-solver : +get_flaw(a:atom):atom_flaw
+solver : +get_flaw(atm:atom):atom_flaw
+solver : -new_flaw(flw:flaw):void
+solver : -new_resolver(res:resolver):void
+solver : -new_causal_link(flw:flaw,res:resolver):void
+solver : -set_cost(res:resolver,cst:double)
+solver : -propagate_costs():void
+solver : -select_flaw():flaw
+solver : -select_resolver(flw:flaw):resolver
+solver : -propagate(p:lit,cnfl:vector<lit>):bool
+solver : -check(cnfl:vector<lit>):bool
+solver : -push():void
+solver : -pop():void
 solver o--> "*" cg_listener : listeners
 
 class flaw

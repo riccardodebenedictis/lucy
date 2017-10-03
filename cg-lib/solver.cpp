@@ -27,8 +27,19 @@ void solver::solve() {}
 
 void solver::new_flaw(flaw &f)
 {
-    f.init();
+    f.init(); // flaws' initialization requires being at root-level..
     flaw_q.push(&f);
+
+    assert(sat_cr.value(f.phi) != False);
+    if (sat_cr.value(f.phi) == True)
+        // we have a top-level (a landmark) flaw..
+        flaws.insert(&f);
+    else
+    {
+        // we listen for the flaw to become active..
+        phis[f.phi].push_back(&f);
+        bind(f.phi);
+    }
 
 #ifdef BUILD_GUI
     // we notify the listeners that a new flaw has arised..
@@ -39,6 +50,14 @@ void solver::new_flaw(flaw &f)
 
 void solver::new_resolver(resolver &r)
 {
+    assert(sat_cr.value(r.rho) != False);
+    if (sat_cr.value(r.rho) != True) // we do not have a top-level (a landmark) resolver..
+    {
+        // we listen for the resolver to become active..
+        rhos[r.rho].push_back(&r);
+        bind(r.rho);
+    }
+
 #ifdef BUILD_GUI
     // we notify the listeners that a new resolver has arised..
     for (const auto &l : listeners)
@@ -60,47 +79,58 @@ void solver::new_causal_link(flaw &f, resolver &r)
 #endif
 }
 
-bool solver::propagate(const lit &p, std::vector<lit> &cnfl) { return false; }
-
-bool solver::check(std::vector<lit> &cnfl)
+void solver::set_cost(resolver &r, double cst)
 {
-    assert(cnfl.empty());
-    return true;
-}
-
-void solver::push()
-{
-    trail.push_back(layer(res));
-    if (res)
+    if (r.est_cost != cst)
     {
-        // we just solved the resolver's effect..
-        trail.back().solved_flaws.insert(&res->effect);
-        flaws.erase(&res->effect);
+        double f_cost = r.effect.get_cost(); // this is the current effect's estimated cost..
+        if (!trail.empty())
+            trail.back().old_costs.insert({&r, r.est_cost});
+        r.est_cost = cst;
+
+#ifdef BUILD_GUI
+        // we notify the listeners that a flaw cost has changed..
+        for (const auto &l : listeners)
+            l->resolver_cost_changed(r);
+#endif
+
+        if (f_cost != r.effect.get_cost()) // the effect's estimated cost has changed..
+            for (const auto &supp : r.effect.supports)
+                resolver_q.push(supp);
+
+        propagate_costs();
     }
 }
 
-void solver::pop()
+void solver::propagate_costs()
 {
-    // we reintroduce the solved flaw..
-    for (const auto &f : trail.back().solved_flaws)
-        flaws.insert(f);
-
-    // we erase the new flaws..
-    for (const auto &f : trail.back().new_flaws)
-        flaws.erase(f);
-
-    // we restore the resolvers' estimated costs..
-    for (const auto &r : trail.back().old_costs)
-        r.first->est_cost = r.second;
+    while (!resolver_q.empty())
+    {
+        resolver &c_res = *resolver_q.front(); // the current resolver whose cost has been updated..
+        double r_cost = -std::numeric_limits<double>::infinity();
+        for (const auto &f : c_res.preconditions)
+        {
+            double c = f->get_cost();
+            if (c < r_cost)
+                r_cost = c;
+        }
+        if (c_res.est_cost != r_cost)
+        {
+            if (!trail.empty())
+                trail.back().old_costs.insert({&c_res, c_res.est_cost});
+            c_res.est_cost = r_cost;
 
 #ifdef BUILD_GUI
-    // we notify the listeners that the cost of some flaws has been restored..
-    for (const auto &l : listeners)
-        for (const auto &c : trail.back().old_costs)
-            l->resolver_cost_changed(*c.first);
+            // we notify the listeners that a flaw cost has changed..
+            for (const auto &l : listeners)
+                l->resolver_cost_changed(c_res);
 #endif
 
-    trail.pop_back();
+            for (const auto &supp : c_res.effect.supports)
+                resolver_q.push(supp);
+        }
+        resolver_q.pop();
+    }
 }
 
 flaw &solver::select_flaw()
@@ -161,5 +191,48 @@ resolver &solver::select_resolver(flaw &f)
 #endif
 
     return *r_next;
+}
+
+bool solver::propagate(const lit &p, std::vector<lit> &cnfl) { return false; }
+
+bool solver::check(std::vector<lit> &cnfl)
+{
+    assert(cnfl.empty());
+    return true;
+}
+
+void solver::push()
+{
+    trail.push_back(layer(res));
+    if (res)
+    {
+        // we just solved the resolver's effect..
+        trail.back().solved_flaws.insert(&res->effect);
+        flaws.erase(&res->effect);
+    }
+}
+
+void solver::pop()
+{
+    // we reintroduce the solved flaw..
+    for (const auto &f : trail.back().solved_flaws)
+        flaws.insert(f);
+
+    // we erase the new flaws..
+    for (const auto &f : trail.back().new_flaws)
+        flaws.erase(f);
+
+    // we restore the resolvers' estimated costs..
+    for (const auto &r : trail.back().old_costs)
+        r.first->est_cost = r.second;
+
+#ifdef BUILD_GUI
+    // we notify the listeners that the cost of some flaws has been restored..
+    for (const auto &l : listeners)
+        for (const auto &c : trail.back().old_costs)
+            l->resolver_cost_changed(*c.first);
+#endif
+
+    trail.pop_back();
 }
 }

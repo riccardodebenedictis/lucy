@@ -6,7 +6,15 @@
 namespace cg
 {
 
-disjunction_flaw::disjunction_flaw(solver &slv, resolver *const cause, const context &ctx, const disjunction &disj) : flaw(slv, {cause}, false, true), ctx(ctx), disj(disj) {}
+inline const std::vector<resolver *> get_cause(resolver *const cause)
+{
+    if (cause)
+        return {cause};
+    else
+        return {};
+}
+
+disjunction_flaw::disjunction_flaw(solver &slv, resolver *const cause, const context &ctx, const disjunction &disj) : flaw(slv, get_cause(cause), false, true), ctx(ctx), disj(disj) {}
 
 disjunction_flaw::~disjunction_flaw() {}
 

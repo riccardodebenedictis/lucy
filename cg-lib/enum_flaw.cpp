@@ -4,7 +4,15 @@
 namespace cg
 {
 
-enum_flaw::enum_flaw(solver &slv, resolver *const cause, var_item &e_itm) : flaw(slv, {cause}, true, true), e_itm(e_itm) {}
+inline const std::vector<resolver *> get_cause(resolver *const cause)
+{
+    if (cause)
+        return {cause};
+    else
+        return {};
+}
+
+enum_flaw::enum_flaw(solver &slv, resolver *const cause, var_item &e_itm) : flaw(slv, get_cause(cause), true, true), e_itm(e_itm) {}
 enum_flaw::~enum_flaw() {}
 
 void enum_flaw::compute_resolvers()
