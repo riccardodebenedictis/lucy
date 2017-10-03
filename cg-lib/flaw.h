@@ -29,7 +29,7 @@ public:
   virtual std::string get_label() const = 0;
 
 private:
-  virtual void init();
+  void init();
   void expand();
   virtual void compute_resolvers() = 0;
 

@@ -91,7 +91,75 @@ void solver::new_disjunction(context &d_ctx, const disjunction &disj)
     new_flaw(*df);
 }
 
-void solver::solve() {}
+void solver::solve()
+{
+    // we build the causal graph..
+    build();
+
+    // we create a new graph var..
+    gamma = sat_cr.new_var();
+#ifndef NDEBUG
+    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
+#endif
+    // we use the new graph var to allow search within the current graph..
+    bool a_gv = sat_cr.assume(gamma) && sat_cr.check();
+    assert(a_gv);
+
+    while (true)
+    {
+        // this is the next flaw to be solved..
+        flaw *f_next = select_flaw();
+
+        if (f_next)
+        {
+#ifndef NDEBUG
+            std::cout << "(" << std::to_string(trail.size()) << "): " << f_next->get_label();
+#endif
+            assert(f_next->get_cost() < std::numeric_limits<double>::infinity());
+            if (!f_next->structural || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
+            {
+                // this is the next resolver to be assumed..
+                res = &select_resolver(*f_next);
+#ifndef NDEBUG
+                std::cout << " " << res->get_label() << std::endl;
+#endif
+
+                // we apply the resolver..
+                if (!sat_cr.assume(res->rho) || !sat_cr.check())
+                    throw unsolvable_exception();
+
+                res = nullptr;
+                if (sat_cr.root_level())
+                    if (sat_cr.value(gamma) == Undefined)
+                    {
+                        // we have learnt a unit clause! thus, we reassume the graph var..
+                        a_gv = sat_cr.assume(gamma);
+                        assert(a_gv);
+                        if (!sat_cr.check())
+                            throw unsolvable_exception();
+                    }
+                    else
+                    {
+                        assert(sat_cr.value(gamma) == False);
+                        // we have exhausted the search within the graph: we extend the graph..
+                        add_layer();
+
+                        // we create a new graph var..
+                        gamma = sat_cr.new_var();
+#ifndef NDEBUG
+                        std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
+#endif
+                        // we use the new graph var to allow search within the new graph..
+                        a_gv = sat_cr.assume(gamma) && sat_cr.check();
+                        assert(a_gv);
+                    }
+            }
+        }
+        else if (!has_inconsistencies()) // we run out of flaws, we check for inconsistencies one last time..
+            // Hurray!! we have found a solution..
+            return;
+    }
+}
 
 void solver::build()
 {
@@ -106,39 +174,10 @@ void solver::build()
             throw unsolvable_exception();
         assert(!flaw_q.front()->expanded);
         if (sat_cr.value(flaw_q.front()->phi) != False)
-        {
             if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
                 flaw_q.push(flaw_q.front());
             else
-            {
-                flaw_q.front()->expand();
-                if (!sat_cr.check())
-                    throw unsolvable_exception();
-
-                for (const auto &r : flaw_q.front()->resolvers)
-                {
-                    res = r;
-                    set_var(r->rho);
-                    try
-                    {
-                        r->apply();
-                    }
-                    catch (const inconsistency_exception &)
-                    {
-                        if (!sat_cr.new_clause({lit(r->rho, false)}))
-                            throw unsolvable_exception();
-                    }
-
-                    if (!sat_cr.check())
-                        throw unsolvable_exception();
-
-                    restore_var();
-                    res = nullptr;
-                    if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
-                        set_cost(*r, std::min(r->est_cost, la_th.value(r->cost)));
-                }
-            }
-        }
+                expand_flaw(*flaw_q.front());
         flaw_q.pop();
     }
 }
@@ -175,6 +214,7 @@ void solver::add_layer()
         rs.insert(flaw_q.front()->get_causes().begin(), flaw_q.front()->get_causes().end());
         flaw_q.pop();
     }
+    assert(std::all_of(rs.begin(), rs.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
     for (const auto &f : fs)
         flaw_q.push(f);
 
@@ -184,35 +224,92 @@ void solver::add_layer()
             throw unsolvable_exception();
         assert(!flaw_q.front()->expanded);
         if (sat_cr.value(flaw_q.front()->phi) != False)
-        {
-            flaw_q.front()->expand();
-            if (!sat_cr.check())
-                throw unsolvable_exception();
-
-            for (const auto &r : flaw_q.front()->resolvers)
-            {
-                res = r;
-                set_var(r->rho);
-                try
-                {
-                    r->apply();
-                }
-                catch (const inconsistency_exception &)
-                {
-                    if (!sat_cr.new_clause({lit(r->rho, false)}))
-                        throw unsolvable_exception();
-                }
-
-                if (!sat_cr.check())
-                    throw unsolvable_exception();
-
-                restore_var();
-                res = nullptr;
-                if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
-                    set_cost(*r, std::min(r->est_cost, la_th.value(r->cost)));
-            }
-        }
+            expand_flaw(*flaw_q.front());
         flaw_q.pop();
+    }
+}
+
+bool solver::has_inconsistencies()
+{
+#ifndef NDEBUG
+    std::cout << " (checking for inconsistencies..) ";
+#endif
+    std::vector<flaw *> incs;
+    std::queue<type *> q;
+    for (const auto &t : get_types())
+        if (!t.second->primitive)
+            q.push(t.second);
+
+    while (!q.empty())
+    {
+        if (smart_type *st = dynamic_cast<smart_type *>(q.front()))
+        {
+            std::vector<flaw *> c_incs = st->get_flaws();
+            incs.insert(incs.end(), c_incs.begin(), c_incs.end());
+        }
+        for (const auto &st : q.front()->get_types())
+            q.push(st.second);
+        q.pop();
+    }
+
+    if (!incs.empty())
+    {
+        // we go back to root level..
+        while (!sat_cr.root_level())
+            sat_cr.pop();
+
+        // we initialize the new flaws..
+        for (const auto &f : incs)
+        {
+            f->init();
+#ifdef BUILD_GUI
+            // we notify the listeners that a new flaw has arised..
+            for (const auto &l : listeners)
+                l->new_flaw(*f);
+#endif
+            expand_flaw(*f);
+        }
+
+        if (std::any_of(incs.begin(), incs.end(), [&](flaw *f) { return f->structural; }))
+            build();
+
+        // we re-assume the current graph var to allow search within the current graph..
+        bool a_gv = sat_cr.assume(lit(gamma, true));
+        assert(a_gv);
+        return true;
+    }
+    else
+        return false;
+}
+
+void solver::expand_flaw(flaw &f)
+{
+    // we expand the flaw..
+    f.expand();
+    if (!sat_cr.check())
+        throw unsolvable_exception();
+
+    for (const auto &r : f.resolvers)
+    {
+        res = r;
+        set_var(r->rho);
+        try
+        {
+            r->apply();
+        }
+        catch (const inconsistency_exception &)
+        {
+            if (!sat_cr.new_clause({lit(r->rho, false)}))
+                throw unsolvable_exception();
+        }
+
+        if (!sat_cr.check())
+            throw unsolvable_exception();
+
+        restore_var();
+        res = nullptr;
+        if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
+            set_cost(*r, std::min(r->est_cost, la_th.value(r->cost)));
     }
 }
 
@@ -220,18 +317,6 @@ void solver::new_flaw(flaw &f)
 {
     f.init(); // flaws' initialization requires being at root-level..
     flaw_q.push(&f);
-
-    assert(sat_cr.value(f.phi) != False);
-    if (sat_cr.value(f.phi) == True)
-        // we have a top-level (a landmark) flaw..
-        flaws.insert(&f);
-    else
-    {
-        // we listen for the flaw to become active..
-        phis[f.phi].push_back(&f);
-        bind(f.phi);
-    }
-
 #ifdef BUILD_GUI
     // we notify the listeners that a new flaw has arised..
     for (const auto &l : listeners)
@@ -241,13 +326,7 @@ void solver::new_flaw(flaw &f)
 
 void solver::new_resolver(resolver &r)
 {
-    assert(sat_cr.value(r.rho) != False);
-    if (sat_cr.value(r.rho) != True) // we do not have a top-level (a landmark) resolver..
-    {
-        // we listen for the resolver to become active..
-        rhos[r.rho].push_back(&r);
-        bind(r.rho);
-    }
+    r.init();
 
 #ifdef BUILD_GUI
     // we notify the listeners that a new resolver has arised..
@@ -324,7 +403,7 @@ void solver::propagate_costs()
     }
 }
 
-flaw &solver::select_flaw()
+flaw *solver::select_flaw()
 {
     assert(!flaws.empty());
     assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return f->expanded && sat_cr.value(f->phi) == True; }));
@@ -358,7 +437,7 @@ flaw &solver::select_flaw()
             l->current_flaw(*f_next);
 #endif
 
-    return *f_next;
+    return f_next;
 }
 
 resolver &solver::select_resolver(flaw &f)

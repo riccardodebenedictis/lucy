@@ -16,6 +16,7 @@ class solver : public core, public theory
 {
   friend class flaw;
   friend class atom_flaw;
+  friend class resolver;
   friend class cg_listener;
 
 public:
@@ -39,6 +40,8 @@ private:
   void build();                // builds the planning graph..
   bool is_deferrable(flaw &f); // checks whether the given flaw is deferrable..
   void add_layer();            // adds a layer to the current planning graph..
+  bool has_inconsistencies();  // checks whether the types have some inconsistency..
+  void expand_flaw(flaw &f);   // expands the given flaw into the planning graph..
 
   void new_flaw(flaw &f);
   void new_resolver(resolver &r);
@@ -46,7 +49,7 @@ private:
 
   void set_cost(resolver &r, double cst); // sets and propagates the cost of the given resolver..
   void propagate_costs();                 // propagates the cost updates..
-  flaw &select_flaw();                    // selects the most expensive flaw from the 'flaws' set..
+  flaw *select_flaw();                    // selects the most expensive flaw from the 'flaws' set, returns a nullptr if there are no active flaws..
   resolver &select_resolver(flaw &f);     // selects the least expensive resolver for the given flaw..
 
   bool propagate(const lit &p, std::vector<lit> &cnfl) override;
@@ -66,14 +69,15 @@ private:
     std::unordered_set<flaw *> solved_flaws;          // the just solved flaws..
   };
 
+  std::vector<cg_listener *> listeners;                  // the causal-graph listeners..
+  resolver *res = nullptr;                               // the current resolver (will be into the trail)..
+  var gamma;                                             // this variable represents the validity of the current graph..
+  std::queue<flaw *> flaw_q;                             // the flaw queue (for graph building procedure)..
+  std::queue<resolver *> resolver_q;                     // the resolver costs queue (for resolver cost propagation)..
   std::unordered_set<flaw *> flaws;                      // the current active flaws..
   std::unordered_map<var, std::vector<flaw *>> phis;     // the phi variables (boolean variable to flaws) of the flaws..
   std::unordered_map<var, std::vector<resolver *>> rhos; // the rho variables (boolean variable to resolver) of the resolvers..
-  std::queue<flaw *> flaw_q;                             // the flaw queue (for graph building procedure)..
-  std::queue<resolver *> resolver_q;                     // the resolver costs queue (for resolver cost propagation)..
-  std::vector<cg_listener *> listeners;                  // the causal-graph listeners..
   std::unordered_map<const atom *, atom_flaw *> reason;  // the reason for having introduced an atom..
-  resolver *res = nullptr;                               // the current resolver (will be into the trail)..
   std::vector<layer> trail;                              // the list of resolvers in chronological order..
 };
 }

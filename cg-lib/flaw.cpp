@@ -41,6 +41,17 @@ void flaw::init()
         // the flaw is active if the conjunction of its causes is active..
         phi = slv.sat_cr.new_conj(cs);
     }
+
+    switch (slv.sat_cr.value(phi))
+    {
+    case True: // we have a top-level (a landmark) flaw..
+        slv.flaws.insert(this);
+        break;
+    case Undefined: // we listen for the flaw to become active..
+        slv.phis[phi].push_back(this);
+        slv.bind(phi);
+        break;
+    }
 }
 
 void flaw::expand()

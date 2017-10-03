@@ -22,8 +22,11 @@ public:
   resolver(const resolver &orig) = delete;
   virtual ~resolver();
 
+private:
+  void init();
   virtual void apply() = 0;
 
+public:
   const var &get_rho() const { return rho; }
   flaw &get_effect() const { return effect; }
   std::vector<flaw *> get_preconditions() const { return preconditions; }
