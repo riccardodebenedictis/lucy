@@ -228,11 +228,20 @@ void solver::add_layer()
         flaw_q.pop();
     }
 
-    // this is the next resolver to watch for a solution: we set other resolvers as more expensive than this..
+    // this is the next resolver to watch for a solution: we set other options, potentially, till the top-level flaw, as more expensive than this..
     resolver *salv = *std::find_if(rs.begin(), rs.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
+    std::queue<resolver *> res_q;
     for (const auto &r : salv->effect.resolvers)
-        if (r != salv)
-            set_cost(*r, salv->get_cost() + 1);
+        if (r != salv && r->get_cost() < salv->get_cost())
+            res_q.push(r);
+    while (!res_q.empty())
+    {
+        set_cost(*res_q.front(), salv->get_cost() + 1);
+        for (const auto &r : res_q.front()->effect.resolvers)
+            if (r != res_q.front() && r->get_cost() < salv->get_cost())
+                res_q.push(r);
+        res_q.pop();
+    }
 }
 
 bool solver::has_inconsistencies()
