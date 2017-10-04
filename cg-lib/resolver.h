@@ -36,7 +36,7 @@ public:
 
 protected:
   solver &slv;                                               // the solver this resolver belongs to..
-  const var rho;                                             // the propositional variable indicates whether the flaw is active or not..
+  const var rho;                                             // the propositional variable indicating whether the resolver is active or not..
   const lin cost;                                            // the intrinsic cost of the resolver..
   std::vector<flaw *> preconditions;                         // the preconditions of this resolver..
   flaw &effect;                                              // the flaw solved by this resolver..
