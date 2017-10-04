@@ -24,9 +24,9 @@ private:
   jobject cg_object;         // the CausalGraph Java object..
   jmethodID f_created;       // the new flaw method..
   jmethodID f_state_changed; // the flaw state changed method..
-  jmethodID f_cost_changed;  // the flaw cost changed method..
   jmethodID c_flaw;          // the current flow changed method..
   jmethodID r_created;       // the new resolver method..
+  jmethodID r_cost_changed;  // the resolver cost changed method..
   jmethodID r_state_changed; // the resolver state changed method..
   jmethodID c_resolver;      // the current resolver changed method..
   jmethodID c_link_added;    // the causal link added method..

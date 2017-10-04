@@ -25,7 +25,7 @@ void cg_java_listener::current_flaw(const cg::flaw &f) { gui.env->CallVoidMethod
 
 void cg_java_listener::resolver_created(const cg::resolver &r) { gui.env->CallVoidMethod(gui.cg_object, gui.r_created, reinterpret_cast<jlong>(&r), reinterpret_cast<jlong>(&r.get_effect()), gui.env->NewStringUTF(r.get_label().c_str()), slv.sat_cr.value(r.get_rho())); }
 void cg_java_listener::resolver_state_changed(const cg::resolver &r) { gui.env->CallVoidMethod(gui.cg_object, gui.r_state_changed, reinterpret_cast<jlong>(&r), slv.sat_cr.value(r.get_rho())); }
-void cg_java_listener::resolver_cost_changed(const cg::resolver &r) { gui.env->CallVoidMethod(gui.cg_object, gui.f_cost_changed, reinterpret_cast<jlong>(&r), r.get_cost()); }
+void cg_java_listener::resolver_cost_changed(const cg::resolver &r) { gui.env->CallVoidMethod(gui.cg_object, gui.r_cost_changed, reinterpret_cast<jlong>(&r), r.get_cost()); }
 void cg_java_listener::current_resolver(const cg::resolver &r) { gui.env->CallVoidMethod(gui.cg_object, gui.c_resolver, reinterpret_cast<jlong>(&r)); }
 
 void cg_java_listener::causal_link_added(const cg::flaw &f, const cg::resolver &r) { gui.env->CallVoidMethod(gui.cg_object, gui.c_link_added, reinterpret_cast<jlong>(&f), reinterpret_cast<jlong>(&r)); }

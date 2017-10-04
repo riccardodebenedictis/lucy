@@ -28,9 +28,9 @@ java_gui::java_gui()
     cg_object = env->NewObject(cg_cls, cg_cstr);
     f_created = env->GetMethodID(cg_cls, "flaw_created", "(J[JLjava/lang/String;DI)V");
     f_state_changed = env->GetMethodID(cg_cls, "flaw_state_changed", "(JI)V");
-    f_cost_changed = env->GetMethodID(cg_cls, "flaw_cost_changed", "(JD)V");
     c_flaw = env->GetMethodID(cg_cls, "current_flaw", "(J)V");
     r_created = env->GetMethodID(cg_cls, "resolver_created", "(JJLjava/lang/String;I)V");
+    r_cost_changed = env->GetMethodID(cg_cls, "resolver_cost_changed", "(JD)V");
     r_state_changed = env->GetMethodID(cg_cls, "resolver_state_changed", "(JI)V");
     c_resolver = env->GetMethodID(cg_cls, "current_resolver", "(J)V");
     c_link_added = env->GetMethodID(cg_cls, "causal_link_added", "(JJ)V");
