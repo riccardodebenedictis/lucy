@@ -26,10 +26,10 @@ java_gui::java_gui()
     jclass cg_cls = env->FindClass("CausalGraph");
     jmethodID cg_cstr = env->GetMethodID(cg_cls, "<init>", "()V");
     cg_object = env->NewObject(cg_cls, cg_cstr);
-    f_created = env->GetMethodID(cg_cls, "flaw_created", "(J[JLjava/lang/String;DI)V");
+    f_created = env->GetMethodID(cg_cls, "flaw_created", "(J[JLjava/lang/String;I)V");
     f_state_changed = env->GetMethodID(cg_cls, "flaw_state_changed", "(JI)V");
     c_flaw = env->GetMethodID(cg_cls, "current_flaw", "(J)V");
-    r_created = env->GetMethodID(cg_cls, "resolver_created", "(JJLjava/lang/String;I)V");
+    r_created = env->GetMethodID(cg_cls, "resolver_created", "(JJLjava/lang/String;DI)V");
     r_cost_changed = env->GetMethodID(cg_cls, "resolver_cost_changed", "(JD)V");
     r_state_changed = env->GetMethodID(cg_cls, "resolver_state_changed", "(JI)V");
     c_resolver = env->GetMethodID(cg_cls, "current_resolver", "(J)V");

@@ -69,8 +69,8 @@ public class CausalGraph extends Display {
     private final VisualGraph vg;
     private final Map<Long, Node> flaws = new HashMap<>();
     private final Map<Long, Node> resolvers = new HashMap<>();
-    private final Map<Long, Collection<Long>> causes = new HashMap<>();
-    private final Map<Long, Collection<Long>> preconditions = new HashMap<>();
+    private final Map<Long, Long> effects = new HashMap<>();
+    private final Map<Long, Collection<Long>> flaw_resolvers = new HashMap<>();
     private Long current_flaw;
     private Long current_resolver;
 
@@ -238,26 +238,20 @@ public class CausalGraph extends Display {
         }
     }
 
-    public void flaw_created(final long f_id, final long[] cause, final String label, final double cost,
-            final int state) {
+    public void flaw_created(final long f_id, final long[] cause, final String label, final int state) {
         synchronized (m_vis) {
             assert !flaws.containsKey(f_id) : "the flaw already exists..";
             assert Arrays.stream(cause).allMatch(c -> resolvers.containsKey(c)) : "the flaw's cause does not exist: "
                     + Arrays.toString(cause) + resolvers;
-            causes.put(f_id, new ArrayList<>());
             Node flaw_node = g.addNode();
             flaw_node.set(VisualItem.LABEL, label);
             flaw_node.set(NODE_TYPE, "flaw");
-            flaw_node.set(NODE_COST, -cost);
+            flaw_node.set(NODE_COST, Double.NEGATIVE_INFINITY);
             flaw_node.set(NODE_STATE, state);
             flaws.put(f_id, flaw_node);
             for (long c : cause) {
-                causes.get(f_id).add(c);
-                preconditions.get(c).add(f_id);
                 Edge c_edge = g.addEdge(flaw_node, resolvers.get(c));
                 c_edge.set(EDGE_STATE, resolvers.get(c).get(NODE_STATE));
-                resolvers.get(c).set(NODE_COST, preconditions.get(c).stream()
-                        .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).min().getAsDouble());
             }
         }
     }
@@ -267,18 +261,6 @@ public class CausalGraph extends Display {
             assert flaws.containsKey(f_id) : "the flaw does not exist..";
             Node flaw_node = flaws.get(f_id);
             flaw_node.set(NODE_STATE, state);
-        }
-    }
-
-    public void flaw_cost_changed(final long f_id, final double cost) {
-        synchronized (m_vis) {
-            assert flaws.containsKey(f_id) : "the flaw does not exist..";
-            Node flaw_node = flaws.get(f_id);
-            flaw_node.set(NODE_COST, -cost);
-            for (long c : causes.get(f_id)) {
-                resolvers.get(c).set(NODE_COST, preconditions.get(c).stream()
-                        .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).min().getAsDouble());
-            }
         }
     }
 
@@ -295,19 +277,25 @@ public class CausalGraph extends Display {
         }
     }
 
-    public void resolver_created(final long r_id, final long f_id, final String label, final int state) {
+    public void resolver_created(final long r_id, final long f_id, final String label, final double cost,
+            final int state) {
         synchronized (m_vis) {
             assert !resolvers.containsKey(r_id) : "the resolver already exists..";
             assert flaws.containsKey(f_id) : "the resolver's solved flaw does not exist..";
-            preconditions.put(r_id, new ArrayList<>());
+            effects.put(r_id, f_id);
+            if (!flaw_resolvers.containsKey(f_id))
+                flaw_resolvers.put(f_id, new ArrayList<>());
+            flaw_resolvers.get(f_id).add(r_id);
             Node resolver_node = g.addNode();
             resolver_node.set(VisualItem.LABEL, label);
             resolver_node.set(NODE_TYPE, "resolver");
-            resolver_node.set(NODE_COST, -0d);
+            resolver_node.set(NODE_COST, -cost);
             resolver_node.set(NODE_STATE, state);
             resolvers.put(r_id, resolver_node);
             Edge c_edge = g.addEdge(resolver_node, flaws.get(f_id));
             c_edge.set(EDGE_STATE, state);
+            flaws.get(f_id).set(NODE_COST, flaw_resolvers.get(f_id).stream()
+                    .mapToDouble(res -> (Double) resolvers.get(res).get(NODE_COST)).min().getAsDouble());
         }
     }
 
@@ -320,6 +308,17 @@ public class CausalGraph extends Display {
             while (c_edges.hasNext()) {
                 c_edges.next().set(EDGE_STATE, state);
             }
+        }
+    }
+
+    public void resolver_cost_changed(final long r_id, final double cost) {
+        synchronized (m_vis) {
+            assert resolvers.containsKey(r_id) : "the flaw resolver not exist..";
+            assert flaws.containsKey(effects.get(r_id)) : "the resolver's effect does not exist..";
+            Node resolver_node = resolvers.get(r_id);
+            resolver_node.set(NODE_COST, -cost);
+            flaws.get(effects.get(r_id)).set(NODE_COST, flaw_resolvers.get(r_id).stream()
+                    .mapToDouble(res -> (Double) resolvers.get(res).get(NODE_COST)).min().getAsDouble());
         }
     }
 
@@ -337,10 +336,8 @@ public class CausalGraph extends Display {
             assert resolvers.containsKey(r_id) : "the resolver does not exist..";
             Edge c_edge = g.addEdge(flaws.get(f_id), resolvers.get(r_id));
             c_edge.set(EDGE_STATE, resolvers.get(r_id).get(NODE_STATE));
-            causes.get(f_id).add(r_id);
-            preconditions.get(r_id).add(f_id);
-            resolvers.get(r_id).set(NODE_COST, preconditions.get(r_id).stream()
-                    .mapToDouble(pre -> (Double) flaws.get(pre).get(NODE_COST)).min().getAsDouble());
+            flaws.get(effects.get(r_id)).set(NODE_COST, flaw_resolvers.get(r_id).stream()
+                    .mapToDouble(res -> (Double) resolvers.get(res).get(NODE_COST)).min().getAsDouble());
         }
     }
 
