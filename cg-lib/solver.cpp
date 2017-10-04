@@ -227,6 +227,12 @@ void solver::add_layer()
             expand_flaw(*flaw_q.front());
         flaw_q.pop();
     }
+
+    // this is the next resolver to watch for a solution: we set other resolvers as more expensive than this..
+    resolver *salv = *std::find_if(rs.begin(), rs.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
+    for (const auto &r : salv->effect.resolvers)
+        if (r != salv)
+            set_cost(*r, salv->get_cost() + 1);
 }
 
 bool solver::has_inconsistencies()
