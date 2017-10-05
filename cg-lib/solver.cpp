@@ -185,19 +185,6 @@ void solver::build()
                 expand_flaw(*flaw_q.front());
         flaw_q.pop();
     }
-
-    // we compute the set of resolvers on the fringe (whose preconditions have not yet been expanded) and their ancestors..
-    std::queue<flaw *> f_q = flaw_q;
-    while (!f_q.empty())
-    {
-        for (const auto &c : f_q.front()->get_causes())
-            if (c->est_cost == std::numeric_limits<double>::infinity() && sat_cr.value(c->rho) == Undefined)
-            {
-                resolvers.insert(c);
-                f_q.push(&c->effect);
-            }
-        f_q.pop();
-    }
     assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 }
 
@@ -264,22 +251,10 @@ void solver::add_layer()
                 res_q.push(r);
         res_q.pop();
     }
-
-    // we recompute the set of resolvers on the fringe (whose preconditions have not yet been expanded) and their ancestors..
-    resolvers.clear();
-    next_resolvers.clear();
-    std::queue<flaw *> f_q = flaw_q;
-    while (!f_q.empty())
-    {
-        for (const auto &c : f_q.front()->get_causes())
-            if (c->est_cost == std::numeric_limits<double>::infinity() && sat_cr.value(c->rho) == Undefined)
-            {
-                resolvers.insert(c);
-                f_q.push(&c->effect);
-            }
-        f_q.pop();
-    }
     assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
+
+    // we clear the next resolvers..
+    next_resolvers.clear();
 }
 
 bool solver::has_inconsistencies()
@@ -391,6 +366,7 @@ void solver::new_flaw(flaw &f)
 void solver::new_resolver(resolver &r)
 {
     r.init();
+    resolvers.insert(&r);
 
 #ifdef BUILD_GUI
     // we notify the listeners that a new resolver has arised..
@@ -423,6 +399,8 @@ void solver::set_cost(resolver &r, double cst)
         double f_cost = r.effect.get_cost();
         // we update the resolver's estimated cost..
         r.est_cost = cst;
+        if (r.est_cost < std::numeric_limits<double>::infinity())
+            resolvers.erase(&r);
 
 #ifdef BUILD_GUI
         // we notify the listeners that a flaw cost has changed..
@@ -430,45 +408,47 @@ void solver::set_cost(resolver &r, double cst)
             l->resolver_cost_changed(r);
 #endif
 
-        if (f_cost != r.effect.get_cost())            // the cost of the resolver's effect has changed as a consequence of the resolver's cost update..
-            for (const auto &c_r : r.effect.supports) // hence, we propagate the update to all the supports of the resolver's effect..
+        if (f_cost != r.effect.get_cost()) // the cost of the resolver's effect has changed as a consequence of the resolver's cost update,hence, we propagate the update to all the supports of the resolver's effect..
+        {
+            // the resolver costs queue (for resolver cost propagation)..
+            std::queue<resolver *> resolver_q;
+            for (const auto &c_r : r.effect.supports)
                 resolver_q.push(c_r);
-        propagate_costs();
-    }
-}
 
-void solver::propagate_costs()
-{
-    while (!resolver_q.empty())
-    {
-        resolver &c_res = *resolver_q.front(); // the current resolver whose cost might require an update..
-        double r_cost = -std::numeric_limits<double>::infinity();
-        for (const auto &f : c_res.preconditions)
-        {
-            double c = f->get_cost();
-            if (c > r_cost)
-                r_cost = c;
-        }
-        if (c_res.est_cost != r_cost)
-        {
-            if (!trail.empty())
-                trail.back().old_costs.insert({&c_res, c_res.est_cost});
-            // this is the current cost of the resolver's effect..
-            double f_cost = c_res.effect.get_cost();
-            // we update the resolver's estimated cost..
-            c_res.est_cost = r_cost;
+            while (!resolver_q.empty())
+            {
+                resolver &c_res = *resolver_q.front(); // the current resolver whose cost might require an update..
+                double r_cost = -std::numeric_limits<double>::infinity();
+                for (const auto &f : c_res.preconditions)
+                {
+                    double c = f->get_cost();
+                    if (c > r_cost)
+                        r_cost = c;
+                }
+                if (c_res.est_cost != r_cost)
+                {
+                    if (!trail.empty())
+                        trail.back().old_costs.insert({&c_res, c_res.est_cost});
+                    // this is the current cost of the resolver's effect..
+                    f_cost = c_res.effect.get_cost();
+                    // we update the resolver's estimated cost..
+                    c_res.est_cost = r_cost;
+                    if (c_res.est_cost < std::numeric_limits<double>::infinity())
+                        resolvers.erase(&c_res);
 
 #ifdef BUILD_GUI
-            // we notify the listeners that a flaw cost has changed..
-            for (const auto &l : listeners)
-                l->resolver_cost_changed(c_res);
+                    // we notify the listeners that a flaw cost has changed..
+                    for (const auto &l : listeners)
+                        l->resolver_cost_changed(c_res);
 #endif
 
-            if (f_cost != c_res.effect.get_cost())            // the cost of the resolver's effect has changed as a consequence of the resolver's cost update..
-                for (const auto &c_r : c_res.effect.supports) // hence, we propagate the update to all the supports of the resolver's effect..
-                    resolver_q.push(c_r);
+                    if (f_cost != c_res.effect.get_cost())            // the cost of the resolver's effect has changed as a consequence of the resolver's cost update..
+                        for (const auto &c_r : c_res.effect.supports) // hence, we propagate the update to all the supports of the resolver's effect..
+                            resolver_q.push(c_r);
+                }
+                resolver_q.pop();
+            }
         }
-        resolver_q.pop();
     }
 }
 

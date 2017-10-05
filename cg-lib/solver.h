@@ -48,7 +48,6 @@ private:
   void new_causal_link(flaw &f, resolver &r);
 
   void set_cost(resolver &r, double cst); // sets and propagates the cost of the given resolver..
-  void propagate_costs();                 // propagates the cost updates..
   flaw *select_flaw();                    // selects the most expensive flaw from the 'flaws' set, returns a nullptr if there are no active flaws..
   resolver &select_resolver(flaw &f);     // selects the least expensive resolver for the given flaw..
 
@@ -74,7 +73,6 @@ private:
   var gamma;                                             // this variable represents the validity of the current graph..
   bool building_graph = false;                           // we are either in a building graph phase or in a solving phase..
   std::queue<flaw *> flaw_q;                             // the flaw queue (for graph building procedure)..
-  std::queue<resolver *> resolver_q;                     // the resolver costs queue (for resolver cost propagation)..
   std::unordered_set<flaw *> flaws;                      // the current active flaws..
   std::unordered_set<resolver *> resolvers;              // the set of resolvers on the fringe (whose preconditions have not yet been expanded) and their ancestors..
   std::unordered_set<resolver *> next_resolvers;         // the current set of resolvers to be expanded, before restarting the search..
