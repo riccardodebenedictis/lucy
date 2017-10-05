@@ -94,7 +94,7 @@ void atom_flaw::compute_resolvers()
                 assert(slv.sat_cr.value(u_res->get_rho()) != False);
                 add_resolver(*u_res);
                 slv.new_causal_link(target, *u_res);
-                slv.set_cost(*u_res, target.get_cost() + 1);
+                slv.set_cost(*u_res, target.get_cost());
             }
         }
     }
