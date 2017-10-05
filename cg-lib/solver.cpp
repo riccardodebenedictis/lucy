@@ -285,7 +285,7 @@ void solver::add_layer()
 bool solver::has_inconsistencies()
 {
 #ifndef NDEBUG
-    std::cout << " (checking for inconsistencies..) ";
+    std::cout << " (checking for inconsistencies..)";
 #endif
     std::vector<flaw *> incs;
     std::queue<type *> q;
