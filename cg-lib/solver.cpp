@@ -98,7 +98,8 @@ void solver::solve()
 
     for (size_t i = flaw_q.size(); i > 0; i--)
     {
-        resolvers.insert(flaw_q.front()->get_causes().begin(), flaw_q.front()->get_causes().end());
+        for (const auto &c : flaw_q.front()->get_causes())
+            resolvers.insert(c);
         flaw_q.push(flaw_q.front());
         flaw_q.pop();
     }
@@ -161,7 +162,8 @@ void solver::solve()
                         next_resolvers.clear();
                         for (size_t i = flaw_q.size(); i > 0; i--)
                         {
-                            resolvers.insert(flaw_q.front()->get_causes().begin(), flaw_q.front()->get_causes().end());
+                            for (const auto &c : flaw_q.front()->get_causes())
+                                resolvers.insert(c);
                             flaw_q.push(flaw_q.front());
                             flaw_q.pop();
                         }
