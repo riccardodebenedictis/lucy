@@ -407,6 +407,9 @@ void solver::set_cost(resolver &r, double cst)
     {
         if (!trail.empty())
             trail.back().old_costs.insert({&r, r.est_cost});
+        // this is the current cost of the resolver's effect..
+        double f_cost = r.effect.get_cost();
+        // we update the resolver's estimated cost..
         r.est_cost = cst;
 
 #ifdef BUILD_GUI
@@ -415,7 +418,9 @@ void solver::set_cost(resolver &r, double cst)
             l->resolver_cost_changed(r);
 #endif
 
-        resolver_q.push(&r);
+        if (f_cost != r.effect.get_cost())            // the cost of the resolver's effect has changed as a consequence of the resolver's cost update..
+            for (const auto &c_r : r.effect.supports) // hence, we propagate the update to all the supports of the resolver's effect..
+                resolver_q.push(c_r);
         propagate_costs();
     }
 }
@@ -424,7 +429,7 @@ void solver::propagate_costs()
 {
     while (!resolver_q.empty())
     {
-        resolver &c_res = *resolver_q.front(); // the current resolver whose cost has been updated..
+        resolver &c_res = *resolver_q.front(); // the current resolver whose cost might require an update..
         double r_cost = -std::numeric_limits<double>::infinity();
         for (const auto &f : c_res.preconditions)
         {
@@ -436,6 +441,9 @@ void solver::propagate_costs()
         {
             if (!trail.empty())
                 trail.back().old_costs.insert({&c_res, c_res.est_cost});
+            // this is the current cost of the resolver's effect..
+            double f_cost = c_res.effect.get_cost();
+            // we update the resolver's estimated cost..
             c_res.est_cost = r_cost;
 
 #ifdef BUILD_GUI
@@ -444,8 +452,9 @@ void solver::propagate_costs()
                 l->resolver_cost_changed(c_res);
 #endif
 
-            for (const auto &supp : c_res.effect.supports)
-                resolver_q.push(supp);
+            if (f_cost != c_res.effect.get_cost())            // the cost of the resolver's effect has changed as a consequence of the resolver's cost update..
+                for (const auto &c_r : c_res.effect.supports) // hence, we propagate the update to all the supports of the resolver's effect..
+                    resolver_q.push(c_r);
         }
         resolver_q.pop();
     }
