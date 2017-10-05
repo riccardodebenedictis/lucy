@@ -408,7 +408,6 @@ void solver::set_cost(resolver &r, double cst)
         if (!trail.empty())
             trail.back().old_costs.insert({&r, r.est_cost});
         r.est_cost = cst;
-        resolver_q.push(&r);
 
 #ifdef BUILD_GUI
         // we notify the listeners that a flaw cost has changed..
@@ -416,6 +415,7 @@ void solver::set_cost(resolver &r, double cst)
             l->resolver_cost_changed(r);
 #endif
 
+        resolver_q.push(&r);
         propagate_costs();
     }
 }
