@@ -211,20 +211,46 @@ void solver::add_layer()
     std::cout << "adding a layer to the causal graph.." << std::endl;
 #endif
     assert(sat_cr.root_level());
+    assert(std::all_of(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
+
+    std::unordered_set<flaw *> fringe;
+    std::queue<flaw *> f_q = flaw_q;
+    while (!f_q.empty())
+    {
+        fringe.insert(f_q.front());
+        f_q.pop();
+    }
+
+    std::unordered_set<flaw *> undeferrable_fs;
+    std::queue<resolver *> res_q;
+    for (const auto &r : next_resolvers)
+        res_q.push(r);
+    while (!res_q.empty())
+    {
+        for (const auto &f : res_q.front()->preconditions)
+            if (fringe.find(f) != fringe.end())
+                undeferrable_fs.insert(f);
+            else
+                for (const auto &r : f->resolvers)
+                    if (resolvers.find(r) != resolvers.end())
+                        res_q.push(r);
+        res_q.pop();
+    }
 
     std::vector<flaw *> fs;
-    std::vector<flaw *> deferrable_fs;
-    while (!flaw_q.empty())
+    f_q = std::move(flaw_q);
+    while (!f_q.empty())
     {
-        if (std::any_of(flaw_q.front()->causes.begin(), flaw_q.front()->causes.end(), [&](resolver *r) { return next_resolvers.find(r) != next_resolvers.end(); }))
-            fs.push_back(flaw_q.front());
+        if (undeferrable_fs.find(f_q.front()) != undeferrable_fs.end())
+            flaw_q.push(f_q.front());
         else
-            deferrable_fs.push_back(flaw_q.front());
-        flaw_q.pop();
+            fs.push_back(f_q.front());
+        f_q.pop();
     }
-    assert(std::all_of(fs.begin(), fs.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); }));
 
-    while (std::all_of(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }))
+    // this is the next resolver to watch for a solution: we set other options, potentially, till the top-level flaw, as more expensive than this..
+    resolver *salv = nullptr;
+    while (salv == nullptr)
     {
         if (flaw_q.empty())
             throw unsolvable_exception();
@@ -232,14 +258,9 @@ void solver::add_layer()
         if (sat_cr.value(flaw_q.front()->phi) != False)
             expand_flaw(*flaw_q.front());
         flaw_q.pop();
+        salv = *std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
     }
 
-    for (const auto &f : deferrable_fs)
-        flaw_q.push(f);
-
-    // this is the next resolver to watch for a solution: we set other options, potentially, till the top-level flaw, as more expensive than this..
-    resolver *salv = *std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
-    std::queue<resolver *> res_q;
     for (const auto &r : salv->effect.resolvers)
         if (r != salv && r->get_cost() < salv->get_cost())
             res_q.push(r);
