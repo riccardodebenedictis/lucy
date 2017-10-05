@@ -360,7 +360,7 @@ void solver::expand_flaw(flaw &f)
         restore_var();
         res = nullptr;
         if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
-            set_cost(*r, std::min(r->est_cost, la_th.value(r->cost)));
+            set_cost(*r, 0);
     }
     building_graph = false;
 }
@@ -434,7 +434,7 @@ void solver::propagate_costs()
         for (const auto &f : c_res.preconditions)
         {
             double c = f->get_cost();
-            if (c < r_cost)
+            if (c > r_cost)
                 r_cost = c;
         }
         if (c_res.est_cost != r_cost)
