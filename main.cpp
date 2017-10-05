@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
 #ifdef BUILD_GUI
         gui::java_gui j_gui;
-        gui::cg_java_listener gl(j_gui, s);
+        gui::cg_java_listener gl(s, j_gui);
 #endif
 
         std::cout << "parsing input files.." << std::endl;

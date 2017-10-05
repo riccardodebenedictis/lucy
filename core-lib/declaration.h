@@ -164,9 +164,9 @@ public:
   void execute(const scope &scp, context &ctx) const;
 
 private:
-  const std::vector<type_declaration *> types;
   const std::vector<method_declaration *> methods;
   const std::vector<predicate_declaration *> predicates;
+  const std::vector<type_declaration *> types;
   const std::vector<statement *> statements;
 };
 }

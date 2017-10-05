@@ -231,8 +231,6 @@ void solver::add_layer()
 
     std::vector<flaw *> fs;
     std::vector<flaw *> deferrable_fs;
-
-    std::vector<flaw *> fs;
     while (!flaw_q.empty())
     {
         if (std::any_of(flaw_q.front()->causes.begin(), flaw_q.front()->causes.end(), [&](resolver *r) { return next_resolvers.find(r) != next_resolvers.end(); }))

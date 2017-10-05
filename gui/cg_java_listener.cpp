@@ -6,7 +6,7 @@
 
 namespace gui
 {
-cg_java_listener::cg_java_listener(java_gui &gui, cg::solver &slv) : gui(gui), cg_listener(slv) {}
+cg_java_listener::cg_java_listener(cg::solver &slv,java_gui &gui) : cg_listener(slv),gui(gui) {}
 cg_java_listener::~cg_java_listener() {}
 
 void cg_java_listener::flaw_created(const cg::flaw &f)
