@@ -18,8 +18,8 @@ class solver
 core <|-- solver
 solver : -phis:map<var,vector<flaw>>
 solver : -rhos:map<var,vector<resolver>>
-solver : -flaw_w:queue<flaw>
-solver : -flaw_costs_w:queue<flaw>
+solver : -flaw_q:queue<flaw>
+solver : -flaw_costs_q:queue<flaw>
 solver : +solver()
 solver : +new_enum(tp:type,allowed_vals:set<item>):expr
 solver : -new_fact(a:atom):void
@@ -43,6 +43,9 @@ solver : -check(cnfl:vector<lit>):bool
 solver : -push():void
 solver : -pop():void
 solver o--> "*" cg_listener : listeners
+solver o--> "*" flaw : flaws
+solver o--> "*" resolver : resolvers
+solver o--> "*" resolver : next_resolvers
 
 class flaw
 flaw : -phi:var
