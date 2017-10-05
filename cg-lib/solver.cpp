@@ -96,15 +96,6 @@ void solver::solve()
     // we build the causal graph..
     build();
 
-    for (size_t i = flaw_q.size(); i > 0; i--)
-    {
-        for (const auto &c : flaw_q.front()->get_causes())
-            resolvers.insert(c);
-        flaw_q.push(flaw_q.front());
-        flaw_q.pop();
-    }
-    assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
-
     // we create a new graph var..
     gamma = sat_cr.new_var();
 #ifndef NDEBUG
@@ -158,17 +149,6 @@ void solver::solve()
                         // we have exhausted the search within the graph: we extend the graph..
                         add_layer();
 
-                        resolvers.clear();
-                        next_resolvers.clear();
-                        for (size_t i = flaw_q.size(); i > 0; i--)
-                        {
-                            for (const auto &c : flaw_q.front()->get_causes())
-                                resolvers.insert(c);
-                            flaw_q.push(flaw_q.front());
-                            flaw_q.pop();
-                        }
-                        assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
-
                         // we create a new graph var..
                         gamma = sat_cr.new_var();
 #ifndef NDEBUG
@@ -205,6 +185,20 @@ void solver::build()
                 expand_flaw(*flaw_q.front());
         flaw_q.pop();
     }
+
+    // we compute the set of resolvers on the fringe (whose preconditions have not yet been expanded) and their ancestors..
+    std::queue<flaw *> f_q = flaw_q;
+    while (!f_q.empty())
+    {
+        for (const auto &c : f_q.front()->get_causes())
+            if (c->est_cost == std::numeric_limits<double>::infinity() && sat_cr.value(c->rho) == Undefined)
+            {
+                resolvers.insert(c);
+                f_q.push(&c->effect);
+            }
+        f_q.pop();
+    }
+    assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 }
 
 bool solver::is_deferrable(flaw &f)
@@ -270,6 +264,22 @@ void solver::add_layer()
                 res_q.push(r);
         res_q.pop();
     }
+
+    // we recompute the set of resolvers on the fringe (whose preconditions have not yet been expanded) and their ancestors..
+    resolvers.clear();
+    next_resolvers.clear();
+    std::queue<flaw *> f_q = flaw_q;
+    while (!f_q.empty())
+    {
+        for (const auto &c : f_q.front()->get_causes())
+            if (c->est_cost == std::numeric_limits<double>::infinity() && sat_cr.value(c->rho) == Undefined)
+            {
+                resolvers.insert(c);
+                f_q.push(&c->effect);
+            }
+        f_q.pop();
+    }
+    assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 }
 
 bool solver::has_inconsistencies()
