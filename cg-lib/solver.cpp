@@ -96,6 +96,14 @@ void solver::solve()
     // we build the causal graph..
     build();
 
+    for (size_t i = flaw_q.size(); i > 0; i--)
+    {
+        resolvers.insert(flaw_q.front()->get_causes().begin(), flaw_q.front()->get_causes().end());
+        flaw_q.push(flaw_q.front());
+        flaw_q.pop();
+    }
+    assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
+
     // we create a new graph var..
     gamma = sat_cr.new_var();
 #ifndef NDEBUG
@@ -124,6 +132,11 @@ void solver::solve()
                 std::cout << " " << res->get_label() << std::endl;
 #endif
 
+                // we consider possible, unexpanded, alternatives..
+                for (const auto &r : f_next->resolvers)
+                    if (resolvers.find(r) != resolvers.end())
+                        next_resolvers.insert(r);
+
                 // we apply the resolver..
                 if (!sat_cr.assume(res->rho) || !sat_cr.check())
                     throw unsolvable_exception();
@@ -143,6 +156,16 @@ void solver::solve()
                         assert(sat_cr.value(gamma) == False);
                         // we have exhausted the search within the graph: we extend the graph..
                         add_layer();
+
+                        resolvers.clear();
+                        next_resolvers.clear();
+                        for (size_t i = flaw_q.size(); i > 0; i--)
+                        {
+                            resolvers.insert(flaw_q.front()->get_causes().begin(), flaw_q.front()->get_causes().end());
+                            flaw_q.push(flaw_q.front());
+                            flaw_q.pop();
+                        }
+                        assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 
                         // we create a new graph var..
                         gamma = sat_cr.new_var();
@@ -206,19 +229,21 @@ void solver::add_layer()
 #endif
     assert(sat_cr.root_level());
 
-    std::unordered_set<resolver *> rs;
+    std::vector<flaw *> fs;
+    std::vector<flaw *> deferrable_fs;
+
     std::vector<flaw *> fs;
     while (!flaw_q.empty())
     {
-        fs.push_back(flaw_q.front());
-        rs.insert(flaw_q.front()->get_causes().begin(), flaw_q.front()->get_causes().end());
+        if (std::any_of(flaw_q.front()->causes.begin(), flaw_q.front()->causes.end(), [&](resolver *r) { return next_resolvers.find(r) != next_resolvers.end(); }))
+            fs.push_back(flaw_q.front());
+        else
+            deferrable_fs.push_back(flaw_q.front());
         flaw_q.pop();
     }
-    assert(std::all_of(rs.begin(), rs.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
-    for (const auto &f : fs)
-        flaw_q.push(f);
+    assert(std::all_of(fs.begin(), fs.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); }));
 
-    while (std::all_of(rs.begin(), rs.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }))
+    while (std::all_of(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }))
     {
         if (flaw_q.empty())
             throw unsolvable_exception();
@@ -228,8 +253,11 @@ void solver::add_layer()
         flaw_q.pop();
     }
 
+    for (const auto &f : deferrable_fs)
+        flaw_q.push(f);
+
     // this is the next resolver to watch for a solution: we set other options, potentially, till the top-level flaw, as more expensive than this..
-    resolver *salv = *std::find_if(rs.begin(), rs.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
+    resolver *salv = *std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
     std::queue<resolver *> res_q;
     for (const auto &r : salv->effect.resolvers)
         if (r != salv && r->get_cost() < salv->get_cost())
@@ -526,7 +554,14 @@ bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
         {
             for (const auto &r : rhos)
                 if (sat_cr.value(r.first) == False)
+                {
                     cnfl.push_back(r.first);
+                    // we also consider possible, unexpanded, alternatives..
+                    for (const auto &c_r : r.second)
+                        for (const auto &c_c_r : c_r->effect.resolvers)
+                            if (resolvers.find(c_c_r) != resolvers.end())
+                                next_resolvers.insert(c_c_r);
+                }
             cnfl.push_back(lit(gamma, false));
             return false;
         }
