@@ -96,7 +96,7 @@ public class CausalGraph extends Display {
         // set up the renderers
         // draw the nodes as basic shapes
         LabelRenderer flaw_renderer = new LabelRenderer(VisualItem.LABEL);
-        flaw_renderer.setRoundedCorner(4, 4);
+        flaw_renderer.setRoundedCorner(3, 3);
         LabelRenderer resolver_renderer = new LabelRenderer(VisualItem.LABEL);
         resolver_renderer.setRoundedCorner(15, 15);
 
@@ -313,11 +313,11 @@ public class CausalGraph extends Display {
 
     public void resolver_cost_changed(final long r_id, final double cost) {
         synchronized (m_vis) {
-            assert resolvers.containsKey(r_id) : "the flaw resolver not exist..";
+            assert resolvers.containsKey(r_id) : "the resolver does not exist..";
             assert flaws.containsKey(effects.get(r_id)) : "the resolver's effect does not exist..";
             Node resolver_node = resolvers.get(r_id);
             resolver_node.set(NODE_COST, -cost);
-            flaws.get(effects.get(r_id)).set(NODE_COST, flaw_resolvers.get(r_id).stream()
+            flaws.get(effects.get(r_id)).set(NODE_COST, flaw_resolvers.get(effects.get(r_id)).stream()
                     .mapToDouble(res -> (Double) resolvers.get(res).get(NODE_COST)).min().getAsDouble());
         }
     }
@@ -336,7 +336,7 @@ public class CausalGraph extends Display {
             assert resolvers.containsKey(r_id) : "the resolver does not exist..";
             Edge c_edge = g.addEdge(flaws.get(f_id), resolvers.get(r_id));
             c_edge.set(EDGE_STATE, resolvers.get(r_id).get(NODE_STATE));
-            flaws.get(effects.get(r_id)).set(NODE_COST, flaw_resolvers.get(r_id).stream()
+            flaws.get(effects.get(r_id)).set(NODE_COST, flaw_resolvers.get(effects.get(r_id)).stream()
                     .mapToDouble(res -> (Double) resolvers.get(res).get(NODE_COST)).min().getAsDouble());
         }
     }
