@@ -405,20 +405,16 @@ void solver::set_cost(resolver &r, double cst)
 {
     if (r.est_cost != cst)
     {
-        double f_cost = r.effect.get_cost(); // this is the current effect's estimated cost..
         if (!trail.empty())
             trail.back().old_costs.insert({&r, r.est_cost});
         r.est_cost = cst;
+        resolver_q.push(&r);
 
 #ifdef BUILD_GUI
         // we notify the listeners that a flaw cost has changed..
         for (const auto &l : listeners)
             l->resolver_cost_changed(r);
 #endif
-
-        if (f_cost != r.effect.get_cost()) // the effect's estimated cost has changed..
-            for (const auto &supp : r.effect.supports)
-                resolver_q.push(supp);
 
         propagate_costs();
     }
