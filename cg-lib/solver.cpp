@@ -248,9 +248,10 @@ void solver::add_layer()
         f_q.pop();
     }
 
-    // this is the next resolver to watch for a solution: we set other options, potentially, till the top-level flaw, as more expensive than this..
-    resolver *salv = nullptr;
-    while (salv == nullptr)
+    // this iterator represents points to the next resolver to watch for a solution
+    // we set other options, potentially, till the top-level flaw, as more expensive than resolver..
+    auto res_it = next_resolvers.end();
+    while (res_it == next_resolvers.end())
     {
         if (flaw_q.empty())
             throw unsolvable_exception();
@@ -258,17 +259,17 @@ void solver::add_layer()
         if (sat_cr.value(flaw_q.front()->phi) != False)
             expand_flaw(*flaw_q.front());
         flaw_q.pop();
-        salv = *std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
+        res_it = std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
     }
 
-    for (const auto &r : salv->effect.resolvers)
-        if (r != salv && r->get_cost() < salv->get_cost())
+    for (const auto &r : (*res_it)->effect.resolvers)
+        if (r != (*res_it) && r->get_cost() < (*res_it)->get_cost())
             res_q.push(r);
     while (!res_q.empty())
     {
-        set_cost(*res_q.front(), salv->get_cost() + 1);
+        set_cost(*res_q.front(), (*res_it)->get_cost() + 1);
         for (const auto &r : res_q.front()->effect.resolvers)
-            if (r != res_q.front() && r->get_cost() < salv->get_cost())
+            if (r != res_q.front() && r->get_cost() < (*res_it)->get_cost())
                 res_q.push(r);
         res_q.pop();
     }
