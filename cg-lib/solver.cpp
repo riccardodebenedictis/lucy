@@ -128,7 +128,8 @@ void solver::solve()
                 // we consider possible, unexpanded, alternatives..
                 std::queue<resolver *> res_q;
                 for (const auto &r : f_next->resolvers)
-                    res_q.push(r);
+                    if (r != res)
+                        res_q.push(r);
                 while (!res_q.empty())
                 {
                     if (resolvers.find(res_q.front()) != resolvers.end())
