@@ -126,9 +126,19 @@ void solver::solve()
 #endif
 
                 // we consider possible, unexpanded, alternatives..
+                std::queue<resolver *> res_q;
                 for (const auto &r : f_next->resolvers)
-                    if (resolvers.find(r) != resolvers.end())
-                        next_resolvers.insert(r);
+                    res_q.push(r);
+                while (!res_q.empty())
+                {
+                    if (resolvers.find(res_q.front()) != resolvers.end())
+                        next_resolvers.insert(res_q.front());
+                    else if (next_resolvers.find(res_q.front()) == next_resolvers.end())
+                        for (const auto &f : res_q.front()->preconditions)
+                            for (const auto &r : f->resolvers)
+                                res_q.push(r);
+                    res_q.pop();
+                }
 
                 // we apply the resolver..
                 if (!sat_cr.assume(res->rho) || !sat_cr.check())
