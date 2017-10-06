@@ -232,7 +232,7 @@ void solver::add_layer()
     assert(!next_resolvers.empty());
     assert(std::all_of(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 
-    // this iterator represents points to the next resolver to watch for a solution
+    // this iterator points to the next resolver to watch for a solution..
     auto res_it = next_resolvers.end();
     while (res_it == next_resolvers.end())
     {
@@ -250,19 +250,10 @@ void solver::add_layer()
         res_it = std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
     }
 
-    // we set other options, potentially, till the top-level flaw, as more expensive than resolver..
-    std::queue<resolver *> res_q;
+    // we set the new solution resolver's siblings as more expensive..
     for (const auto &r : (*res_it)->effect.resolvers)
         if (r != (*res_it) && r->get_cost() < (*res_it)->get_cost())
-            res_q.push(r);
-    while (!res_q.empty())
-    {
-        set_est_cost(*res_q.front(), (*res_it)->get_cost());
-        for (const auto &r : res_q.front()->effect.resolvers)
-            if (r != res_q.front() && r->get_cost() < (*res_it)->get_cost())
-                res_q.push(r);
-        res_q.pop();
-    }
+            set_est_cost(*r, (*res_it)->get_cost());
 
     assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 
