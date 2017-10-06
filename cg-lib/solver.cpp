@@ -128,7 +128,7 @@ void solver::solve()
                 // we consider possible, unexpanded, alternatives..
                 std::queue<resolver *> res_q;
                 for (const auto &r : f_next->resolvers)
-                    if (r != res)
+                    if (r != res && (r->est_cost == std::numeric_limits<double>::infinity() || r->get_cost() < res->get_cost())) // we expand only cheaper alternatives..
                         res_q.push(r);
                 while (!res_q.empty())
                 {
