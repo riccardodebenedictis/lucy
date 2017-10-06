@@ -317,6 +317,9 @@ bool solver::has_inconsistencies()
         // we re-assume the current graph var to allow search within the current graph..
         bool a_gv = sat_cr.assume(lit(gamma, true));
         assert(a_gv);
+#ifndef NDEBUG
+        std::cout << ": " << std::to_string(incs.size()) << std::endl;
+#endif
         return true;
     }
     else
