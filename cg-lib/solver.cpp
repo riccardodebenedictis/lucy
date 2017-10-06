@@ -179,9 +179,11 @@ void solver::build()
             throw unsolvable_exception();
         assert(!flaw_q.front()->expanded);
         if (sat_cr.value(flaw_q.front()->phi) != False)
-            if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
+            if (is_deferrable(*flaw_q.front()))
+                // we postpone the expansion..
                 flaw_q.push(flaw_q.front());
             else
+                // we expand the flaw..
                 expand_flaw(*flaw_q.front());
         flaw_q.pop();
     }
@@ -195,8 +197,12 @@ bool solver::is_deferrable(flaw &f)
     while (!q.empty())
     {
         assert(sat_cr.value(q.front()->phi) != False);
-        if (q.front()->get_cost() < std::numeric_limits<double>::infinity()) // we already have a possible solution for this flaw, thus we defer..
+        if (q.front()->get_cost() < std::numeric_limits<double>::infinity())
+            // we already have a possible solution for this flaw, thus we defer..
             return true;
+        else if (std::any_of(q.front()->causes.begin(), q.front()->causes.end(), [&](resolver *r) { return next_resolvers.find(r) != next_resolvers.end(); }))
+            // we have reached one of the resolvers whose cost must be made finite, thus we cannot defer..
+            return false;
         for (const auto &r : q.front()->causes)
             q.push(&r->effect);
         q.pop();
@@ -211,45 +217,10 @@ void solver::add_layer()
     std::cout << "adding a layer to the causal graph.." << std::endl;
 #endif
     assert(sat_cr.root_level());
+    assert(!next_resolvers.empty());
     assert(std::all_of(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 
-    std::unordered_set<flaw *> fringe;
-    std::queue<flaw *> f_q = flaw_q;
-    while (!f_q.empty())
-    {
-        fringe.insert(f_q.front());
-        f_q.pop();
-    }
-
-    std::unordered_set<flaw *> undeferrable_fs;
-    std::queue<resolver *> res_q;
-    for (const auto &r : next_resolvers)
-        res_q.push(r);
-    while (!res_q.empty())
-    {
-        for (const auto &f : res_q.front()->preconditions)
-            if (fringe.find(f) != fringe.end())
-                undeferrable_fs.insert(f);
-            else
-                for (const auto &r : f->resolvers)
-                    if (resolvers.find(r) != resolvers.end())
-                        res_q.push(r);
-        res_q.pop();
-    }
-
-    std::vector<flaw *> fs;
-    f_q = std::move(flaw_q);
-    while (!f_q.empty())
-    {
-        if (undeferrable_fs.find(f_q.front()) != undeferrable_fs.end())
-            flaw_q.push(f_q.front());
-        else
-            fs.push_back(f_q.front());
-        f_q.pop();
-    }
-
     // this iterator represents points to the next resolver to watch for a solution
-    // we set other options, potentially, till the top-level flaw, as more expensive than resolver..
     auto res_it = next_resolvers.end();
     while (res_it == next_resolvers.end())
     {
@@ -257,11 +228,18 @@ void solver::add_layer()
             throw unsolvable_exception();
         assert(!flaw_q.front()->expanded);
         if (sat_cr.value(flaw_q.front()->phi) != False)
-            expand_flaw(*flaw_q.front());
+            if (is_deferrable(*flaw_q.front()))
+                // we postpone the expansion..
+                flaw_q.push(flaw_q.front());
+            else
+                // we expand the flaw..
+                expand_flaw(*flaw_q.front());
         flaw_q.pop();
         res_it = std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
     }
 
+    // we set other options, potentially, till the top-level flaw, as more expensive than resolver..
+    std::queue<resolver *> res_q;
     for (const auto &r : (*res_it)->effect.resolvers)
         if (r != (*res_it) && r->get_cost() < (*res_it)->get_cost())
             res_q.push(r);
@@ -273,6 +251,7 @@ void solver::add_layer()
                 res_q.push(r);
         res_q.pop();
     }
+
     assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 
     // we clear the next resolvers..
