@@ -252,7 +252,7 @@ void solver::add_layer()
 
     // we set the new solution resolver's siblings as more expensive..
     for (const auto &r : (*res_it)->effect.resolvers)
-        if (r != (*res_it) && r->get_cost() < (*res_it)->get_cost())
+        if (r != (*res_it) && r->get_cost() <= (*res_it)->get_cost())
             set_est_cost(*r, (*res_it)->get_cost());
 
     assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
