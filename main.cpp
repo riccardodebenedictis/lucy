@@ -28,6 +28,8 @@ int main(int argc, char *argv[])
         gui::cg_java_listener gl(s, j_gui);
 #endif
 
+        s.init();
+
         std::cout << "parsing input files.." << std::endl;
         s.read(prob_names);
 

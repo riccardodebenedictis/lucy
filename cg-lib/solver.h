@@ -24,6 +24,8 @@ public:
   solver(const solver &orig) = delete;
   virtual ~solver();
 
+  void init(); // initializes the solver..
+
   expr new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals) override;
 
 private:
@@ -32,7 +34,7 @@ private:
   void new_disjunction(context &d_ctx, const disjunction &disj) override;
 
 public:
-  void solve() override;
+  void solve() override; // solves the given problem..
 
   atom_flaw &get_flaw(const atom &atm) const { return *reason.at(&atm); } // returns the flaw which has given rise to the atom..
 

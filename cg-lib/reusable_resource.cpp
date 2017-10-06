@@ -29,7 +29,7 @@ std::vector<flaw *> reusable_resource::get_flaws()
             // we filter out those which are not strictly active..
             if (slv.sat_cr.value(a.first->sigma) == True)
             {
-                expr c_scope = a.first->get("scope");
+                expr c_scope = a.first->get(TAU);
                 if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
                 {
                     for (const auto &val : slv.ov_th.value(enum_scope->ev))
@@ -105,7 +105,7 @@ void reusable_resource::new_fact(atom_flaw &f)
         throw unsolvable_exception();
 
     atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
-    expr c_scope = atm.get("scope");
+    expr c_scope = atm.get(TAU);
     if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : slv.ov_th.value(enum_scope->ev))
             to_check.insert(static_cast<item *>(val));
@@ -118,7 +118,7 @@ void reusable_resource::new_goal(atom_flaw &) { throw std::logic_error("it is no
 reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.slv, rr, {new field(rr.slv.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_CAPACITY)}, {{REUSABLE_RESOURCE_CAPACITY, {new ast::id_expression({REUSABLE_RESOURCE_CAPACITY})}}}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}), new ast::real_literal_expression(0)))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
 
-reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.slv, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.slv.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_USE_AMOUNT_NAME), new field(rr, "scope")}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_USE_AMOUNT_NAME}), new ast::real_literal_expression(0)))}) { supertypes.push_back(&rr.slv.get_predicate("IntervalPredicate")); }
+reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.slv, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.slv.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_USE_AMOUNT_NAME), new field(rr, TAU)}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_USE_AMOUNT_NAME}), new ast::real_literal_expression(0)))}) { supertypes.push_back(&rr.slv.get_predicate("IntervalPredicate")); }
 reusable_resource::use_predicate::~use_predicate() {}
 
 reusable_resource::rr_atom_listener::rr_atom_listener(reusable_resource &rr, atom &atm) : atom_listener(atm), rr(rr) {}
@@ -126,7 +126,7 @@ reusable_resource::rr_atom_listener::~rr_atom_listener() {}
 
 void reusable_resource::rr_atom_listener::something_changed()
 {
-    expr c_scope = atm.get("scope");
+    expr c_scope = atm.get(TAU);
     if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : atm.get_core().ov_th.value(enum_scope->ev))
             rr.to_check.insert(static_cast<item *>(val));
@@ -154,7 +154,7 @@ void reusable_resource::rr_flaw::compute_resolvers()
         if (slv.sat_cr.value(a1_before_a0->l) != False)
             add_resolver(*new order_resolver(slv, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
 
-        expr a0_scope = as[0]->get("scope");
+        expr a0_scope = as[0]->get(TAU);
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
             std::unordered_set<var_value *> a0_scopes = slv.ov_th.value(enum_scope->ev);
@@ -163,7 +163,7 @@ void reusable_resource::rr_flaw::compute_resolvers()
                     add_resolver(*new displace_resolver(slv, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
         }
 
-        expr a1_scope = as[1]->get("scope");
+        expr a1_scope = as[1]->get(TAU);
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a1_scope))
         {
             std::unordered_set<var_value *> a1_scopes = slv.ov_th.value(enum_scope->ev);

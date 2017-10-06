@@ -114,15 +114,15 @@ void formula_statement::execute(const scope &scp, context &ctx) const
         p = &static_cast<item *>(c_scope)->tp.get_predicate(predicate_name);
 
         if (var_item *ee = dynamic_cast<var_item *>(c_scope)) // the scope is an enumerative expression..
-            assgnments.insert({"scope", ee});
+            assgnments.insert({TAU, ee});
         else // the scope is a single item..
-            assgnments.insert({"scope", context(c_scope)});
+            assgnments.insert({TAU, context(c_scope)});
     }
     else
     {
         p = &scp.get_predicate(predicate_name);
         if (&p->get_scope() != &scp.get_core()) // we inherit the scope..
-            assgnments.insert({"scope", ctx->get("scope")});
+            assgnments.insert({TAU, ctx->get(TAU)});
     }
 
     for (const auto &a : assignments)
@@ -151,7 +151,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
     }
 
     atom *a;
-    if (assgnments.find("scope") == assgnments.end())
+    if (assgnments.find(TAU) == assgnments.end())
     {
         // the new atom's scope is the core..
         context c_scope = &scp.get_core();
@@ -160,7 +160,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
     else
     {
         // we have computed the new atom's scope above..
-        context c_scope = assgnments.at("scope");
+        context c_scope = assgnments.at(TAU);
         a = static_cast<atom *>(&*p->new_instance(c_scope));
     }
 

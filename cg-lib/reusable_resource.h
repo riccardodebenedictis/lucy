@@ -116,7 +116,7 @@ private:
     std::string get_label() const override
     {
       // this should be an enumerative expression (or the resolver should not have been created)..
-      var_expr c_scp = a.get("scope");
+      var_expr c_scp = a.get(TAU);
       return "ρ" + std::to_string(rho) + " scope (τ" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }
 

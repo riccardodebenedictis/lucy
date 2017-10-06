@@ -17,14 +17,15 @@
 namespace cg
 {
 
-solver::solver() : core(), theory(sat_cr)
+solver::solver() : core(), theory(sat_cr) {}
+solver::~solver() {}
+
+void solver::init()
 {
     read(std::vector<std::string>({"init.rddl"}));
     types.insert({STATE_VARIABLE_NAME, new state_variable(*this)});
     types.insert({REUSABLE_RESOURCE_NAME, new reusable_resource(*this)});
 }
-
-solver::~solver() {}
 
 expr solver::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
 {

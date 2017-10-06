@@ -28,7 +28,7 @@ std::vector<flaw *> state_variable::get_flaws()
             // we filter out those which are not strictly active..
             if (slv.sat_cr.value(atm.first->sigma) == True)
             {
-                expr c_scope = atm.first->get("scope");
+                expr c_scope = atm.first->get(TAU);
                 if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
                 {
                     for (const auto &val : slv.ov_th.value(enum_scope->ev))
@@ -86,7 +86,7 @@ std::vector<flaw *> state_variable::get_flaws()
 void state_variable::new_predicate(predicate &pred)
 {
     inherit(static_cast<predicate &>(slv.get_predicate("IntervalPredicate")), pred);
-    add_field(pred, *new field(static_cast<type &>(pred.get_scope()), "scope"));
+    add_field(pred, *new field(static_cast<type &>(pred.get_scope()), TAU));
 }
 
 void state_variable::new_fact(atom_flaw &f)
@@ -98,7 +98,7 @@ void state_variable::new_fact(atom_flaw &f)
     restore_var();
 
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
-    expr c_scope = atm.get("scope");
+    expr c_scope = atm.get(TAU);
     if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : slv.ov_th.value(enum_scope->ev))
             to_check.insert(static_cast<item *>(val));
@@ -110,7 +110,7 @@ void state_variable::new_goal(atom_flaw &f)
 {
     atom &atm = f.get_atom();
     atoms.push_back({&atm, new sv_atom_listener(*this, atm)});
-    expr c_scope = atm.get("scope");
+    expr c_scope = atm.get(TAU);
     if (var_item *multi_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : slv.ov_th.value(multi_scope->ev))
             to_check.insert(static_cast<item *>(val));
@@ -123,7 +123,7 @@ state_variable::sv_atom_listener::~sv_atom_listener() {}
 
 void state_variable::sv_atom_listener::something_changed()
 {
-    expr c_scope = atm.get("scope");
+    expr c_scope = atm.get(TAU);
     if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : atm.get_core().ov_th.value(enum_scope->ev))
             sv.to_check.insert(static_cast<item *>(val));
@@ -151,7 +151,7 @@ void state_variable::sv_flaw::compute_resolvers()
         if (slv.sat_cr.value(a1_before_a0->l) != False)
             add_resolver(*new order_resolver(slv, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
 
-        expr a0_scope = as[0]->get("scope");
+        expr a0_scope = as[0]->get(TAU);
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
             std::unordered_set<var_value *> a0_scopes = slv.ov_th.value(enum_scope->ev);
@@ -160,7 +160,7 @@ void state_variable::sv_flaw::compute_resolvers()
                     add_resolver(*new displace_resolver(slv, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
         }
 
-        expr a1_scope = as[1]->get("scope");
+        expr a1_scope = as[1]->get(TAU);
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
             std::unordered_set<var_value *> a1_scopes = slv.ov_th.value(enum_scope->ev);
