@@ -245,7 +245,7 @@ void solver::add_layer()
             res_q.push(r);
     while (!res_q.empty())
     {
-        set_cost(*res_q.front(), (*res_it)->get_cost() + 1);
+        set_est_cost(*res_q.front(), (*res_it)->get_cost());
         for (const auto &r : res_q.front()->effect.resolvers)
             if (r != res_q.front() && r->get_cost() < (*res_it)->get_cost())
                 res_q.push(r);
@@ -348,7 +348,7 @@ void solver::expand_flaw(flaw &f)
         restore_var();
         res = nullptr;
         if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
-            set_cost(*r, 0);
+            set_est_cost(*r, 0);
     }
     building_graph = false;
 }
@@ -390,7 +390,7 @@ void solver::new_causal_link(flaw &f, resolver &r)
 #endif
 }
 
-void solver::set_cost(resolver &r, double cst)
+void solver::set_est_cost(resolver &r, double cst)
 {
     if (r.est_cost != cst)
     {
@@ -538,7 +538,7 @@ bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
             for (const auto &r : rhos.at(p.v))
                 if (!p.sign) // this resolver has been removed from the current partial solution..
                 {
-                    set_cost(*r, std::numeric_limits<double>::infinity());
+                    set_est_cost(*r, std::numeric_limits<double>::infinity());
 #ifdef BUILD_GUI
                     // we notify the listeners that the state of the flaw has changed..
                     for (const auto &l : listeners)
