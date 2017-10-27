@@ -76,8 +76,6 @@ private:
   bool building_graph = false;                           // we are either in a building graph phase or in a solving phase..
   std::list<flaw *> flaw_q;                              // the flaw queue (for graph building procedure)..
   std::unordered_set<flaw *> flaws;                      // the current active flaws..
-  std::unordered_set<resolver *> resolvers;              // the set of resolvers on the fringe (whose preconditions have not yet been expanded) and their ancestors..
-  std::unordered_set<resolver *> next_resolvers;         // the current set of resolvers to be expanded, before restarting the search..
   std::unordered_map<var, std::vector<flaw *>> phis;     // the phi variables (boolean variable to flaws) of the flaws..
   std::unordered_map<var, std::vector<resolver *>> rhos; // the rho variables (boolean variable to resolver) of the resolvers..
   std::unordered_map<const atom *, atom_flaw *> reason;  // the reason for having introduced an atom..
