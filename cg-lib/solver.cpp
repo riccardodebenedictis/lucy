@@ -108,7 +108,7 @@ void solver::solve()
 #endif
     // these flaws have not been expanded, hence, cannot have a solution..
     for (const auto &f : flaw_q)
-        sat_cr.new_clause({!gamma, !f->phi});
+        sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
     // we use the new graph var to allow search within the current graph..
     bool a_gv = sat_cr.assume(gamma) && sat_cr.check();
     assert(a_gv);
@@ -159,7 +159,7 @@ void solver::solve()
 #endif
                         // these flaws have not been expanded, hence, cannot have a solution..
                         for (const auto &f : flaw_q)
-                            sat_cr.new_clause({!gamma, !f->phi});
+                            sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
                         // we use the new graph var to allow search within the new graph..
                         a_gv = sat_cr.assume(gamma) && sat_cr.check();
                         assert(a_gv);
