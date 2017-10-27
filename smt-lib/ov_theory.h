@@ -56,14 +56,10 @@ private:
     // the updated variables..
     std::unordered_set<var> vars;
   };
-  // the current assignments (val to bool variable)..
-  std::vector<std::unordered_map<var_value *, var>> assigns;
-  // the already existing expressions (string to bool variable)..
-  std::unordered_map<std::string, var> exprs;
-  // the boolean variable contained in the set variables (bool variable to vector of set variables)..
-  std::unordered_map<var, std::vector<var>> is_contained_in;
-  // we store the updated variables..
-  std::vector<layer> layers;
+  std::vector<std::unordered_map<var_value *, var>> assigns; // the current assignments (val to bool variable)..
+  std::unordered_map<std::string, var> exprs;                // the already existing expressions (string to bool variable)..
+  std::unordered_map<var, std::vector<var>> is_contained_in; // the boolean variable contained in the set variables (bool variable to vector of set variables)..
+  std::vector<layer> layers;                                 // we store the updated variables..
   std::unordered_map<var, std::list<ov_value_listener *>> listening;
 };
 

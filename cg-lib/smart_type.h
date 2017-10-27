@@ -2,7 +2,7 @@
 
 #include "type.h"
 #include "solver.h"
-#include "atom.h"
+#include "atom_flaw.h"
 #include "field.h"
 
 using namespace lucy;
@@ -17,24 +17,34 @@ class smart_type : public type
   friend class solver;
 
 public:
-  smart_type(solver &graph, scope &scp, const std::string &name) : type(graph, scp, name, false), graph(graph) {}
+  smart_type(solver &slv, scope &scp, const std::string &name) : type(slv, scp, name, false), slv(slv) {}
   smart_type(const smart_type &that) = delete;
 
   virtual ~smart_type() {}
 
 private:
   virtual std::vector<flaw *> get_flaws() = 0;
-  virtual void new_fact(support_flaw &) {}
-  virtual void new_goal(support_flaw &) {}
+  virtual void new_fact(atom_flaw &) {}
+  virtual void new_goal(atom_flaw &) {}
+
+public:
+  static inline std::vector<resolver *> get_resolvers(solver &slv, const std::set<atom *> &atms) // returns the vector of resolvers which has given rise to the given atoms..
+  {
+    std::unordered_set<resolver *> ress;
+    for (const auto &atm : atms)
+      for (const auto &r : slv.get_flaw(*atm).get_causes())
+        ress.insert(r);
+    return std::vector<resolver *>(ress.begin(), ress.end());
+  }
 
 protected:
-  solver &graph;
+  solver &slv;
 };
 
 class atom_listener : public sat_value_listener, public la_value_listener, public ov_value_listener
 {
 public:
-  atom_listener(atom &atm) : sat_value_listener(atm.get_core().sat), la_value_listener(atm.get_core().la_th), ov_value_listener(atm.get_core().ov_th), atm(atm)
+  atom_listener(atom &atm) : sat_value_listener(atm.get_core().sat_cr), la_value_listener(atm.get_core().la_th), ov_value_listener(atm.get_core().ov_th), atm(atm)
   {
     std::queue<const type *> q;
     q.push(&atm.tp);

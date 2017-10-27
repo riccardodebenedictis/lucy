@@ -1,9 +1,14 @@
 #pragma once
 
 #include "flaw.h"
-#include "context.h"
-#include "disjunction.h"
 #include "resolver.h"
+#include "context.h"
+
+namespace lucy
+{
+class disjunction;
+class conjunction;
+}
 
 using namespace lucy;
 
@@ -13,7 +18,7 @@ namespace cg
 class disjunction_flaw : public flaw
 {
 public:
-  disjunction_flaw(solver &graph, const context &ctx, const disjunction &disj);
+  disjunction_flaw(solver &slv, resolver *const cause, const context &ctx, const disjunction &disj);
   disjunction_flaw(const disjunction_flaw &orig) = delete;
   virtual ~disjunction_flaw();
 
@@ -25,7 +30,7 @@ private:
   class choose_conjunction : public resolver
   {
   public:
-    choose_conjunction(solver &graph, disjunction_flaw &disj_flaw, const context &ctx, const conjunction &conj);
+    choose_conjunction(solver &slv, disjunction_flaw &disj_flaw, const context &ctx, const conjunction &conj);
     choose_conjunction(const choose_conjunction &that) = delete;
     virtual ~choose_conjunction();
 

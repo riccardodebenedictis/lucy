@@ -7,8 +7,8 @@
             "request": "launch",
             "program": "${workspaceRoot}/build/lucy",
             "args": [
-                "${workspaceRoot}/examples/logistics/logistics_domain.rddl",
-                "${workspaceRoot}/examples/logistics/logistics_problem_1.rddl",
+                "${workspaceRoot}/examples/logistics_state_variables/logistics_domain.rddl",
+                "${workspaceRoot}/examples/logistics_state_variables/logistics_problem_1.rddl",
                 "output.json"
             ],
             "stopAtEntry": false,

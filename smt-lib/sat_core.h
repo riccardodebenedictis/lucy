@@ -109,27 +109,17 @@ class sat_core
     void forget(const var &v, sat_value_listener *const l);
 
   private:
-    // collection of problem constraints..
-    std::vector<clause *> constrs;
-    // for each literal 'p', a list of constraints watching 'p'..
-    std::vector<std::vector<clause *>> watches;
-    // propagation queue..
-    std::queue<lit> prop_q;
-    // the current assignments..
-    std::vector<lbool> assigns;
-    // the list of assignment in chronological order..
-    std::vector<lit> trail;
-    // separator indices for different decision levels in 'trail'..
-    std::vector<size_t> trail_lim;
-    // for each variable, the constraint that implied its value..
-    std::vector<clause *> reason;
-    // for each variable, the decision level it was assigned..
-    std::vector<size_t> level;
-    // the already existing expressions (string to bool variable)..
-    std::unordered_map<std::string, var> exprs;
+    std::vector<clause *> constrs;              // collection of problem constraints..
+    std::vector<std::vector<clause *>> watches; // for each literal 'p', a list of constraints watching 'p'..
+    std::queue<lit> prop_q;                     // propagation queue..
+    std::vector<lbool> assigns;                 // the current assignments..
+    std::vector<lit> trail;                     // the list of assignment in chronological order..
+    std::vector<size_t> trail_lim;              // separator indices for different decision levels in 'trail'..
+    std::vector<clause *> reason;               // for each variable, the constraint that implied its value..
+    std::vector<size_t> level;                  // for each variable, the decision level it was assigned..
+    std::unordered_map<std::string, var> exprs; // the already existing expressions (string to bool variable)..
 
-    // all the theories..
-    std::vector<theory *> theories;
+    std::vector<theory *> theories; // all the theories..
     std::unordered_map<var, std::list<theory *>> bounds;
     std::unordered_map<var, std::list<sat_value_listener *>> listening;
 };

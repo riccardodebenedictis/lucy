@@ -13,20 +13,20 @@ namespace cg
 class propositional_agent : public smart_type
 {
 public:
-  propositional_agent(solver &g);
+  propositional_agent(solver &s);
   propositional_agent(const propositional_agent &orig) = delete;
   virtual ~propositional_agent();
 
 private:
   std::vector<flaw *> get_flaws() override;
 
-  void new_fact(support_flaw &f) override;
-  void new_goal(support_flaw &f) override;
+  void new_fact(atom_flaw &f) override;
+  void new_goal(atom_flaw &f) override;
 
   class agnt_constructor : public constructor
   {
   public:
-    agnt_constructor(propositional_agent &agnt) : constructor(agnt.graph, agnt, {}, {}, {}) {}
+    agnt_constructor(propositional_agent &agnt) : constructor(agnt.slv, agnt, {}, {}, {}) {}
     agnt_constructor(agnt_constructor &&) = delete;
     virtual ~agnt_constructor() {}
   };
@@ -52,7 +52,7 @@ private:
   class agnt_flaw : public flaw
   {
   public:
-    agnt_flaw(solver &graph, const std::set<atom *> &overlapping_atoms);
+    agnt_flaw(solver &s, const std::set<atom *> &overlapping_atoms);
     agnt_flaw(agnt_flaw &&) = delete;
     virtual ~agnt_flaw();
 
@@ -68,7 +68,7 @@ private:
   class agnt_resolver : public resolver
   {
   public:
-    agnt_resolver(solver &graph, const lin &cost, agnt_flaw &f, const atom &before, const atom &after, const lit &to_do);
+    agnt_resolver(solver &s, const lin &cost, agnt_flaw &f, const atom &before, const atom &after, const lit &to_do);
     agnt_resolver(const agnt_resolver &that) = delete;
     virtual ~agnt_resolver();
 

@@ -51,9 +51,9 @@ scope o--> "1" scope : scp
 class core
 env <|-- core
 scope <|-- core
-core : -sat:sat_core
-core : -la:la_theory
-core : -ov:ov_theory
+core : -sat_cr:sat_core
+core : -la_th:la_theory
+core : -ov_th:ov_theory
 core : -methods:map<string, vector<method>>
 core : -types:map<string, type>
 core : -predicates:map<string, predicate>

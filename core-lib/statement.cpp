@@ -51,7 +51,7 @@ expression_statement::~expression_statement() { delete xpr; }
 void expression_statement::execute(const scope &scp, context &ctx) const
 {
     bool_expr be = xpr->evaluate(scp, ctx);
-    if (scp.get_core().sat.value(be->l) != False)
+    if (scp.get_core().sat_cr.value(be->l) != False)
         scp.get_core().assert_facts({be->l});
     else
         throw inconsistency_exception();
@@ -114,15 +114,15 @@ void formula_statement::execute(const scope &scp, context &ctx) const
         p = &static_cast<item *>(c_scope)->tp.get_predicate(predicate_name);
 
         if (var_item *ee = dynamic_cast<var_item *>(c_scope)) // the scope is an enumerative expression..
-            assgnments.insert({"scope", ee});
+            assgnments.insert({TAU, ee});
         else // the scope is a single item..
-            assgnments.insert({"scope", context(c_scope)});
+            assgnments.insert({TAU, context(c_scope)});
     }
     else
     {
         p = &scp.get_predicate(predicate_name);
         if (&p->get_scope() != &scp.get_core()) // we inherit the scope..
-            assgnments.insert({"scope", ctx->get("scope")});
+            assgnments.insert({TAU, ctx->get(TAU)});
     }
 
     for (const auto &a : assignments)
@@ -131,7 +131,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
         const type &tt = p->get_field(a.first).tp; // the target type..
         if (tt.is_assignable_from(e->tp))          // the target type is a superclass of the assignment..
             assgnments.insert({a.first, e});
-        else if (e->tp.is_assignable_from(tt))                  // the target type is a subclass of the assignment..
+        else if (e->tp.is_assignable_from(tt))                // the target type is a subclass of the assignment..
             if (var_item *ae = dynamic_cast<var_item *>(&*e)) // some of the allowed values might be inhibited..
             {
                 std::unordered_set<var_value *> alwd_vals = scp.get_core().ov_th.value(ae->ev); // the allowed values..
@@ -151,7 +151,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
     }
 
     atom *a;
-    if (assgnments.find("scope") == assgnments.end())
+    if (assgnments.find(TAU) == assgnments.end())
     {
         // the new atom's scope is the core..
         context c_scope = &scp.get_core();
@@ -160,7 +160,7 @@ void formula_statement::execute(const scope &scp, context &ctx) const
     else
     {
         // we have computed the new atom's scope above..
-        context c_scope = assgnments.at("scope");
+        context c_scope = assgnments.at(TAU);
         a = static_cast<atom *>(&*p->new_instance(c_scope));
     }
 

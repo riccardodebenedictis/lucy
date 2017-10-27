@@ -17,7 +17,7 @@ namespace cg
 class reusable_resource : public smart_type
 {
 public:
-  reusable_resource(solver &graph);
+  reusable_resource(solver &slv);
   reusable_resource(const reusable_resource &orig) = delete;
   virtual ~reusable_resource();
 
@@ -25,8 +25,8 @@ private:
   std::vector<flaw *> get_flaws() override;
 
   void new_predicate(predicate &) override { throw std::logic_error("it is not possible to define predicates on a reusable resource.."); }
-  void new_fact(support_flaw &f) override;
-  void new_goal(support_flaw &f) override;
+  void new_fact(atom_flaw &f) override;
+  void new_goal(atom_flaw &f) override;
 
   class rr_constructor : public constructor
   {
@@ -65,7 +65,7 @@ private:
   class rr_flaw : public flaw
   {
   public:
-    rr_flaw(solver &graph, const std::set<atom *> &overlapping_atoms);
+    rr_flaw(solver &slv, const std::set<atom *> &overlapping_atoms);
     rr_flaw(rr_flaw &&) = delete;
     virtual ~rr_flaw();
 
@@ -81,7 +81,7 @@ private:
   class rr_resolver : public resolver
   {
   public:
-    rr_resolver(solver &graph, const lin &cost, rr_flaw &f, const lit &to_do);
+    rr_resolver(solver &slv, const lin &cost, rr_flaw &f, const lit &to_do);
     rr_resolver(const rr_resolver &that) = delete;
     virtual ~rr_resolver();
 
@@ -95,7 +95,7 @@ private:
   class order_resolver : public rr_resolver
   {
   public:
-    order_resolver(solver &graph, const lin &cost, rr_flaw &f, const atom &before, const atom &after, const lit &to_do);
+    order_resolver(solver &slv, const lin &cost, rr_flaw &f, const atom &before, const atom &after, const lit &to_do);
     order_resolver(const order_resolver &that) = delete;
     virtual ~order_resolver();
 
@@ -109,14 +109,14 @@ private:
   class displace_resolver : public rr_resolver
   {
   public:
-    displace_resolver(solver &graph, const lin &cost, rr_flaw &f, const atom &a, const item &i, const lit &to_do);
+    displace_resolver(solver &slv, const lin &cost, rr_flaw &f, const atom &a, const item &i, const lit &to_do);
     displace_resolver(const displace_resolver &that) = delete;
     virtual ~displace_resolver();
 
     std::string get_label() const override
     {
       // this should be an enumerative expression (or the resolver should not have been created)..
-      var_expr c_scp = a.get("scope");
+      var_expr c_scp = a.get(TAU);
       return "ρ" + std::to_string(rho) + " scope (τ" + std::to_string(c_scp->ev) + ") != " + std::to_string(reinterpret_cast<uintptr_t>(&i));
     }
 

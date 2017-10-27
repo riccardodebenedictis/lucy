@@ -81,24 +81,15 @@ private:
     lit *reason;  // the reason for the value..
   };
 
-  // the current assignments..
-  std::vector<bound> assigns;
-  // the current values..
-  std::vector<double> vals;
-  // the sparse matrix..
-  std::map<var, row *> tableau;
-  // the expressions (string to numeric variable) for which already exist slack variables..
-  std::unordered_map<std::string, var> exprs;
-  // the assertions (string to boolean variable) used for reducing the number of boolean variables..
-  std::unordered_map<std::string, var> s_asrts;
-  // the assertions (boolean variable to assertion) used for enforcing (negating) assertions..
-  std::unordered_map<var, assertion *> v_asrts;
-  // for each variable 'v', a list of assertions watching 'v'..
-  std::vector<std::vector<assertion *>> a_watches;
-  // for each variable 'v', a list of tableau rows watching 'v'..
-  std::vector<std::set<row *>> t_watches;
-  // we store the updated bounds..
-  std::vector<std::unordered_map<size_t, bound>> layers;
+  std::vector<bound> assigns;                            // the current assignments..
+  std::vector<double> vals;                              // the current values..
+  std::map<var, row *> tableau;                          // the sparse matrix..
+  std::unordered_map<std::string, var> exprs;            // the expressions (string to numeric variable) for which already exist slack variables..
+  std::unordered_map<std::string, var> s_asrts;          // the assertions (string to boolean variable) used for reducing the number of boolean variables..
+  std::unordered_map<var, assertion *> v_asrts;          // the assertions (boolean variable to assertion) used for enforcing (negating) assertions..
+  std::vector<std::vector<assertion *>> a_watches;       // for each variable 'v', a list of assertions watching 'v'..
+  std::vector<std::set<row *>> t_watches;                // for each variable 'v', a list of tableau rows watching 'v'..
+  std::vector<std::unordered_map<size_t, bound>> layers; // we store the updated bounds..
   std::unordered_map<var, std::list<la_value_listener *>> listening;
 };
 

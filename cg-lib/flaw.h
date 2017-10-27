@@ -1,7 +1,6 @@
 #pragma once
 
 #include "la_theory.h"
-#include <limits>
 
 using namespace smt;
 
@@ -17,7 +16,7 @@ class flaw
   friend class resolver;
 
 public:
-  flaw(solver &graph, const bool &exclusive = false, const bool &structural = false);
+  flaw(solver &slv, const std::vector<resolver *> &causes, const bool &exclusive = false, const bool &structural = false);
   flaw(const flaw &orig) = delete;
   virtual ~flaw();
 
@@ -25,12 +24,12 @@ public:
   const var &get_phi() const { return phi; }
   std::vector<resolver *> get_causes() const { return causes; }
   std::vector<resolver *> get_supports() const { return supports; }
-  double get_cost() const { return cost; }
+  double get_cost() const;
 
-  virtual std::string get_label() const;
+  virtual std::string get_label() const = 0;
 
 private:
-  virtual void init();
+  void init();
   void expand();
   virtual void compute_resolvers() = 0;
 
@@ -38,19 +37,15 @@ protected:
   void add_resolver(resolver &r);
 
 protected:
-  solver &graph;
+  solver &slv;
 
 private:
   const bool exclusive;
   const bool structural;
   bool expanded = false;
-  var phi;
-  // the resolvers for this flaw..
-  std::vector<resolver *> resolvers;
-  // the causes for having this flaw..
-  std::vector<resolver *> causes;
-  // the resolvers supported by this flaw..
-  std::vector<resolver *> supports;
-  double cost = std::numeric_limits<double>::infinity();
+  var phi;                           // the propositional variable indicates whether the flaw is active or not..
+  std::vector<resolver *> resolvers; // the resolvers for this flaw..
+  std::vector<resolver *> causes;    // the causes for having this flaw..
+  std::vector<resolver *> supports;  // the resolvers supported by this flaw..
 };
 }

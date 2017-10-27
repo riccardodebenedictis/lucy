@@ -1,47 +1,22 @@
 #include "resolver.h"
 #include "solver.h"
-#include "flaw.h"
-#include <cassert>
 
 namespace cg
 {
 
-resolver::resolver(solver &graph, const var &r, const lin &cost, flaw &eff) : graph(graph), rho(r), cost(cost), effect(eff) {}
-resolver::resolver(solver &graph, const lin &cost, flaw &eff) : resolver(graph, graph.core::sat.new_var(), cost, eff) {}
+resolver::resolver(solver &slv, const var &r, const lin &cost, flaw &eff) : slv(slv), rho(r), cost(cost), effect(eff) {}
+resolver::resolver(solver &slv, const lin &cost, flaw &eff) : resolver(slv, slv.sat_cr.new_var(), cost, eff) {}
 resolver::~resolver() {}
 
-double resolver::get_cost() const
+void resolver::init()
 {
-    if (graph.core::sat.value(rho) == False) // the resolver cannot be rho..
-        return std::numeric_limits<double>::infinity();
-    else
+    if (slv.sat_cr.value(rho) == Undefined) // we do not have a top-level (a landmark) resolver..
     {
-        // the cost of the resolver is given by the cost of its most expensive precondition plus the cost of the resolver itself..
-        double r_cost = preconditions.empty() ? 0.0 : -std::numeric_limits<double>::infinity();
-        for (const auto &f : preconditions)
-            if (f->cost > r_cost)
-                r_cost = f->cost;
-        r_cost += graph.la_th.value(cost);
-        return r_cost;
+        // we listen for the resolver to become active..
+        slv.rhos[rho].push_back(this);
+        slv.bind(rho);
     }
 }
 
-std::string resolver::get_label() const
-{
-    std::string lbl = "ρ" + std::to_string(rho);
-    switch (graph.core::sat.value(rho))
-    {
-    case True:
-        lbl += "(T)";
-        break;
-    case False:
-        lbl += "(F)";
-        break;
-    case Undefined:
-        break;
-    default:
-        break;
-    }
-    return lbl;
-}
+double resolver::get_cost() const { return slv.la_th.value(cost) + est_cost; }
 }

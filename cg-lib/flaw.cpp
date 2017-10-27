@@ -1,42 +1,27 @@
 #include "flaw.h"
 #include "resolver.h"
 #include "solver.h"
-#include <algorithm>
+#include <limits>
 #include <cassert>
 
 namespace cg
 {
 
-flaw::flaw(solver &graph, const bool &exclusive, const bool &structural) : graph(graph), exclusive(exclusive), structural(structural), supports(graph.resolvers.begin(), graph.resolvers.end())
+flaw::flaw(solver &slv, const std::vector<resolver *> &causes, const bool &exclusive, const bool &structural) : slv(slv), exclusive(exclusive), structural(structural), causes(causes.begin(), causes.end()), supports(causes.begin(), causes.end())
 {
-    // the cuases for this flaw is the current resolvers of the causal graph..
-    for (const auto &r : graph.resolvers)
-    {
-        causes.push_back(r);
+    for (const auto &r : causes)
         r->preconditions.push_back(this);
-    }
 }
 
 flaw::~flaw() {}
 
-std::string flaw::get_label() const
+double flaw::get_cost() const
 {
-    std::string lbl = "φ" + std::to_string(phi);
-    switch (graph.core::sat.value(phi))
-    {
-    case True:
-        lbl += "(T)";
-        break;
-    case False:
-        lbl += "(F)";
-        break;
-    case Undefined:
-        break;
-    default:
-        break;
-    }
-    lbl += " " + std::to_string(cost);
-    return lbl;
+    double min_cost = std::numeric_limits<double>::infinity();
+    for (const auto &r : resolvers)
+        if (r->get_cost() < min_cost)
+            min_cost = r->get_cost();
+    return min_cost;
 }
 
 void flaw::init()
@@ -54,17 +39,18 @@ void flaw::init()
             cs.push_back(c->rho);
 
         // the flaw is active if the conjunction of its causes is active..
-        phi = graph.core::sat.new_conj(cs);
+        phi = slv.sat_cr.new_conj(cs);
     }
 
-    if (graph.core::sat.value(phi) == True)
-        // we have a top-level (a landmark) flaw..
-        graph.flaws.insert(this);
-    else
+    switch (slv.sat_cr.value(phi))
     {
-        // we listen for the flaw to become active..
-        graph.phis[phi].push_back(this);
-        graph.bind(phi);
+    case True: // we have a top-level (a landmark) flaw..
+        slv.flaws.insert(this);
+        break;
+    case Undefined: // we listen for the flaw to become active..
+        slv.phis[phi].push_back(this);
+        slv.bind(phi);
+        break;
     }
 }
 
@@ -80,7 +66,7 @@ void flaw::expand()
     if (resolvers.empty())
     {
         // there is no way for solving this flaw..
-        if (!graph.core::sat.new_clause({lit(phi, false)}))
+        if (!slv.sat_cr.new_clause({lit(phi, false)}))
             throw unsolvable_exception();
     }
     else
@@ -89,7 +75,7 @@ void flaw::expand()
         std::vector<lit> r_chs;
         for (const auto &r : resolvers)
             r_chs.push_back(r->rho);
-        if (!graph.core::sat.new_clause({lit(phi, false), exclusive ? graph.core::sat.new_exct_one(r_chs) : graph.core::sat.new_disj(r_chs)}))
+        if (!slv.sat_cr.new_clause({lit(phi, false), exclusive ? slv.sat_cr.new_exct_one(r_chs) : slv.sat_cr.new_disj(r_chs)}))
             throw unsolvable_exception();
     }
 }
@@ -97,6 +83,6 @@ void flaw::expand()
 void flaw::add_resolver(resolver &r)
 {
     resolvers.push_back(&r);
-    graph.new_resolver(r);
+    slv.new_resolver(r);
 }
 }

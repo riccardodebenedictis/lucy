@@ -38,7 +38,7 @@ var item::eq(item &i) noexcept
 		else if (eqs.size() == 1)
 			return eqs.begin()->v;
 		else
-			return cr.sat.new_conj(eqs);
+			return cr.sat_cr.new_conj(eqs);
 	}
 }
 
@@ -74,7 +74,7 @@ var bool_item::eq(item &i) noexcept
 	if (this == &i)
 		return TRUE_var;
 	else if (bool_item *be = dynamic_cast<bool_item *>(&i))
-		return cr.sat.new_eq(l, be->l);
+		return cr.sat_cr.new_eq(l, be->l);
 	else
 		return FALSE_var;
 }
@@ -85,8 +85,8 @@ bool bool_item::equates(const item &i) const noexcept
 		return true;
 	else if (const bool_item *be = dynamic_cast<const bool_item *>(&i))
 	{
-		lbool c_val = cr.sat.value(l);
-		lbool i_val = cr.sat.value(be->l);
+		lbool c_val = cr.sat_cr.value(l);
+		lbool i_val = cr.sat_cr.value(be->l);
 		return c_val == i_val || c_val == Undefined || i_val == Undefined;
 	}
 	else
@@ -101,7 +101,7 @@ var arith_item::eq(item &i) noexcept
 	if (this == &i)
 		return TRUE_var;
 	else if (arith_item *ae = dynamic_cast<arith_item *>(&i))
-		return cr.sat.new_conj({cr.la_th.new_leq(l, ae->l), cr.la_th.new_geq(l, ae->l)});
+		return cr.sat_cr.new_conj({cr.la_th.new_leq(l, ae->l), cr.la_th.new_geq(l, ae->l)});
 	else
 		return FALSE_var;
 }
@@ -165,7 +165,7 @@ expr var_item::get(const std::string &name) const
 				vals_set.insert(c_vals.back());
 			}
 			if (vals_set.size() == 1)
-			    return *vals_set.begin();
+				return *vals_set.begin();
 			var_expr e = cr.new_enum(tp.get_field(name).tp, c_vars, c_vals);
 			const_cast<var_item *>(this)->items.insert({name, e});
 		}

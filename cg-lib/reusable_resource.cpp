@@ -2,7 +2,6 @@
 #include "combinations.h"
 #include "statement.h"
 #include "expression.h"
-#include "support_flaw.h"
 
 namespace cg
 {
@@ -28,12 +27,12 @@ std::vector<flaw *> reusable_resource::get_flaws()
         for (const auto &a : atoms)
         {
             // we filter out those which are not strictly active..
-            if (graph.core::sat.value(a.first->sigma) == True)
+            if (slv.sat_cr.value(a.first->sigma) == True)
             {
-                expr c_scope = a.first->get("scope");
+                expr c_scope = a.first->get(TAU);
                 if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
                 {
-                    for (const auto &val : graph.ov_th.value(enum_scope->ev))
+                    for (const auto &val : slv.ov_th.value(enum_scope->ev))
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
                             rr_instances[static_cast<item *>(val)].push_back(a.first);
                 }
@@ -59,8 +58,8 @@ std::vector<flaw *> reusable_resource::get_flaws()
             {
                 arith_expr s_expr = a->get("start");
                 arith_expr e_expr = a->get("end");
-                double start = graph.la_th.value(s_expr->l);
-                double end = graph.la_th.value(e_expr->l);
+                double start = slv.la_th.value(s_expr->l);
+                double end = slv.la_th.value(e_expr->l);
                 starting_atoms[start].insert(a);
                 ending_atoms[end].insert(a);
                 pulses.insert(start);
@@ -83,8 +82,8 @@ std::vector<flaw *> reusable_resource::get_flaws()
                     resource_usage += amount->l;
                 }
 
-                if (graph.la_th.value(resource_usage) > graph.la_th.value(capacity->l)) // we have a peak..
-                    flaws.push_back(new rr_flaw(graph, overlapping_atoms));
+                if (slv.la_th.value(resource_usage) > slv.la_th.value(capacity->l)) // we have a peak..
+                    flaws.push_back(new rr_flaw(slv, overlapping_atoms));
             }
         }
 
@@ -93,7 +92,7 @@ std::vector<flaw *> reusable_resource::get_flaws()
     }
 }
 
-void reusable_resource::new_fact(support_flaw &f)
+void reusable_resource::new_fact(atom_flaw &f)
 {
     // we apply interval-predicate if the fact becomes active..
     atom &atm = f.get_atom();
@@ -102,24 +101,24 @@ void reusable_resource::new_fact(support_flaw &f)
     restore_var();
 
     // we avoid unification..
-    if (!graph.core::sat.new_clause({lit(f.get_phi(), false), atm.sigma}))
+    if (!slv.sat_cr.new_clause({lit(f.get_phi(), false), atm.sigma}))
         throw unsolvable_exception();
 
     atoms.push_back({&atm, new rr_atom_listener(*this, atm)});
-    expr c_scope = atm.get("scope");
+    expr c_scope = atm.get(TAU);
     if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
-        for (const auto &val : graph.ov_th.value(enum_scope->ev))
+        for (const auto &val : slv.ov_th.value(enum_scope->ev))
             to_check.insert(static_cast<item *>(val));
     else
         to_check.insert(&*c_scope);
 }
 
-void reusable_resource::new_goal(support_flaw &) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
+void reusable_resource::new_goal(atom_flaw &) { throw std::logic_error("it is not possible to define goals on a reusable resource.."); }
 
-reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.graph, rr, {new field(rr.graph.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_CAPACITY)}, {{REUSABLE_RESOURCE_CAPACITY, {new ast::id_expression({REUSABLE_RESOURCE_CAPACITY})}}}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}), new ast::real_literal_expression(0)))}) {}
+reusable_resource::rr_constructor::rr_constructor(reusable_resource &rr) : constructor(rr.slv, rr, {new field(rr.slv.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_CAPACITY)}, {{REUSABLE_RESOURCE_CAPACITY, {new ast::id_expression({REUSABLE_RESOURCE_CAPACITY})}}}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_CAPACITY}), new ast::real_literal_expression(0)))}) {}
 reusable_resource::rr_constructor::~rr_constructor() {}
 
-reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.graph, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.graph.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_USE_AMOUNT_NAME), new field(rr, "scope")}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_USE_AMOUNT_NAME}), new ast::real_literal_expression(0)))}) { supertypes.push_back(&rr.graph.get_predicate("IntervalPredicate")); }
+reusable_resource::use_predicate::use_predicate(reusable_resource &rr) : predicate(rr.slv, rr, REUSABLE_RESOURCE_USE_PREDICATE_NAME, {new field(rr.slv.get_type(REAL_KEYWORD), REUSABLE_RESOURCE_USE_AMOUNT_NAME), new field(rr, TAU)}, {new ast::expression_statement(new ast::geq_expression(new ast::id_expression({REUSABLE_RESOURCE_USE_AMOUNT_NAME}), new ast::real_literal_expression(0)))}) { supertypes.push_back(&rr.slv.get_predicate("IntervalPredicate")); }
 reusable_resource::use_predicate::~use_predicate() {}
 
 reusable_resource::rr_atom_listener::rr_atom_listener(reusable_resource &rr, atom &atm) : atom_listener(atm), rr(rr) {}
@@ -127,7 +126,7 @@ reusable_resource::rr_atom_listener::~rr_atom_listener() {}
 
 void reusable_resource::rr_atom_listener::something_changed()
 {
-    expr c_scope = atm.get("scope");
+    expr c_scope = atm.get(TAU);
     if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
         for (const auto &val : atm.get_core().ov_th.value(enum_scope->ev))
             rr.to_check.insert(static_cast<item *>(val));
@@ -135,7 +134,7 @@ void reusable_resource::rr_atom_listener::something_changed()
         rr.to_check.insert(&*c_scope);
 }
 
-reusable_resource::rr_flaw::rr_flaw(solver &graph, const std::set<atom *> &overlapping_atoms) : flaw(graph), overlapping_atoms(overlapping_atoms) {}
+reusable_resource::rr_flaw::rr_flaw(solver &slv, const std::set<atom *> &atms) : flaw(slv, smart_type::get_resolvers(slv, atms)), overlapping_atoms(atms) {}
 reusable_resource::rr_flaw::~rr_flaw() {}
 
 void reusable_resource::rr_flaw::compute_resolvers()
@@ -148,40 +147,40 @@ void reusable_resource::rr_flaw::compute_resolvers()
         arith_expr a1_start = as[1]->get("start");
         arith_expr a1_end = as[1]->get("end");
 
-        bool_expr a0_before_a1 = graph.leq(a0_end, a1_start);
-        if (graph.core::sat.value(a0_before_a1->l) != False)
-            add_resolver(*new order_resolver(graph, lin(0.0), *this, *as[0], *as[1], a0_before_a1->l));
-        bool_expr a1_before_a0 = graph.leq(a1_end, a0_start);
-        if (graph.core::sat.value(a1_before_a0->l) != False)
-            add_resolver(*new order_resolver(graph, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
+        bool_expr a0_before_a1 = slv.leq(a0_end, a1_start);
+        if (slv.sat_cr.value(a0_before_a1->l) != False)
+            add_resolver(*new order_resolver(slv, lin(0.0), *this, *as[0], *as[1], a0_before_a1->l));
+        bool_expr a1_before_a0 = slv.leq(a1_end, a0_start);
+        if (slv.sat_cr.value(a1_before_a0->l) != False)
+            add_resolver(*new order_resolver(slv, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
 
-        expr a0_scope = as[0]->get("scope");
+        expr a0_scope = as[0]->get(TAU);
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
         {
-            std::unordered_set<var_value *> a0_scopes = graph.ov_th.value(enum_scope->ev);
+            std::unordered_set<var_value *> a0_scopes = slv.ov_th.value(enum_scope->ev);
             if (a0_scopes.size() > 1)
                 for (const auto &sc : a0_scopes)
-                    add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(graph.ov_th.allows(enum_scope->ev, *sc), false)));
+                    add_resolver(*new displace_resolver(slv, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
         }
 
-        expr a1_scope = as[1]->get("scope");
+        expr a1_scope = as[1]->get(TAU);
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a1_scope))
         {
-            std::unordered_set<var_value *> a1_scopes = graph.ov_th.value(enum_scope->ev);
+            std::unordered_set<var_value *> a1_scopes = slv.ov_th.value(enum_scope->ev);
             if (a1_scopes.size() > 1)
                 for (const auto &sc : a1_scopes)
-                    add_resolver(*new displace_resolver(graph, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(graph.ov_th.allows(enum_scope->ev, *sc), false)));
+                    add_resolver(*new displace_resolver(slv, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
         }
     }
 }
 
-reusable_resource::rr_resolver::rr_resolver(solver &graph, const lin &cost, rr_flaw &f, const lit &to_do) : resolver(graph, cost, f), to_do(to_do) {}
+reusable_resource::rr_resolver::rr_resolver(solver &slv, const lin &cost, rr_flaw &f, const lit &to_do) : resolver(slv, cost, f), to_do(to_do) {}
 reusable_resource::rr_resolver::~rr_resolver() {}
-void reusable_resource::rr_resolver::apply() { graph.core::sat.new_clause({lit(rho, false), to_do}); }
+void reusable_resource::rr_resolver::apply() { slv.sat_cr.new_clause({lit(rho, false), to_do}); }
 
-reusable_resource::order_resolver::order_resolver(solver &graph, const lin &cost, rr_flaw &f, const atom &before, const atom &after, const lit &to_do) : rr_resolver(graph, cost, f, to_do), before(before), after(after) {}
+reusable_resource::order_resolver::order_resolver(solver &slv, const lin &cost, rr_flaw &f, const atom &before, const atom &after, const lit &to_do) : rr_resolver(slv, cost, f, to_do), before(before), after(after) {}
 reusable_resource::order_resolver::~order_resolver() {}
 
-reusable_resource::displace_resolver::displace_resolver(solver &graph, const lin &cost, rr_flaw &f, const atom &a, const item &i, const lit &to_do) : rr_resolver(graph, cost, f, to_do), a(a), i(i) {}
+reusable_resource::displace_resolver::displace_resolver(solver &slv, const lin &cost, rr_flaw &f, const atom &a, const item &i, const lit &to_do) : rr_resolver(slv, cost, f, to_do), a(a), i(i) {}
 reusable_resource::displace_resolver::~displace_resolver() {}
 }
