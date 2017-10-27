@@ -193,11 +193,11 @@ void solver::build()
         if (sat_cr.value(flaw_q.front()->phi) != False)
             if (is_deferrable(*flaw_q.front()))
                 // we postpone the expansion..
-                flaw_q.push(flaw_q.front());
+                flaw_q.push_back(flaw_q.front());
             else
                 // we expand the flaw..
                 expand_flaw(*flaw_q.front());
-        flaw_q.pop();
+        flaw_q.pop_front();
     }
     assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 }
@@ -242,11 +242,11 @@ void solver::add_layer()
         if (sat_cr.value(flaw_q.front()->phi) != False)
             if (is_deferrable(*flaw_q.front()))
                 // we postpone the expansion..
-                flaw_q.push(flaw_q.front());
+                flaw_q.push_back(flaw_q.front());
             else
                 // we expand the flaw..
                 expand_flaw(*flaw_q.front());
-        flaw_q.pop();
+        flaw_q.pop_front();
         res_it = std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
     }
 
@@ -362,7 +362,7 @@ void solver::expand_flaw(flaw &f)
 void solver::new_flaw(flaw &f)
 {
     f.init(); // flaws' initialization requires being at root-level..
-    flaw_q.push(&f);
+    flaw_q.push_back(&f);
 #ifdef BUILD_GUI
     // we notify the listeners that a new flaw has arised..
     for (const auto &l : listeners)
