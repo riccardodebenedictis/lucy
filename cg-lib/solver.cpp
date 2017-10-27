@@ -110,8 +110,8 @@ void solver::solve()
     for (const auto &f : flaw_q)
         sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
     // we use the new graph var to allow search within the current graph..
-    bool a_gv = sat_cr.assume(gamma) && sat_cr.check();
-    assert(a_gv);
+    if (!sat_cr.assume(gamma) || !sat_cr.check())
+        throw unsolvable_exception();
 
     while (true)
     {
@@ -141,9 +141,7 @@ void solver::solve()
                     if (sat_cr.value(gamma) == Undefined)
                     {
                         // we have learnt a unit clause! thus, we reassume the graph var..
-                        a_gv = sat_cr.assume(gamma);
-                        assert(a_gv);
-                        if (!sat_cr.check())
+                        if (!sat_cr.assume(gamma) || !sat_cr.check())
                             throw unsolvable_exception();
                     }
                     else
@@ -161,8 +159,8 @@ void solver::solve()
                         for (const auto &f : flaw_q)
                             sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
                         // we use the new graph var to allow search within the new graph..
-                        a_gv = sat_cr.assume(gamma) && sat_cr.check();
-                        assert(a_gv);
+                        if (!sat_cr.assume(gamma) || !sat_cr.check())
+                            throw unsolvable_exception();
                     }
             }
         }
