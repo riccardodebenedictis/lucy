@@ -5,6 +5,8 @@
 #include "smart_type.h"
 #include "state_variable.h"
 #include "reusable_resource.h"
+#include "propositional_agent.h"
+#include "propositional_state.h"
 #ifdef BUILD_GUI
 #include "cg_listener.h"
 #endif
@@ -25,6 +27,8 @@ void solver::init()
     read(std::vector<std::string>({"init.rddl"}));
     types.insert({STATE_VARIABLE_NAME, new state_variable(*this)});
     types.insert({REUSABLE_RESOURCE_NAME, new reusable_resource(*this)});
+    types.insert({PROPOSITIONAL_AGENT_NAME, new propositional_agent(*this)});
+    types.insert({PROPOSITIONAL_STATE_NAME, new propositional_state(*this)});
 }
 
 expr solver::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
