@@ -101,17 +101,12 @@ void solver::solve()
     // we build the causal graph..
     build();
 
-    // we create a new graph var..
-    gamma = sat_cr.new_var();
-#ifndef NDEBUG
-    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
-#endif
-    // these flaws have not been expanded, hence, cannot have a solution..
-    for (const auto &f : flaw_q)
-        sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
-    // we use the new graph var to allow search within the current graph..
-    if (!sat_cr.assume(gamma) || !sat_cr.check())
-        throw unsolvable_exception();
+    if (sat_cr.root_level())
+    {
+        assert(sat_cr.value(gamma) == False);
+        // we have exhausted the search within the graph: we extend the graph..
+        add_layer();
+    }
 
     while (true)
     {
@@ -149,18 +144,6 @@ void solver::solve()
                         assert(sat_cr.value(gamma) == False);
                         // we have exhausted the search within the graph: we extend the graph..
                         add_layer();
-
-                        // we create a new graph var..
-                        gamma = sat_cr.new_var();
-#ifndef NDEBUG
-                        std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
-#endif
-                        // these flaws have not been expanded, hence, cannot have a solution..
-                        for (const auto &f : flaw_q)
-                            sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
-                        // we use the new graph var to allow search within the new graph..
-                        if (!sat_cr.assume(gamma) || !sat_cr.check())
-                            throw unsolvable_exception();
                     }
             }
         }
@@ -191,6 +174,18 @@ void solver::build()
                 expand_flaw(*flaw_q.front());
         flaw_q.pop_front();
     }
+
+    // we create a new graph var..
+    gamma = sat_cr.new_var();
+#ifndef NDEBUG
+    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
+#endif
+    // these flaws have not been expanded, hence, cannot have a solution..
+    for (const auto &f : flaw_q)
+        sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
+    // we use the new graph var to allow search within the current graph..
+    if (!sat_cr.assume(gamma) || !sat_cr.check())
+        throw unsolvable_exception();
 }
 
 bool solver::is_deferrable(flaw &f)
@@ -224,15 +219,22 @@ void solver::add_layer()
         if (flaw_q.empty())
             throw unsolvable_exception();
         assert(!flaw_q.front()->expanded);
-        if (sat_cr.value(flaw_q.front()->phi) != False)
-            if (is_deferrable(*flaw_q.front()))
-                // we postpone the expansion..
-                flaw_q.push_back(flaw_q.front());
-            else
-                // we expand the flaw..
-                expand_flaw(*flaw_q.front());
+        if (sat_cr.value(flaw_q.front()->phi) != False) // we expand the flaw..
+            expand_flaw(*flaw_q.front());
         flaw_q.pop_front();
     }
+
+    // we create a new graph var..
+    gamma = sat_cr.new_var();
+#ifndef NDEBUG
+    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
+#endif
+    // these flaws have not been expanded, hence, cannot have a solution..
+    for (const auto &f : flaw_q)
+        sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
+    // we use the new graph var to allow search within the new graph..
+    if (!sat_cr.assume(gamma) || !sat_cr.check())
+        throw unsolvable_exception();
 }
 
 bool solver::has_inconsistencies()
