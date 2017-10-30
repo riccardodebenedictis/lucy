@@ -430,7 +430,6 @@ void solver::set_est_cost(resolver &r, double cst)
 
 flaw *solver::select_flaw()
 {
-    assert(!flaws.empty());
     assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return f->expanded && sat_cr.value(f->phi) == True; }));
     // this is the next flaw to be solved (i.e., the most expensive one)..
     flaw *f_next = nullptr;
