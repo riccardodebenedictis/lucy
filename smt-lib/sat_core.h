@@ -52,9 +52,9 @@ class sat_core
         {
             for (size_t j = i + 1; j < lits.size(); j++)
                 // the at-most-one clauses..
-                if (!new_clause({!lits[i], !lits[j]}))
+                if (!new_clause({!lits.at(i), !lits.at(j)}))
                     return false;
-            ls.push_back(lits[i]);
+            ls.push_back(lits.at(i));
         }
         return new_clause(ls);
     }

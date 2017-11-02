@@ -192,10 +192,10 @@ const var sat_core::new_exct_one(const std::vector<lit> &ls)
         {
             for (size_t j = i + 1; j < ls.size(); j++)
             {
-                nc = new_clause({!ls[i], !ls[j], lit(eo, false)});
+                nc = new_clause({!ls.at(i), !ls.at(j), lit(eo, false)});
                 assert(nc);
             }
-            lits.push_back(ls[i]);
+            lits.push_back(ls.at(i));
         }
         nc = new_clause(lits);
         assert(nc);
@@ -273,18 +273,18 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
         std::vector<clause *> tmp = std::move(watches[index(prop_q.front())]);
         for (size_t i = 0; i < tmp.size(); i++)
         {
-            if (!tmp[i]->propagate(prop_q.front()))
+            if (!tmp.at(i)->propagate(prop_q.front()))
             {
                 // constraint is conflicting..
                 for (size_t j = i + 1; j < tmp.size(); j++)
                     watches[index(prop_q.front())].push_back(tmp[j]);
-                assert(std::count_if(tmp[i]->lits.begin(), tmp[i]->lits.end(), [&](const lit &p) { return std::find(watches[index(!p)].begin(), watches[index(!p)].end(), tmp[i]) != watches[index(!p)].end(); }) == 2);
+                assert(std::count_if(tmp.at(i)->lits.begin(), tmp.at(i)->lits.end(), [&](const lit &p) { return std::find(watches[index(!p)].begin(), watches[index(!p)].end(), tmp[i]) != watches[index(!p)].end(); }) == 2);
                 while (!prop_q.empty())
                     prop_q.pop();
-                cnfl.insert(cnfl.begin(), tmp[i]->lits.begin(), tmp[i]->lits.end());
+                cnfl.insert(cnfl.begin(), tmp.at(i)->lits.begin(), tmp.at(i)->lits.end());
                 return false;
             }
-            assert(std::count_if(tmp[i]->lits.begin(), tmp[i]->lits.end(), [&](const lit &p) { return std::find(watches[index(!p)].begin(), watches[index(!p)].end(), tmp[i]) != watches[index(!p)].end(); }) == 2);
+            assert(std::count_if(tmp.at(i)->lits.begin(), tmp.at(i)->lits.end(), [&](const lit &p) { return std::find(watches[index(!p)].begin(), watches[index(!p)].end(), tmp[i]) != watches[index(!p)].end(); }) == 2);
         }
 
         // we perform theory propagation..

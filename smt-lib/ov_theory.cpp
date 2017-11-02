@@ -36,8 +36,8 @@ const var ov_theory::new_var(const std::vector<var> &vars, const std::vector<var
     assigns.push_back(std::unordered_map<var_value *, var>());
     for (size_t i = 0; i < vars.size(); ++i)
     {
-        assigns.back().insert({vals[i], vars[i]});
-        is_contained_in.at(vars[i]).push_back(id);
+        assigns.back().insert({vals.at(i), vars.at(i)});
+        is_contained_in.at(vars.at(i)).push_back(id);
     }
     return id;
 }

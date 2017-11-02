@@ -26,7 +26,7 @@ item *method::invoke(context &ctx, const std::vector<expr> &exprs)
 	assert(args.size() == exprs.size());
 	context c_ctx(new env(cr, ctx));
 	for (size_t i = 0; i < args.size(); i++)
-		c_ctx->items.insert({args[i]->name, exprs[i]});
+		c_ctx->items.insert({args.at(i)->name, exprs.at(i)});
 
 	for (const auto &s : statements)
 		s->execute(*this, c_ctx);

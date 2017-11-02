@@ -223,7 +223,7 @@ arith_expr core::div(const std::vector<arith_expr> &exprs)
     assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); }) && "non-linear expression..");
     double c = la_th.value(exprs[1]->l);
     for (size_t i = 2; i < exprs.size(); i++)
-        c *= la_th.value(exprs[i]->l);
+        c *= la_th.value(exprs.at(i)->l);
     return new arith_item(*this, *types.at(REAL_KEYWORD), exprs[0]->l / c);
 }
 
@@ -273,7 +273,7 @@ method &core::get_method(const std::string &name, const std::vector<const type *
             {
                 found = true;
                 for (size_t i = 0; i < ts.size(); i++)
-                    if (!mthd->args[i]->tp.is_assignable_from(*ts[i]))
+                    if (!mthd->args.at(i)->tp.is_assignable_from(*ts.at(i)))
                     {
                         found = false;
                         break;

@@ -35,16 +35,16 @@ void constructor::invoke(item &itm, const std::vector<expr> &exprs)
     context ctx(new env(cr, &itm));
     ctx->items.insert({THIS_KEYWORD, expr(&itm)});
     for (size_t i = 0; i < args.size(); i++)
-        ctx->items.insert({args[i]->name, exprs[i]});
+        ctx->items.insert({args.at(i)->name, exprs.at(i)});
 
     // we initialize the supertypes..
     size_t il_idx = 0;
     for (const auto &st : static_cast<type &>(scp).get_supertypes())
-        if (il_idx < init_list.size() && init_list[il_idx].first.compare(st->name) == 0) // explicit supertype constructor invocation..
+        if (il_idx < init_list.size() && init_list.at(il_idx).first.compare(st->name) == 0) // explicit supertype constructor invocation..
         {
             std::vector<expr> c_exprs;
             std::vector<const type *> par_types;
-            for (const auto &ex : init_list[il_idx].second)
+            for (const auto &ex : init_list.at(il_idx).second)
             {
                 expr c_expr = ex->evaluate(*this, ctx);
                 c_exprs.push_back(c_expr);
