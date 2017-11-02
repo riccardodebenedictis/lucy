@@ -12,6 +12,8 @@ namespace cg
 
 class atom_flaw : public flaw
 {
+  friend class smart_type;
+
 public:
   atom_flaw(solver &slv, resolver *const cause, atom &a, const bool is_fact);
   atom_flaw(const atom_flaw &orig) = delete;
