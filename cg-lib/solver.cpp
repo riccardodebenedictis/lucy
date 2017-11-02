@@ -218,10 +218,13 @@ void solver::add_layer()
     {
         if (flaw_q.empty())
             throw unsolvable_exception();
-        assert(!flaw_q.front()->expanded);
-        if (sat_cr.value(flaw_q.front()->phi) != False) // we expand the flaw..
-            expand_flaw(*flaw_q.front());
-        flaw_q.pop_front();
+        std::list<flaw *> c_q = std::move(flaw_q);
+        for (const auto &f : c_q)
+        {
+            assert(!f->expanded);
+            if (sat_cr.value(f->phi) != False) // we expand the flaw..
+                expand_flaw(*f);
+        }
     }
 
     // we create a new graph var..
