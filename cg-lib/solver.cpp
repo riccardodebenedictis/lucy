@@ -101,7 +101,7 @@ void solver::solve()
     // we build the causal graph..
     build();
 
-    if (sat_cr.root_level())
+    while (sat_cr.root_level())
     {
         assert(sat_cr.value(gamma) == False);
         // we have exhausted the search within the graph: we extend the graph..
@@ -132,7 +132,7 @@ void solver::solve()
                     throw unsolvable_exception();
 
                 res = nullptr;
-                if (sat_cr.root_level())
+                while (sat_cr.root_level())
                     if (sat_cr.value(gamma) == Undefined)
                     {
                         // we have learnt a unit clause! thus, we reassume the graph var..
@@ -280,8 +280,8 @@ bool solver::has_inconsistencies()
         }
 
         // we re-assume the current graph var to allow search within the current graph..
-        bool a_gv = sat_cr.assume(lit(gamma, true));
-        assert(a_gv);
+        if (!sat_cr.assume(gamma) || !sat_cr.check())
+            throw unsolvable_exception();
 #ifndef NDEBUG
         std::cout << ": " << std::to_string(incs.size()) << std::endl;
 #endif
