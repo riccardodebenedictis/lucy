@@ -166,11 +166,9 @@ void solver::build()
             throw unsolvable_exception();
         assert(!flaw_q.front()->expanded);
         if (sat_cr.value(flaw_q.front()->phi) != False)
-            if (is_deferrable(*flaw_q.front()))
-                // we postpone the expansion..
+            if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
                 flaw_q.push_back(flaw_q.front());
-            else
-                // we expand the flaw..
+            else // we expand the flaw..
                 expand_flaw(*flaw_q.front());
         flaw_q.pop_front();
     }
@@ -195,8 +193,7 @@ bool solver::is_deferrable(flaw &f)
     while (!q.empty())
     {
         assert(sat_cr.value(q.front()->phi) != False);
-        if (q.front()->get_cost() < std::numeric_limits<double>::infinity())
-            // we already have a possible solution for this flaw, thus we defer..
+        if (q.front()->get_cost() < std::numeric_limits<double>::infinity()) // we already have a possible solution for this flaw, thus we defer..
             return true;
         for (const auto &r : q.front()->causes)
             q.push(&r->effect);
@@ -263,6 +260,7 @@ bool solver::has_inconsistencies()
         q.pop();
     }
 
+    assert(std::none_of(incs.begin(), incs.end(), [&](flaw *f) { return f->structural; }));
     if (!incs.empty())
     {
         // we go back to root level..
@@ -280,9 +278,6 @@ bool solver::has_inconsistencies()
 #endif
             expand_flaw(*f);
         }
-
-        if (std::any_of(incs.begin(), incs.end(), [&](flaw *f) { return f->structural; }))
-            build();
 
         // we re-assume the current graph var to allow search within the current graph..
         bool a_gv = sat_cr.assume(lit(gamma, true));
@@ -513,17 +508,9 @@ bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
                 else // this flaw has been removed from the current partial solution..
                     assert(flaws.find(f) == flaws.end());
 
-        if (rhos.find(p.v) != rhos.end()) // a decision has been taken about the presence of some resolvers within the current partial solution..
+        if (rhos.find(p.v) != rhos.end() && !p.sign) // a decision has been taken about the removal of some resolvers within the current partial solution..
             for (const auto &r : rhos.at(p.v))
-                if (!p.sign) // this resolver has been removed from the current partial solution..
-                {
-                    set_est_cost(*r, std::numeric_limits<double>::infinity());
-#ifdef BUILD_GUI
-                    // we notify the listeners that the state of the flaw has changed..
-                    for (const auto &l : listeners)
-                        l->resolver_cost_changed(*r);
-#endif
-                }
+                set_est_cost(*r, std::numeric_limits<double>::infinity());
     }
 
     return true;
