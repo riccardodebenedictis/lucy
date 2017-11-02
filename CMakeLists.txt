@@ -65,6 +65,7 @@ add_test( NAME TestLogistics01 COMMAND ${PROJECT_NAME} "${CMAKE_SOURCE_DIR}/exam
 add_test( NAME TestLogistics02 COMMAND ${PROJECT_NAME} "${CMAKE_SOURCE_DIR}/examples/logistics/logistics_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/logistics/logistics_problem_2.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestLogisticsSV00 COMMAND ${PROJECT_NAME} "${CMAKE_SOURCE_DIR}/examples/logistics_state_variables/logistics_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/logistics_state_variables/logistics_problem_0.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 add_test( NAME TestLogisticsSV01 COMMAND ${PROJECT_NAME} "${CMAKE_SOURCE_DIR}/examples/logistics_state_variables/logistics_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/logistics_state_variables/logistics_problem_1.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
+add_test( NAME TestLogisticsSV02 COMMAND ${PROJECT_NAME} "${CMAKE_SOURCE_DIR}/examples/logistics_state_variables/logistics_domain.rddl" "${CMAKE_SOURCE_DIR}/examples/logistics_state_variables/logistics_problem_2.rddl" "solution.json" WORKING_DIRECTORY ${CMAKE_BINARY_DIR} )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
