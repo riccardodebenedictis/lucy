@@ -24,37 +24,24 @@ public:
   bool operator>=(const interval &right) const;
   bool operator>(const interval &right) const;
 
-  interval operator&&(const interval &rhs);
+  interval operator&&(const interval &rhs) const;
 
-  interval operator+(const interval &rhs);
-  interval operator+(const double &rhs);
-  friend interval operator+(const double &lhs, const interval &rhs);
-
-  interval operator-(const interval &rhs);
-  interval operator-(const double &rhs);
-  friend interval operator-(const double &lhs, const interval &rhs);
-
-  interval operator*(const interval &rhs);
-  interval operator*(const double &rhs);
-  friend interval operator*(const double &lhs, const interval &rhs);
-
-  interval operator/(const interval &rhs);
-  interval operator/(const double &rhs);
-  friend interval operator/(const double &lhs, const interval &rhs);
+  interval operator+(const interval &rhs) const;
+  interval operator-(const interval &rhs) const;
+  interval operator*(const interval &rhs) const;
+  interval operator/(const interval &rhs) const;
 
   interval operator+=(const interval &right);
-  interval operator+=(const double &right);
-
   interval operator-=(const interval &right);
-  interval operator-=(const double &right);
-
   interval operator*=(const interval &right);
-  interval operator*=(const double &right);
-
   interval operator/=(const interval &right);
-  interval operator/=(const double &right);
 
   interval operator-() const;
+
+  friend interval operator+(const double &lhs, const interval &rhs);
+  friend interval operator-(const double &lhs, const interval &rhs);
+  friend interval operator*(const double &lhs, const interval &rhs);
+  friend interval operator/(const double &lhs, const interval &rhs);
 
   std::string to_string() const;
 
