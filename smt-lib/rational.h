@@ -13,35 +13,50 @@ public:
   rational(I n);
   rational(I n, I d);
 
-  rational &operator=(I n) { return assign(n, 1); }
-  rational &assign(I n, I d)
-  {
-    num = n;
-    den = d;
-    normalize();
-    return *this;
-  }
-
+public:
   I numerator() const { return num; }
   I denominator() const { return den; }
 
-  rational operator+(const rational &rhs);
+  bool operator!=(const rational &rhs) const;
+  bool operator<(const rational &rhs) const;
+  bool operator<=(const rational &rhs) const;
+  bool operator==(const rational &rhs) const;
+  bool operator>=(const rational &rhs) const;
+  bool operator>(const rational &rhs) const;
+
+  bool operator!=(const I &rhs) const;
+  bool operator<(const I &rhs) const;
+  bool operator<=(const I &rhs) const;
+  bool operator==(const I &rhs) const;
+  bool operator>=(const I &rhs) const;
+  bool operator>(const I &rhs) const;
+
+  rational operator+(const rational &rhs) const;
+  rational operator-(const rational &rhs) const;
+  rational operator*(const rational &rhs) const;
+  rational operator/(const rational &rhs) const;
+
+  rational operator+(const I &rhs) const;
+  rational operator-(const I &rhs) const;
+  rational operator*(const I &rhs) const;
+  rational operator/(const I &rhs) const;
+
+  rational &operator+=(const rational &rhs);
+  rational &operator-=(const rational &rhs);
+  rational &operator*=(const rational &rhs);
+  rational &operator/=(const rational &rhs);
+
+  rational &operator+=(const I &rhs);
+  rational &operator-=(const I &rhs);
+  rational &operator*=(const I &rhs);
+  rational &operator/=(const I &rhs);
+
   friend rational operator+(const I &lhs, const rational &rhs);
-
-  rational operator-(const rational &rhs);
   friend rational operator-(const I &lhs, const rational &rhs);
-
-  rational operator*(const rational &rhs);
   friend rational operator*(const I &lhs, const rational &rhs);
-
-  rational operator/(const rational &rhs);
   friend rational operator/(const I &lhs, const rational &rhs);
 
-  static const rational ZERO;
-  static const rational ONE;
-  static const rational NaN;
-  static const rational POSITIVE_INFINITY;
-  static const rational NEGATIVE_INFINITY;
+  rational operator-() const;
 
 private:
   void normalize()
@@ -56,7 +71,7 @@ private:
     }
   }
 
-  static I gcd(I u, I v)
+  static I gcd(I u, I v) // computes the greatest common divisor..
   {
     while (v != 0)
     {

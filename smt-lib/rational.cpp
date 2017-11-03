@@ -1,66 +1,278 @@
 #include "rational.h"
+#include <cassert>
 
 namespace smt
 {
-const rational rational::ZERO(0);
-const rational rational::ONE(1);
-const rational rational::NaN(0, 0);
-const rational rational::POSITIVE_INFINITY(1, 0);
-const rational rational::NEGATIVE_INFINITY(-1, 0);
 
 rational::rational() : num(0), den(1) {}
 rational::rational(I n) : num(n), den(1) {}
 rational::rational(I n, I d) : num(n), den(d) { normalize(); }
 
-rational rational::operator+(const rational &rhs)
+bool rational::operator!=(const rational &rhs) const { return num != rhs.num || den != rhs.den; }
+bool rational::operator<(const rational &rhs) const { return num * rhs.den < den * rhs.num; }
+bool rational::operator<=(const rational &rhs) const { return num * rhs.den <= den * rhs.num; }
+bool rational::operator==(const rational &rhs) const { return num == rhs.num && den == rhs.den; }
+bool rational::operator>=(const rational &rhs) const { return num * rhs.den >= den * rhs.num; }
+bool rational::operator>(const rational &rhs) const { return num * rhs.den > den * rhs.num; }
+
+bool rational::operator!=(const I &rhs) const { return num != rhs || den != 1; }
+bool rational::operator<(const I &rhs) const { return num < den * rhs; }
+bool rational::operator<=(const I &rhs) const { return num <= den * rhs; }
+bool rational::operator==(const I &rhs) const { return num == rhs && den == 1; }
+bool rational::operator>=(const I &rhs) const { return num >= den * rhs; }
+bool rational::operator>(const I &rhs) const { return num > den * rhs; }
+
+rational rational::operator+(const rational &rhs) const
 {
-    if (&rhs == &ZERO)
+    assert(den != 0 || rhs.den != 0 || num == rhs.num);
+    if (rhs.num == 0 || (den == 0 && den == rhs.den))
         return *this;
-    if (this == &ZERO)
+    if (den == 1 && rhs.den == 1)
+        return num + rhs.num;
+
+    rational res;
+    I r_num = rhs.num;
+    I r_den = rhs.den;
+
+    I g = gcd(den, r_den);
+    res.den /= g;
+    res.num = num * (r_den / g) + r_num * den;
+    g = gcd(num, g);
+    res.num /= g;
+    res.den *= r_den / g;
+    return res;
+}
+
+rational rational::operator-(const rational &rhs) const
+{
+    assert(den != 0 || rhs.den != 0 || num == rhs.num);
+    if (rhs.num == 0 || (den == 0 && den == rhs.den))
+        return *this;
+    if (den == 1 && rhs.den == 1)
+        return num - rhs.num;
+
+    rational res;
+    I r_num = rhs.num;
+    I r_den = rhs.den;
+
+    I g = gcd(den, r_den);
+    res.den /= g;
+    res.num = num * (r_den / g) - r_num * den;
+    g = gcd(num, g);
+    res.num /= g;
+    res.den *= r_den / g;
+    return res;
+}
+
+rational rational::operator*(const rational &rhs) const
+{
+    if (rhs.num == 1 && rhs.den == 1)
+        return *this;
+    if (num == 1 && den == 1)
         return rhs;
-    if (den == rhs.den)
+
+    rational res;
+    I r_num = rhs.num;
+    I r_den = rhs.den;
+
+    I gcd1 = gcd(num, r_den);
+    I gcd2 = gcd(r_num, den);
+    res.num = (num / gcd1) * (r_num / gcd2);
+    res.den = (den / gcd2) * (r_den / gcd1);
+    return res;
+}
+
+rational rational::operator/(const rational &rhs) const
+{
+    if (rhs.num == 1 && rhs.den == 1)
+        return *this;
+    if (num == 1 && den == 1)
     {
-        if (den == 0)
-            return num == rhs.num ? *this : NaN;
-        return (num + rhs.num, den);
+        rational res;
+        res.num = rhs.den;
+        res.den = rhs.num;
+        return res;
     }
 
-    I c_gcd = gcd(den, rhs.den);
-    I denomgcd = den / c_gcd;
-    I otherdenomgcd = rhs.den / c_gcd;
-    I newdenom = denomgcd * rhs.den;
-    I newnum = otherdenomgcd * num + denomgcd * rhs.num;
-    return (newnum, newdenom);
-}
-rational operator+(const I &lhs, const rational &rhs)
-{
-    return 0;
+    rational res;
+    I r_num = rhs.num;
+    I r_den = rhs.den;
+
+    // Avoid overflow and preserve normalization
+    I gcd1 = gcd(num, r_num);
+    I gcd2 = gcd(r_den, den);
+    res.num = (num / gcd1) * (r_den / gcd2);
+    res.den = (den / gcd2) * (r_num / gcd1);
+
+    if (res.den < 0)
+    {
+        res.num = -num;
+        res.den = -den;
+    }
+    return res;
 }
 
-rational rational::operator-(const rational &rhs)
+rational rational::operator+(const I &rhs) const
 {
-    return 0;
-}
-rational operator-(const I &lhs, const rational &rhs)
-{
-    return 0;
+    if (rhs == 0 || den == 0)
+        return *this;
+    if (den == 1)
+        return num + rhs;
+
+    rational res;
+    res.num = num + rhs * den;
+    res.den = den;
+    return res;
 }
 
-rational rational::operator*(const rational &rhs)
+rational rational::operator-(const I &rhs) const
 {
-    return 0;
-}
-rational operator*(const I &lhs, const rational &rhs)
-{
-    return 0;
+    if (rhs == 0 || den == 0)
+        return *this;
+    if (den == 1)
+        return num - rhs;
+
+    rational res;
+    res.num = num - rhs * den;
+    res.den = den;
+    return res;
 }
 
-rational rational::operator/(const rational &rhs)
+rational rational::operator*(const I &rhs) const
 {
-    return 0;
+    if (rhs == 1)
+        return *this;
+    if (den == 0)
+    {
+        rational res;
+        res.num = rhs > 0 ? num : -num;
+        res.den = den;
+        return res;
+    }
+    if (den == 1)
+        return num * rhs;
+
+    return (num * rhs, den);
 }
-rational operator/(const I &lhs, const rational &rhs)
+
+rational rational::operator/(const I &rhs) const
 {
-    return 0;
+    if (rhs == 1)
+        return *this;
+    if (den == 0)
+    {
+        rational res;
+        res.num = rhs > 0 ? num : -num;
+        res.den = den;
+        return res;
+    }
+    if (den == 1)
+        return num / rhs;
+
+    return (num, den * rhs);
 }
+
+rational &rational::operator+=(const rational &rhs)
+{
+    assert(den != 0 || rhs.den != 0 || num == rhs.num);
+    if (rhs.num == 0 || (den == 0 && den == rhs.den))
+        return *this;
+    if (den == 1 && rhs.den == 1)
+    {
+        num += rhs.num;
+        return *this;
+    }
+
+    I r_num = rhs.num;
+    I r_den = rhs.den;
+
+    I g = gcd(den, r_den);
+    den /= g;
+    num = num * (r_den / g) + r_num * den;
+    g = gcd(num, g);
+    num /= g;
+    den *= r_den / g;
+
+    return *this;
+}
+
+rational &rational::operator-=(const rational &rhs)
+{
+    assert(den != 0 || rhs.den != 0 || num == rhs.num);
+    if (rhs.num == 0 || (den == 0 && den == rhs.den))
+        return *this;
+    if (den == 1 && rhs.den == 1)
+    {
+        num -= rhs.num;
+        return *this;
+    }
+
+    I r_num = rhs.num;
+    I r_den = rhs.den;
+
+    I g = gcd(den, r_den);
+    den /= g;
+    num = num * (r_den / g) - r_num * den;
+    g = gcd(num, g);
+    num /= g;
+    den *= r_den / g;
+
+    return *this;
+}
+
+rational &rational::operator*=(const rational &rhs)
+{
+    if (rhs.num == 1 && rhs.den == 1)
+        return *this;
+    if (num == 1 && den == 1)
+    {
+        num = rhs.num;
+        den = rhs.den;
+        return *this;
+    }
+
+    I r_num = rhs.num;
+    I r_den = rhs.den;
+
+    I gcd1 = gcd(num, r_den);
+    I gcd2 = gcd(r_num, den);
+    num = (num / gcd1) * (r_num / gcd2);
+    den = (den / gcd2) * (r_den / gcd1);
+    return *this;
+}
+
+rational &rational::operator/=(const rational &rhs)
+{
+    if (rhs.num == 1 && rhs.den == 1)
+        return *this;
+    if (num == 1 && den == 1)
+    {
+        num = rhs.den;
+        den = rhs.num;
+        return *this;
+    }
+
+    I r_num = rhs.num;
+    I r_den = rhs.den;
+
+    // Avoid overflow and preserve normalization
+    I gcd1 = gcd(num, r_num);
+    I gcd2 = gcd(r_den, den);
+    num = (num / gcd1) * (r_den / gcd2);
+    den = (den / gcd2) * (r_num / gcd1);
+
+    if (den < 0)
+    {
+        num = -num;
+        den = -den;
+    }
+    return *this;
+}
+
+rational operator+(const I &lhs, const rational &rhs) { return (lhs * rhs.den + rhs.num, rhs.den); }
+rational operator-(const I &lhs, const rational &rhs) { return (lhs * rhs.den - rhs.num, rhs.den); }
+rational operator*(const I &lhs, const rational &rhs) { return (lhs * rhs.num, rhs.den); }
+rational operator/(const I &lhs, const rational &rhs) { return (lhs * rhs.den, rhs.num); }
+
+rational rational::operator-() const { return (-num, den); }
 }
