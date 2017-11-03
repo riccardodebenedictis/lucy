@@ -5,6 +5,8 @@
 #include "smart_type.h"
 #include "state_variable.h"
 #include "reusable_resource.h"
+#include "propositional_agent.h"
+#include "propositional_state.h"
 #ifdef BUILD_GUI
 #include "cg_listener.h"
 #endif
@@ -25,6 +27,8 @@ void solver::init()
     read(std::vector<std::string>({"init.rddl"}));
     types.insert({STATE_VARIABLE_NAME, new state_variable(*this)});
     types.insert({REUSABLE_RESOURCE_NAME, new reusable_resource(*this)});
+    types.insert({PROPOSITIONAL_AGENT_NAME, new propositional_agent(*this)});
+    types.insert({PROPOSITIONAL_STATE_NAME, new propositional_state(*this)});
 }
 
 expr solver::new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals)
@@ -97,14 +101,12 @@ void solver::solve()
     // we build the causal graph..
     build();
 
-    // we create a new graph var..
-    gamma = sat_cr.new_var();
-#ifndef NDEBUG
-    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
-#endif
-    // we use the new graph var to allow search within the current graph..
-    bool a_gv = sat_cr.assume(gamma) && sat_cr.check();
-    assert(a_gv);
+    while (sat_cr.root_level())
+    {
+        assert(sat_cr.value(gamma) == False);
+        // we have exhausted the search within the graph: we extend the graph..
+        add_layer();
+    }
 
     while (true)
     {
@@ -125,34 +127,16 @@ void solver::solve()
                 std::cout << " " << res->get_label() << std::endl;
 #endif
 
-                // we consider possible, unexpanded, alternatives..
-                std::queue<resolver *> res_q;
-                for (const auto &r : f_next->resolvers)
-                    if (r != res && (r->est_cost == std::numeric_limits<double>::infinity() || r->get_cost() < res->get_cost())) // we expand only cheaper alternatives..
-                        res_q.push(r);
-                while (!res_q.empty())
-                {
-                    if (resolvers.find(res_q.front()) != resolvers.end())
-                        next_resolvers.insert(res_q.front());
-                    else if (next_resolvers.find(res_q.front()) == next_resolvers.end())
-                        for (const auto &f : res_q.front()->preconditions)
-                            for (const auto &r : f->resolvers)
-                                res_q.push(r);
-                    res_q.pop();
-                }
-
                 // we apply the resolver..
                 if (!sat_cr.assume(res->rho) || !sat_cr.check())
                     throw unsolvable_exception();
 
                 res = nullptr;
-                if (sat_cr.root_level())
+                while (sat_cr.root_level())
                     if (sat_cr.value(gamma) == Undefined)
                     {
                         // we have learnt a unit clause! thus, we reassume the graph var..
-                        a_gv = sat_cr.assume(gamma);
-                        assert(a_gv);
-                        if (!sat_cr.check())
+                        if (!sat_cr.assume(gamma) || !sat_cr.check())
                             throw unsolvable_exception();
                     }
                     else
@@ -160,15 +144,6 @@ void solver::solve()
                         assert(sat_cr.value(gamma) == False);
                         // we have exhausted the search within the graph: we extend the graph..
                         add_layer();
-
-                        // we create a new graph var..
-                        gamma = sat_cr.new_var();
-#ifndef NDEBUG
-                        std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
-#endif
-                        // we use the new graph var to allow search within the new graph..
-                        a_gv = sat_cr.assume(gamma) && sat_cr.check();
-                        assert(a_gv);
                     }
             }
         }
@@ -191,15 +166,24 @@ void solver::build()
             throw unsolvable_exception();
         assert(!flaw_q.front()->expanded);
         if (sat_cr.value(flaw_q.front()->phi) != False)
-            if (is_deferrable(*flaw_q.front()))
-                // we postpone the expansion..
-                flaw_q.push(flaw_q.front());
-            else
-                // we expand the flaw..
+            if (is_deferrable(*flaw_q.front())) // we postpone the expansion..
+                flaw_q.push_back(flaw_q.front());
+            else // we expand the flaw..
                 expand_flaw(*flaw_q.front());
-        flaw_q.pop();
+        flaw_q.pop_front();
     }
-    assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
+
+    // we create a new graph var..
+    gamma = sat_cr.new_var();
+#ifndef NDEBUG
+    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
+#endif
+    // these flaws have not been expanded, hence, cannot have a solution..
+    for (const auto &f : flaw_q)
+        sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
+    // we use the new graph var to allow search within the current graph..
+    if (!sat_cr.assume(gamma) || !sat_cr.check())
+        throw unsolvable_exception();
 }
 
 bool solver::is_deferrable(flaw &f)
@@ -209,12 +193,8 @@ bool solver::is_deferrable(flaw &f)
     while (!q.empty())
     {
         assert(sat_cr.value(q.front()->phi) != False);
-        if (q.front()->get_cost() < std::numeric_limits<double>::infinity())
-            // we already have a possible solution for this flaw, thus we defer..
+        if (q.front()->get_cost() < std::numeric_limits<double>::infinity()) // we already have a possible solution for this flaw, thus we defer..
             return true;
-        else if (std::any_of(q.front()->causes.begin(), q.front()->causes.end(), [&](resolver *r) { return next_resolvers.find(r) != next_resolvers.end(); }))
-            // we have reached one of the resolvers whose cost must be made finite, thus we cannot defer..
-            return false;
         for (const auto &r : q.front()->causes)
             q.push(&r->effect);
         q.pop();
@@ -229,36 +209,32 @@ void solver::add_layer()
     std::cout << "adding a layer to the causal graph.." << std::endl;
 #endif
     assert(sat_cr.root_level());
-    assert(!next_resolvers.empty());
-    assert(std::all_of(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
 
-    // this iterator points to the next resolver to watch for a solution..
-    auto res_it = next_resolvers.end();
-    while (res_it == next_resolvers.end())
+    std::list<flaw *> f_q(flaw_q);
+    while (std::all_of(f_q.begin(), f_q.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); }))
     {
         if (flaw_q.empty())
             throw unsolvable_exception();
-        assert(!flaw_q.front()->expanded);
-        if (sat_cr.value(flaw_q.front()->phi) != False)
-            if (is_deferrable(*flaw_q.front()))
-                // we postpone the expansion..
-                flaw_q.push(flaw_q.front());
-            else
-                // we expand the flaw..
-                expand_flaw(*flaw_q.front());
-        flaw_q.pop();
-        res_it = std::find_if(next_resolvers.begin(), next_resolvers.end(), [&](resolver *r) { return r->est_cost < std::numeric_limits<double>::infinity(); });
+        std::list<flaw *> c_q = std::move(flaw_q);
+        for (const auto &f : c_q)
+        {
+            assert(!f->expanded);
+            if (sat_cr.value(f->phi) != False) // we expand the flaw..
+                expand_flaw(*f);
+        }
     }
 
-    // we set the new solution resolver's siblings as more expensive..
-    for (const auto &r : (*res_it)->effect.resolvers)
-        if (r != (*res_it) && r->get_cost() <= (*res_it)->get_cost())
-            set_est_cost(*r, (*res_it)->get_cost());
-
-    assert(std::all_of(resolvers.begin(), resolvers.end(), [&](resolver *r) { return r->est_cost == std::numeric_limits<double>::infinity(); }));
-
-    // we clear the next resolvers..
-    next_resolvers.clear();
+    // we create a new graph var..
+    gamma = sat_cr.new_var();
+#ifndef NDEBUG
+    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
+#endif
+    // these flaws have not been expanded, hence, cannot have a solution..
+    for (const auto &f : flaw_q)
+        sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
+    // we use the new graph var to allow search within the new graph..
+    if (!sat_cr.assume(gamma) || !sat_cr.check())
+        throw unsolvable_exception();
 }
 
 bool solver::has_inconsistencies()
@@ -284,6 +260,7 @@ bool solver::has_inconsistencies()
         q.pop();
     }
 
+    assert(std::none_of(incs.begin(), incs.end(), [&](flaw *f) { return f->structural; }));
     if (!incs.empty())
     {
         // we go back to root level..
@@ -302,12 +279,9 @@ bool solver::has_inconsistencies()
             expand_flaw(*f);
         }
 
-        if (std::any_of(incs.begin(), incs.end(), [&](flaw *f) { return f->structural; }))
-            build();
-
         // we re-assume the current graph var to allow search within the current graph..
-        bool a_gv = sat_cr.assume(lit(gamma, true));
-        assert(a_gv);
+        if (!sat_cr.assume(gamma) || !sat_cr.check())
+            throw unsolvable_exception();
 #ifndef NDEBUG
         std::cout << ": " << std::to_string(incs.size()) << std::endl;
 #endif
@@ -362,7 +336,7 @@ void solver::expand_flaw(flaw &f)
 void solver::new_flaw(flaw &f)
 {
     f.init(); // flaws' initialization requires being at root-level..
-    flaw_q.push(&f);
+    flaw_q.push_back(&f);
 #ifdef BUILD_GUI
     // we notify the listeners that a new flaw has arised..
     for (const auto &l : listeners)
@@ -373,7 +347,6 @@ void solver::new_flaw(flaw &f)
 void solver::new_resolver(resolver &r)
 {
     r.init();
-    resolvers.insert(&r);
 
 #ifdef BUILD_GUI
     // we notify the listeners that a new resolver has arised..
@@ -406,8 +379,6 @@ void solver::set_est_cost(resolver &r, double cst)
         double f_cost = r.effect.get_cost();
         // we update the resolver's estimated cost..
         r.est_cost = cst;
-        if (r.est_cost < std::numeric_limits<double>::infinity())
-            resolvers.erase(&r);
 
 #ifdef BUILD_GUI
         // we notify the listeners that a flaw cost has changed..
@@ -440,8 +411,6 @@ void solver::set_est_cost(resolver &r, double cst)
                     f_cost = c_res.effect.get_cost();
                     // we update the resolver's estimated cost..
                     c_res.est_cost = r_cost;
-                    if (c_res.est_cost < std::numeric_limits<double>::infinity())
-                        resolvers.erase(&c_res);
 
 #ifdef BUILD_GUI
                     // we notify the listeners that a flaw cost has changed..
@@ -461,7 +430,6 @@ void solver::set_est_cost(resolver &r, double cst)
 
 flaw *solver::select_flaw()
 {
-    assert(!flaws.empty());
     assert(std::all_of(flaws.begin(), flaws.end(), [&](flaw *const f) { return f->expanded && sat_cr.value(f->phi) == True; }));
     // this is the next flaw to be solved (i.e., the most expensive one)..
     flaw *f_next = nullptr;
@@ -540,33 +508,9 @@ bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
                 else // this flaw has been removed from the current partial solution..
                     assert(flaws.find(f) == flaws.end());
 
-        if (rhos.find(p.v) != rhos.end()) // a decision has been taken about the presence of some resolvers within the current partial solution..
+        if (rhos.find(p.v) != rhos.end() && !p.sign) // a decision has been taken about the removal of some resolvers within the current partial solution..
             for (const auto &r : rhos.at(p.v))
-                if (!p.sign) // this resolver has been removed from the current partial solution..
-                {
-                    set_est_cost(*r, std::numeric_limits<double>::infinity());
-#ifdef BUILD_GUI
-                    // we notify the listeners that the state of the flaw has changed..
-                    for (const auto &l : listeners)
-                        l->resolver_cost_changed(*r);
-#endif
-                }
-
-        if (std::any_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); })) // we have made the heuristic blind..
-        {
-            for (const auto &r : rhos)
-                if (sat_cr.value(r.first) == False)
-                {
-                    cnfl.push_back(r.first);
-                    // we also consider possible, unexpanded, alternatives..
-                    for (const auto &c_r : r.second)
-                        for (const auto &c_c_r : c_r->effect.resolvers)
-                            if (resolvers.find(c_c_r) != resolvers.end())
-                                next_resolvers.insert(c_c_r);
-                }
-            cnfl.push_back(lit(gamma, false));
-            return false;
-        }
+                set_est_cost(*r, std::numeric_limits<double>::infinity());
     }
 
     return true;

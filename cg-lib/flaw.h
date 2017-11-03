@@ -22,6 +22,7 @@ public:
 
   bool is_expanded() const { return expanded; }
   const var &get_phi() const { return phi; }
+  std::vector<resolver *> get_resolvers() const { return resolvers; }
   std::vector<resolver *> get_causes() const { return causes; }
   std::vector<resolver *> get_supports() const { return supports; }
   double get_cost() const;

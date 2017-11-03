@@ -32,12 +32,10 @@ bool clause::propagate(const lit &p)
     // we look for a new literal to watch..
     for (size_t i = 1; i < lits.size(); i++)
     {
-        if (s.value(lits[i]) != False)
+        if (s.value(lits.at(i)) != False)
         {
-            lit tmp = lits[1];
-            lits[1] = lits[i];
-            lits[i] = tmp;
-            s.watches[s.index(!lits[1])].push_back(this);
+            std::iter_swap(lits.begin() + 1, lits.begin() + i);
+            s.watches[s.index(!lits.at(1))].push_back(this);
             return true;
         }
     }

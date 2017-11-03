@@ -32,8 +32,12 @@ public:
   {
     std::unordered_set<resolver *> ress;
     for (const auto &atm : atms)
-      for (const auto &r : slv.get_flaw(*atm).get_causes())
-        ress.insert(r);
+      for (const auto &r : slv.get_flaw(*atm).get_resolvers())
+        if (resolver *af = dynamic_cast<atom_flaw::activate_fact *>(r))
+          ress.insert(af);
+        else if (resolver *ag = dynamic_cast<atom_flaw::activate_goal *>(r))
+          ress.insert(ag);
+
     return std::vector<resolver *>(ress.begin(), ress.end());
   }
 

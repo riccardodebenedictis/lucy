@@ -15,7 +15,7 @@ void cg_java_listener::flaw_created(const cg::flaw &f)
     jlongArray causes_array = gui.env->NewLongArray(causes.size());
     jlong *cause = gui.env->GetLongArrayElements(causes_array, NULL);
     for (size_t i = 0; i < causes.size(); i++)
-        cause[i] = reinterpret_cast<jlong>(causes[i]);
+        cause[i] = reinterpret_cast<jlong>(causes.at(i));
     gui.env->ReleaseLongArrayElements(causes_array, cause, 0);
 
     gui.env->CallVoidMethod(gui.cg_object, gui.f_created, reinterpret_cast<jlong>(&f), causes_array, gui.env->NewStringUTF(f.get_label().c_str()), slv.sat_cr.value(f.get_phi()));

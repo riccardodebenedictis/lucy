@@ -30,7 +30,7 @@ std::vector<flaw *> propositional_state::get_flaws()
 void propositional_state::new_predicate(predicate &pred)
 {
     inherit(static_cast<predicate &>(get_predicate(PROPOSITIONAL_STATE_PREDICATE_NAME)), pred);
-    add_field(pred, *new field(static_cast<type &>(pred.get_scope()), "scope"));
+    add_field(pred, *new field(static_cast<type &>(pred.get_scope()), TAU));
 }
 
 void propositional_state::new_fact(atom_flaw &f)
