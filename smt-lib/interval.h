@@ -31,10 +31,20 @@ public:
   interval operator*(const interval &rhs) const;
   interval operator/(const interval &rhs) const;
 
+  interval operator+(const double &rhs) const;
+  interval operator-(const double &rhs) const;
+  interval operator*(const double &rhs) const;
+  interval operator/(const double &rhs) const;
+
   interval &operator+=(const interval &right);
   interval &operator-=(const interval &right);
   interval &operator*=(const interval &right);
   interval &operator/=(const interval &right);
+
+  interval &operator+=(const double &right);
+  interval &operator-=(const double &right);
+  interval &operator*=(const double &right);
+  interval &operator/=(const double &right);
 
   interval operator-() const;
 

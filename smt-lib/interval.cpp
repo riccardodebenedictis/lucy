@@ -56,6 +56,23 @@ interval interval::operator/(const interval &rhs) const
     }
 }
 
+interval interval::operator+(const double &rhs) const { return interval(lb + rhs, ub + rhs); }
+interval interval::operator-(const double &rhs) const { return interval(lb - rhs, ub - rhs); }
+interval interval::operator*(const double &rhs) const
+{
+    if (rhs >= 0)
+        return interval(lb * rhs, ub * rhs);
+    else
+        return interval(ub * rhs, lb * rhs);
+}
+interval interval::operator/(const double &rhs) const
+{
+    if (rhs >= 0)
+        return interval(lb / rhs, ub / rhs);
+    else
+        return interval(ub / rhs, lb / rhs);
+}
+
 interval operator+(const double &lhs, const interval &rhs) { return interval(lhs + rhs.lb, lhs + rhs.ub); }
 interval operator-(const double &lhs, const interval &rhs) { return interval(lhs - rhs.ub, lhs - rhs.lb); }
 interval operator*(const double &lhs, const interval &rhs)
@@ -89,14 +106,12 @@ interval &interval::operator+=(const interval &right)
     ub += right.ub;
     return *this;
 }
-
 interval &interval::operator-=(const interval &right)
 {
     lb -= right.ub;
     ub -= right.lb;
     return *this;
 }
-
 interval &interval::operator*=(const interval &right)
 {
     double c_lb = std::numeric_limits<double>::infinity();
@@ -112,7 +127,6 @@ interval &interval::operator*=(const interval &right)
     ub = c_ub;
     return *this;
 }
-
 interval &interval::operator/=(const interval &right)
 {
     if (right.lb <= 0 && right.ub >= 0)
@@ -134,6 +148,49 @@ interval &interval::operator/=(const interval &right)
         }
         lb = c_lb;
         ub = c_ub;
+    }
+    return *this;
+}
+
+interval &interval::operator+=(const double &right)
+{
+    lb += right;
+    ub += right;
+    return *this;
+}
+interval &interval::operator-=(const double &right)
+{
+    lb -= right;
+    ub -= right;
+    return *this;
+}
+interval &interval::operator*=(const double &right)
+{
+    if (right >= 0)
+    {
+        lb *= right;
+        ub *= right;
+    }
+    else
+    {
+        double c_lb = lb;
+        lb = ub * right;
+        ub = c_lb * right;
+    }
+    return *this;
+}
+interval &interval::operator/=(const double &right)
+{
+    if (right >= 0)
+    {
+        lb /= right;
+        ub /= right;
+    }
+    else
+    {
+        double c_lb = lb;
+        lb = ub / right;
+        ub = c_lb / right;
     }
     return *this;
 }
