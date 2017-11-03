@@ -22,6 +22,13 @@ bool interval::operator==(const interval &right) const { return constant() && ri
 bool interval::operator>=(const interval &right) const { return lb >= right.ub; }
 bool interval::operator>(const interval &right) const { return lb > right.ub; }
 
+bool interval::operator!=(const double &right) const { return ub < right || lb > right; }
+bool interval::operator<(const double &right) const { return ub < right; }
+bool interval::operator<=(const double &right) const { return ub <= right; }
+bool interval::operator==(const double &right) const { return constant() && lb == right; }
+bool interval::operator>=(const double &right) const { return lb >= right; }
+bool interval::operator>(const double &right) const { return lb > right; }
+
 interval interval::operator&&(const interval &rhs) const { return interval(std::max(lb, rhs.lb), std::min(ub, rhs.ub)); }
 
 interval interval::operator+(const interval &rhs) const { return interval(lb + rhs.lb, ub + rhs.ub); }

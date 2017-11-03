@@ -24,6 +24,13 @@ public:
   bool operator>=(const interval &right) const;
   bool operator>(const interval &right) const;
 
+  bool operator!=(const double &right) const;
+  bool operator<(const double &right) const;
+  bool operator<=(const double &right) const;
+  bool operator==(const double &right) const;
+  bool operator>=(const double &right) const;
+  bool operator>(const double &right) const;
+
   interval operator&&(const interval &rhs) const;
 
   interval operator+(const interval &rhs) const;
