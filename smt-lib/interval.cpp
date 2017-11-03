@@ -83,21 +83,21 @@ interval operator/(const double &lhs, const interval &rhs)
     }
 }
 
-interval interval::operator+=(const interval &right)
+interval &interval::operator+=(const interval &right)
 {
     lb += right.lb;
     ub += right.ub;
     return *this;
 }
 
-interval interval::operator-=(const interval &right)
+interval &interval::operator-=(const interval &right)
 {
     lb -= right.ub;
     ub -= right.lb;
     return *this;
 }
 
-interval interval::operator*=(const interval &right)
+interval &interval::operator*=(const interval &right)
 {
     double c_lb = std::numeric_limits<double>::infinity();
     double c_ub = -std::numeric_limits<double>::infinity();
@@ -113,7 +113,7 @@ interval interval::operator*=(const interval &right)
     return *this;
 }
 
-interval interval::operator/=(const interval &right)
+interval &interval::operator/=(const interval &right)
 {
     if (right.lb <= 0 && right.ub >= 0)
     {
@@ -138,7 +138,7 @@ interval interval::operator/=(const interval &right)
     return *this;
 }
 
-interval interval::operator-() const { return std::move(interval(-ub, -lb)); }
+interval interval::operator-() const { return (-ub, -lb); }
 
 std::string interval::to_string() const { return "[" + std::to_string(lb) + ", " + std::to_string(ub) + "]"; }
 }
