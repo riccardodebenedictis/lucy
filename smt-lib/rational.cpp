@@ -24,7 +24,7 @@ bool rational::operator>(const I &rhs) const { return num > den * rhs; }
 
 rational rational::operator+(const rational &rhs) const
 {
-    assert(den != 0 || rhs.den != 0 || num == rhs.num);
+    assert(den != 0 || rhs.den != 0 || num == rhs.num); // inf + -inf or -inf + inf..
     if (rhs.num == 0 || (den == 0 && den == rhs.den))
         return *this;
     if (den == 1 && rhs.den == 1)
@@ -45,7 +45,7 @@ rational rational::operator+(const rational &rhs) const
 
 rational rational::operator-(const rational &rhs) const
 {
-    assert(den != 0 || rhs.den != 0 || num == rhs.num);
+    assert(den != 0 || rhs.den != 0 || num == rhs.num); // inf + -inf or -inf + inf..
     if (rhs.num == 0 || (den == 0 && den == rhs.den))
         return *this;
     if (den == 1 && rhs.den == 1)
@@ -66,6 +66,8 @@ rational rational::operator-(const rational &rhs) const
 
 rational rational::operator*(const rational &rhs) const
 {
+    assert(num != 0 || rhs.den != 0); // 0*inf..
+    assert(den != 0 || rhs.num != 0); // inf*0..
     if (rhs.num == 1 && rhs.den == 1)
         return *this;
     if (num == 1 && den == 1)
@@ -84,6 +86,8 @@ rational rational::operator*(const rational &rhs) const
 
 rational rational::operator/(const rational &rhs) const
 {
+    assert(num != 0 || rhs.num != 0); // 0/0..
+    assert(den != 0 || rhs.den != 0); // inf/inf..
     if (rhs.num == 1 && rhs.den == 1)
         return *this;
     if (num == 1 && den == 1)
@@ -98,7 +102,6 @@ rational rational::operator/(const rational &rhs) const
     I r_num = rhs.num;
     I r_den = rhs.den;
 
-    // Avoid overflow and preserve normalization
     I gcd1 = gcd(num, r_num);
     I gcd2 = gcd(r_den, den);
     res.num = (num / gcd1) * (r_den / gcd2);
@@ -140,6 +143,7 @@ rational rational::operator-(const I &rhs) const
 
 rational rational::operator*(const I &rhs) const
 {
+    assert(den != 0 || rhs != 0); // inf*0..
     if (rhs == 1)
         return *this;
     if (den == 0)
@@ -152,11 +156,12 @@ rational rational::operator*(const I &rhs) const
     if (den == 1)
         return num * rhs;
 
-    return (num * rhs, den);
+    return rational(num * rhs, den);
 }
 
 rational rational::operator/(const I &rhs) const
 {
+    assert(num != 0 || rhs != 0); // 0/0..
     if (rhs == 1)
         return *this;
     if (den == 0)
@@ -166,15 +171,13 @@ rational rational::operator/(const I &rhs) const
         res.den = den;
         return res;
     }
-    if (den == 1)
-        return num / rhs;
 
-    return (num, den * rhs);
+    return rational(num, den * rhs);
 }
 
 rational &rational::operator+=(const rational &rhs)
 {
-    assert(den != 0 || rhs.den != 0 || num == rhs.num);
+    assert(den != 0 || rhs.den != 0 || num == rhs.num); // inf + -inf or -inf + inf..
     if (rhs.num == 0 || (den == 0 && den == rhs.den))
         return *this;
     if (den == 1 && rhs.den == 1)
@@ -198,7 +201,7 @@ rational &rational::operator+=(const rational &rhs)
 
 rational &rational::operator-=(const rational &rhs)
 {
-    assert(den != 0 || rhs.den != 0 || num == rhs.num);
+    assert(den != 0 || rhs.den != 0 || num == rhs.num); // inf + -inf or -inf + inf..
     if (rhs.num == 0 || (den == 0 && den == rhs.den))
         return *this;
     if (den == 1 && rhs.den == 1)
@@ -222,6 +225,8 @@ rational &rational::operator-=(const rational &rhs)
 
 rational &rational::operator*=(const rational &rhs)
 {
+    assert(num != 0 || rhs.den != 0); // 0*inf..
+    assert(den != 0 || rhs.num != 0); // inf*0..
     if (rhs.num == 1 && rhs.den == 1)
         return *this;
     if (num == 1 && den == 1)
@@ -243,6 +248,8 @@ rational &rational::operator*=(const rational &rhs)
 
 rational &rational::operator/=(const rational &rhs)
 {
+    assert(num != 0 || rhs.num != 0); // 0/0..
+    assert(den != 0 || rhs.den != 0); // inf/inf..
     if (rhs.num == 1 && rhs.den == 1)
         return *this;
     if (num == 1 && den == 1)
@@ -255,7 +262,6 @@ rational &rational::operator/=(const rational &rhs)
     I r_num = rhs.num;
     I r_den = rhs.den;
 
-    // Avoid overflow and preserve normalization
     I gcd1 = gcd(num, r_num);
     I gcd2 = gcd(r_den, den);
     num = (num / gcd1) * (r_den / gcd2);
@@ -266,6 +272,66 @@ rational &rational::operator/=(const rational &rhs)
         num = -num;
         den = -den;
     }
+    return *this;
+}
+
+rational &rational::operator+=(const I &rhs)
+{
+    if (rhs == 0 || den == 0)
+        return *this;
+    if (den == 1)
+    {
+        num += rhs;
+        return *this;
+    }
+
+    num += rhs * den;
+    return *this;
+}
+
+rational &rational::operator-=(const I &rhs)
+{
+    if (rhs == 0 || den == 0)
+        return *this;
+    if (den == 1)
+    {
+        num -= rhs;
+        return *this;
+    }
+
+    num -= rhs * den;
+    return *this;
+}
+
+rational &rational::operator*=(const I &rhs)
+{
+    if (rhs == 1)
+        return *this;
+    if (den == 0)
+    {
+        num = rhs > 0 ? num : -num;
+        return *this;
+    }
+    num *= rhs;
+    if (den != 1)
+        normalize();
+
+    return *this;
+}
+
+rational &rational::operator/=(const I &rhs)
+{
+    if (rhs == 1)
+        return *this;
+    if (den == 0)
+    {
+        num = rhs > 0 ? num : -num;
+        return *this;
+    }
+    den *= rhs;
+    if (den != 1)
+        normalize();
+
     return *this;
 }
 
