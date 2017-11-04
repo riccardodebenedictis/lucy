@@ -1,5 +1,6 @@
 #pragma once
 #include <numeric>
+#include <string>
 
 namespace smt
 {
@@ -57,6 +58,8 @@ public:
   friend rational operator/(const I &lhs, const rational &rhs);
 
   rational operator-() const;
+
+  std::string to_string();
 
 private:
   void normalize()

@@ -341,4 +341,17 @@ rational operator*(const I &lhs, const rational &rhs) { return (lhs * rhs.num, r
 rational operator/(const I &lhs, const rational &rhs) { return (lhs * rhs.den, rhs.num); }
 
 rational rational::operator-() const { return (-num, den); }
+
+std::string rational::to_string()
+{
+    switch (den)
+    {
+    case 0:
+        return num > 0 ? "+inf" : "-inf";
+    case 1:
+        return std::to_string(num);
+    default:
+        return std::to_string(num) + "/" + std::to_string(den);
+    }
+}
 }
