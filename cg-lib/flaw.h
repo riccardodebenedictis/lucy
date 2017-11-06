@@ -25,7 +25,7 @@ public:
   std::vector<resolver *> get_resolvers() const { return resolvers; }
   std::vector<resolver *> get_causes() const { return causes; }
   std::vector<resolver *> get_supports() const { return supports; }
-  inf_rational get_cost() const;
+  double get_cost() const;
 
   virtual std::string get_label() const = 0;
 

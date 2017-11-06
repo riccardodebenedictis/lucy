@@ -118,7 +118,7 @@ void solver::solve()
 #ifndef NDEBUG
             std::cout << "(" << std::to_string(trail.size()) << "): " << f_next->get_label();
 #endif
-            assert(!f_next->get_cost().is_positive_infinite());
+            assert(f_next->get_cost() < std::numeric_limits<double>::infinity());
             if (!f_next->structural || !has_inconsistencies()) // we run out of inconsistencies, thus, we renew them..
             {
                 // this is the next resolver to be assumed..
@@ -160,7 +160,7 @@ void solver::build()
 #endif
     assert(sat_cr.root_level());
 
-    while (std::any_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->get_cost().is_positive_infinite(); }))
+    while (std::any_of(flaws.begin(), flaws.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); }))
     {
         if (flaw_q.empty())
             throw unsolvable_exception();
@@ -193,7 +193,7 @@ bool solver::is_deferrable(flaw &f)
     while (!q.empty())
     {
         assert(sat_cr.value(q.front()->phi) != False);
-        if (!q.front()->get_cost().is_positive_infinite()) // we already have a possible solution for this flaw, thus we defer..
+        if (q.front()->get_cost() < std::numeric_limits<double>::infinity()) // we already have a possible solution for this flaw, thus we defer..
             return true;
         for (const auto &r : q.front()->causes)
             q.push(&r->effect);
@@ -211,7 +211,7 @@ void solver::add_layer()
     assert(sat_cr.root_level());
 
     std::list<flaw *> f_q(flaw_q);
-    while (std::all_of(f_q.begin(), f_q.end(), [&](flaw *f) { return f->get_cost().is_positive_infinite(); }))
+    while (std::all_of(f_q.begin(), f_q.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); }))
     {
         if (flaw_q.empty())
             throw unsolvable_exception();
@@ -369,14 +369,14 @@ void solver::new_causal_link(flaw &f, resolver &r)
 #endif
 }
 
-void solver::set_est_cost(resolver &r, const inf_rational &cst)
+void solver::set_est_cost(resolver &r, const double &cst)
 {
     if (r.est_cost != cst)
     {
         if (!trail.empty())
             trail.back().old_costs.insert({&r, r.est_cost});
         // this is the current cost of the resolver's effect..
-        inf_rational f_cost = r.effect.get_cost();
+        double f_cost = r.effect.get_cost();
         // we update the resolver's estimated cost..
         r.est_cost = cst;
 
@@ -396,10 +396,10 @@ void solver::set_est_cost(resolver &r, const inf_rational &cst)
             while (!resolver_q.empty())
             {
                 resolver &c_res = *resolver_q.front(); // the current resolver whose cost might require an update..
-                inf_rational r_cost(-1, 0);
+                double r_cost = -std::numeric_limits<double>::infinity();
                 for (const auto &f : c_res.preconditions)
                 {
-                    inf_rational c = f->get_cost();
+                    double c = f->get_cost();
                     if (c > r_cost)
                         r_cost = c;
                 }
@@ -510,7 +510,7 @@ bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
 
         if (rhos.find(p.v) != rhos.end() && !p.sign) // a decision has been taken about the removal of some resolvers within the current partial solution..
             for (const auto &r : rhos.at(p.v))
-                set_est_cost(*r, rational(1, 0));
+                set_est_cost(*r, std::numeric_limits<double>::infinity());
     }
 
     return true;

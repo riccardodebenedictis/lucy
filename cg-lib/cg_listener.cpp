@@ -61,8 +61,8 @@ std::string cg_listener::to_string() const
                 g += "\"Undefined\"";
                 break;
             }
-            if (!fs_it->first->get_cost().is_positive_infinite())
-                g += ", \"cost\" : " + fs_it->first->get_cost().to_string();
+            if (fs_it->first->get_cost() < std::numeric_limits<double>::infinity())
+                g += ", \"cost\" : " + std::to_string(fs_it->first->get_cost());
             g += " }";
         }
         g += "]";
@@ -89,8 +89,8 @@ std::string cg_listener::to_string() const
                 g += "\"Undefined\"";
                 break;
             }
-            if (!rs_it->first->get_cost().is_positive_infinite())
-                g += ", \"cost\" : " + rs_it->first->get_cost().to_string();
+            if (rs_it->first->get_cost() < std::numeric_limits<double>::infinity())
+                g += ", \"cost\" : " + std::to_string(rs_it->first->get_cost());
             g += ", \"solves\" : \"" + std::to_string(reinterpret_cast<uintptr_t>(&rs_it->first->get_effect())) + "\"";
             std::vector<flaw *> pres = rs_it->first->get_preconditions();
             if (!pres.empty())
