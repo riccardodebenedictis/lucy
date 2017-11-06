@@ -38,7 +38,7 @@ const var la_theory::new_lt(const lin &left, const lin &right)
             expr += tableau[v]->l * c;
         }
 
-    const rational c_right = inf_rational(-expr.known_term, -1);
+    const inf_rational c_right = inf_rational(-expr.known_term, -1);
     expr.known_term = 0;
     const interval i = bounds(expr);
 
@@ -149,7 +149,7 @@ const var la_theory::new_gt(const lin &left, const lin &right)
             expr += tableau[v]->l * c;
         }
 
-    const rational c_right = inf_rational(-expr.known_term, -1);
+    const inf_rational c_right = inf_rational(-expr.known_term, -1);
     expr.known_term = 0;
     const interval i = bounds(expr);
 
