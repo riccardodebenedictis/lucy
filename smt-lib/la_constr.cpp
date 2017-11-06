@@ -6,7 +6,7 @@
 namespace smt
 {
 
-assertion::assertion(la_theory &th, const op o, const var b, const var x, const rational &v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
+assertion::assertion(la_theory &th, const op o, const var b, const var x, const inf_rational &v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
 assertion::~assertion() {}
 
 std::string assertion::to_string() const
@@ -122,7 +122,7 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
     cnfl.push_back(lit());
     if (l.vars.at(v).is_positive())
     {
-        rational lb(0);
+        inf_rational lb(0);
         for (const auto &term : l.vars)
             if (term.second.is_positive())
                 if (th.lb(term.first).is_negative_infinite())
@@ -178,7 +178,7 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
     }
     else
     {
-        rational ub(0);
+        inf_rational ub(0);
         for (const auto &term : l.vars)
             if (term.second.is_positive())
                 if (th.ub(term.first).is_positive_infinite())
@@ -244,7 +244,7 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
     cnfl.push_back(lit());
     if (l.vars.at(v).is_positive())
     {
-        rational ub(0);
+        inf_rational ub(0);
         for (const auto &term : l.vars)
             if (term.second.is_positive())
                 if (th.ub(term.first).is_positive_infinite())
@@ -300,7 +300,7 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
     }
     else
     {
-        rational lb(0);
+        inf_rational lb(0);
         for (const auto &term : l.vars)
             if (term.second.is_positive())
                 if (th.lb(term.first).is_negative_infinite())

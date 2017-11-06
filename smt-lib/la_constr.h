@@ -7,6 +7,7 @@
 namespace smt
 {
 
+class inf_rational;
 class la_theory;
 
 enum op
@@ -21,7 +22,7 @@ class assertion
   friend class row;
 
 public:
-  assertion(la_theory &th, const op o, const var b, const var x, const rational &v);
+  assertion(la_theory &th, const op o, const var b, const var x, const inf_rational &v);
   assertion(const assertion &orig) = delete;
   virtual ~assertion();
 
@@ -36,7 +37,7 @@ private:
   const op o;
   const var b;
   const var x;
-  const rational v;
+  const inf_rational v;
 };
 
 class row

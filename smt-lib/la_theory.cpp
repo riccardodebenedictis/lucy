@@ -267,7 +267,7 @@ void la_theory::pop()
     layers.pop_back();
 }
 
-bool la_theory::assert_lower(const var &x_i, const rational &val, const lit &p, std::vector<lit> &cnfl)
+bool la_theory::assert_lower(const var &x_i, const inf_rational &val, const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (val <= lb(x_i))
@@ -300,7 +300,7 @@ bool la_theory::assert_lower(const var &x_i, const rational &val, const lit &p, 
     }
 }
 
-bool la_theory::assert_upper(const var &x_i, const rational &val, const lit &p, std::vector<lit> &cnfl)
+bool la_theory::assert_upper(const var &x_i, const inf_rational &val, const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     if (val >= ub(x_i))
@@ -333,7 +333,7 @@ bool la_theory::assert_upper(const var &x_i, const rational &val, const lit &p, 
     }
 }
 
-void la_theory::update(const var &x_i, const rational &v)
+void la_theory::update(const var &x_i, const inf_rational &v)
 {
     assert(tableau.find(x_i) == tableau.end() && "x_i should be a non-basic variable..");
     for (const auto &c : t_watches[x_i])
@@ -351,13 +351,13 @@ void la_theory::update(const var &x_i, const rational &v)
             l->la_value_change(x_i);
 }
 
-void la_theory::pivot_and_update(const var &x_i, const var &x_j, const rational &v)
+void la_theory::pivot_and_update(const var &x_i, const var &x_j, const inf_rational &v)
 {
     assert(tableau.find(x_i) != tableau.end() && "x_i should be a basic variable..");
     assert(tableau.find(x_j) == tableau.end() && "x_j should be a non-basic variable..");
     assert(tableau[x_i]->l.vars.find(x_j) != tableau[x_i]->l.vars.end());
 
-    const rational theta = (v - vals[x_i]) / tableau.at(x_i)->l.vars.at(x_j);
+    const inf_rational theta = (v - vals[x_i]) / tableau.at(x_i)->l.vars.at(x_j);
     // x_i = v
     vals[x_i] = v;
     if (listening.find(x_i) != listening.end())

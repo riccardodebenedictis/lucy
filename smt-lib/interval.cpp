@@ -5,9 +5,9 @@
 namespace smt
 {
 
-interval::interval() : lb(rational(-1, 0)), ub(rational(1, 0)) {}
-interval::interval(const rational &value) : lb(value), ub(value) {}
-interval::interval(const rational &lb, const rational &ub) : lb(lb), ub(ub) {}
+interval::interval() : lb(inf_rational(-1, 0)), ub(inf_rational(1, 0)) {}
+interval::interval(const inf_rational &value) : lb(value), ub(value) {}
+interval::interval(const inf_rational &lb, const inf_rational &ub) : lb(lb), ub(ub) {}
 
 bool interval::consistent() const { return lb <= ub; }
 bool interval::constant() const { return lb == ub; }
@@ -21,12 +21,12 @@ bool interval::operator==(const interval &right) const { return constant() && ri
 bool interval::operator>=(const interval &right) const { return lb >= right.ub; }
 bool interval::operator>(const interval &right) const { return lb > right.ub; }
 
-bool interval::operator!=(const rational &right) const { return ub < right || lb > right; }
-bool interval::operator<(const rational &right) const { return ub < right; }
-bool interval::operator<=(const rational &right) const { return ub <= right; }
-bool interval::operator==(const rational &right) const { return constant() && lb == right; }
-bool interval::operator>=(const rational &right) const { return lb >= right; }
-bool interval::operator>(const rational &right) const { return lb > right; }
+bool interval::operator!=(const inf_rational &right) const { return ub < right || lb > right; }
+bool interval::operator<(const inf_rational &right) const { return ub < right; }
+bool interval::operator<=(const inf_rational &right) const { return ub <= right; }
+bool interval::operator==(const inf_rational &right) const { return constant() && lb == right; }
+bool interval::operator>=(const inf_rational &right) const { return lb >= right; }
+bool interval::operator>(const inf_rational &right) const { return lb > right; }
 
 interval interval::operator&&(const interval &rhs) const { return interval(std::max(lb, rhs.lb), std::min(ub, rhs.ub)); }
 
@@ -34,7 +34,7 @@ interval interval::operator+(const interval &rhs) const { return interval(lb + r
 interval interval::operator-(const interval &rhs) const { return interval(lb - rhs.ub, ub - rhs.lb); }
 interval interval::operator*(const interval &rhs) const
 {
-    interval result(rational(1, 0), rational(-1, 0));
+    interval result(inf_rational(1, 0), inf_rational(-1, 0));
     for (const auto &i : {lb * rhs.lb, lb * rhs.ub, ub * rhs.lb, ub * rhs.ub})
     {
         if (i < result.lb)
@@ -50,7 +50,7 @@ interval interval::operator/(const interval &rhs) const
         return interval();
     else
     {
-        interval result(rational(1, 0), rational(-1, 0));
+        interval result(inf_rational(1, 0), inf_rational(-1, 0));
         for (const auto &i : {lb / rhs.lb, lb / rhs.ub, ub / rhs.lb, ub / rhs.ub})
         {
             if (i < result.lb)
@@ -62,16 +62,16 @@ interval interval::operator/(const interval &rhs) const
     }
 }
 
-interval interval::operator+(const rational &rhs) const { return interval(lb + rhs, ub + rhs); }
-interval interval::operator-(const rational &rhs) const { return interval(lb - rhs, ub - rhs); }
-interval interval::operator*(const rational &rhs) const
+interval interval::operator+(const inf_rational &rhs) const { return interval(lb + rhs, ub + rhs); }
+interval interval::operator-(const inf_rational &rhs) const { return interval(lb - rhs, ub - rhs); }
+interval interval::operator*(const inf_rational &rhs) const
 {
     if (rhs >= 0)
         return interval(lb * rhs, ub * rhs);
     else
         return interval(ub * rhs, lb * rhs);
 }
-interval interval::operator/(const rational &rhs) const
+interval interval::operator/(const inf_rational &rhs) const
 {
     if (rhs >= 0)
         return interval(lb / rhs, ub / rhs);
@@ -79,22 +79,22 @@ interval interval::operator/(const rational &rhs) const
         return interval(ub / rhs, lb / rhs);
 }
 
-interval operator+(const rational &lhs, const interval &rhs) { return interval(lhs + rhs.lb, lhs + rhs.ub); }
-interval operator-(const rational &lhs, const interval &rhs) { return interval(lhs - rhs.ub, lhs - rhs.lb); }
-interval operator*(const rational &lhs, const interval &rhs)
+interval operator+(const inf_rational &lhs, const interval &rhs) { return interval(lhs + rhs.lb, lhs + rhs.ub); }
+interval operator-(const inf_rational &lhs, const interval &rhs) { return interval(lhs - rhs.ub, lhs - rhs.lb); }
+interval operator*(const inf_rational &lhs, const interval &rhs)
 {
     if (lhs >= 0)
         return interval(rhs.lb * lhs, rhs.ub * lhs);
     else
         return interval(rhs.ub * lhs, rhs.lb * lhs);
 }
-interval operator/(const rational &lhs, const interval &rhs)
+interval operator/(const inf_rational &lhs, const interval &rhs)
 {
     if (rhs.lb <= 0 && rhs.ub >= 0) // 0 appears in the denominator..
         return interval();
     else
     {
-        interval result(rational(1, 0), rational(-1, 0));
+        interval result(inf_rational(1, 0), inf_rational(-1, 0));
         for (const auto &i : {lhs / rhs.lb, lhs / rhs.ub})
         {
             if (i < result.lb)
@@ -120,8 +120,8 @@ interval &interval::operator-=(const interval &right)
 }
 interval &interval::operator*=(const interval &right)
 {
-    rational c_lb(1, 0);
-    rational c_ub(-1, 0);
+    inf_rational c_lb(1, 0);
+    inf_rational c_ub(-1, 0);
     for (const auto &i : {lb * right.lb, lb * right.ub, ub * right.lb, ub * right.ub})
     {
         if (i < c_lb)
@@ -138,13 +138,13 @@ interval &interval::operator/=(const interval &right)
     if (right.lb <= 0 && right.ub >= 0)
     {
         // 0 appears in the denominator..
-        lb = rational(-1, 0);
-        ub = rational(1, 0);
+        lb = inf_rational(-1, 0);
+        ub = inf_rational(1, 0);
     }
     else
     {
-        rational c_lb(1, 0);
-        rational c_ub(-1, 0);
+        inf_rational c_lb(1, 0);
+        inf_rational c_ub(-1, 0);
         for (const auto &i : {lb / right.lb, lb / right.ub, ub / right.lb, ub / right.ub})
         {
             if (i < c_lb)
@@ -158,19 +158,19 @@ interval &interval::operator/=(const interval &right)
     return *this;
 }
 
-interval &interval::operator+=(const rational &right)
+interval &interval::operator+=(const inf_rational &right)
 {
     lb += right;
     ub += right;
     return *this;
 }
-interval &interval::operator-=(const rational &right)
+interval &interval::operator-=(const inf_rational &right)
 {
     lb -= right;
     ub -= right;
     return *this;
 }
-interval &interval::operator*=(const rational &right)
+interval &interval::operator*=(const inf_rational &right)
 {
     if (right >= 0)
     {
@@ -179,13 +179,13 @@ interval &interval::operator*=(const rational &right)
     }
     else
     {
-        rational c_lb = lb;
+        inf_rational c_lb = lb;
         lb = ub * right;
         ub = c_lb * right;
     }
     return *this;
 }
-interval &interval::operator/=(const rational &right)
+interval &interval::operator/=(const inf_rational &right)
 {
     if (right >= 0)
     {
@@ -194,7 +194,7 @@ interval &interval::operator/=(const rational &right)
     }
     else
     {
-        rational c_lb = lb;
+        inf_rational c_lb = lb;
         lb = ub / right;
         ub = c_lb / right;
     }

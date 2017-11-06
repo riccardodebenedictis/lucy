@@ -24,48 +24,48 @@ public:
   bool is_positive_infinite() const { return is_positive() && is_infinite(); }
   bool is_negative_infinite() const { return is_negative() && is_infinite(); }
 
-  virtual bool operator!=(const rational &rhs) const;
-  virtual bool operator<(const rational &rhs) const;
-  virtual bool operator<=(const rational &rhs) const;
-  virtual bool operator==(const rational &rhs) const;
-  virtual bool operator>=(const rational &rhs) const;
-  virtual bool operator>(const rational &rhs) const;
+  bool operator!=(const rational &rhs) const;
+  bool operator<(const rational &rhs) const;
+  bool operator<=(const rational &rhs) const;
+  bool operator==(const rational &rhs) const;
+  bool operator>=(const rational &rhs) const;
+  bool operator>(const rational &rhs) const;
 
-  virtual bool operator!=(const I &rhs) const;
-  virtual bool operator<(const I &rhs) const;
-  virtual bool operator<=(const I &rhs) const;
-  virtual bool operator==(const I &rhs) const;
-  virtual bool operator>=(const I &rhs) const;
-  virtual bool operator>(const I &rhs) const;
+  bool operator!=(const I &rhs) const;
+  bool operator<(const I &rhs) const;
+  bool operator<=(const I &rhs) const;
+  bool operator==(const I &rhs) const;
+  bool operator>=(const I &rhs) const;
+  bool operator>(const I &rhs) const;
 
-  virtual rational operator+(const rational &rhs) const;
-  virtual rational operator-(const rational &rhs) const;
-  virtual rational operator*(const rational &rhs) const;
-  virtual rational operator/(const rational &rhs) const;
+  rational operator+(const rational &rhs) const;
+  rational operator-(const rational &rhs) const;
+  rational operator*(const rational &rhs) const;
+  rational operator/(const rational &rhs) const;
 
-  virtual rational operator+(const I &rhs) const;
-  virtual rational operator-(const I &rhs) const;
-  virtual rational operator*(const I &rhs) const;
-  virtual rational operator/(const I &rhs) const;
+  rational operator+(const I &rhs) const;
+  rational operator-(const I &rhs) const;
+  rational operator*(const I &rhs) const;
+  rational operator/(const I &rhs) const;
 
-  virtual rational &operator+=(const rational &rhs);
-  virtual rational &operator-=(const rational &rhs);
-  virtual rational &operator*=(const rational &rhs);
-  virtual rational &operator/=(const rational &rhs);
+  rational &operator+=(const rational &rhs);
+  rational &operator-=(const rational &rhs);
+  rational &operator*=(const rational &rhs);
+  rational &operator/=(const rational &rhs);
 
-  virtual rational &operator+=(const I &rhs);
-  virtual rational &operator-=(const I &rhs);
-  virtual rational &operator*=(const I &rhs);
-  virtual rational &operator/=(const I &rhs);
+  rational &operator+=(const I &rhs);
+  rational &operator-=(const I &rhs);
+  rational &operator*=(const I &rhs);
+  rational &operator/=(const I &rhs);
 
   friend rational operator+(const I &lhs, const rational &rhs);
   friend rational operator-(const I &lhs, const rational &rhs);
   friend rational operator*(const I &lhs, const rational &rhs);
   friend rational operator/(const I &lhs, const rational &rhs);
 
-  virtual rational operator-() const;
+  rational operator-() const;
 
-  virtual std::string to_string() const;
+  std::string to_string() const;
 
 private:
   void normalize()
