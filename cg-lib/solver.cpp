@@ -466,11 +466,11 @@ flaw *solver::select_flaw()
 
 resolver &solver::select_resolver(flaw &f)
 {
-    inf_rational r_cost(1, 0);
+    double r_cost = std::numeric_limits<double>::infinity();
     resolver *r_next = nullptr; // this is the next resolver to be selected (i.e., the cheapest one)..
     for (const auto &r : f.resolvers)
     {
-        inf_rational c_cost = r->get_cost();
+        double c_cost = r->get_cost();
         if (c_cost < r_cost)
         {
             r_cost = c_cost;
