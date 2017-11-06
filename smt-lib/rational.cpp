@@ -401,7 +401,7 @@ rational operator/(const I &lhs, const rational &rhs)
     return rational(rhs.num, rhs.den * lhs);
 }
 
-rational rational::operator-() const { return (-num, den); }
+rational rational::operator-() const { return rational(-num, den); }
 
 std::string rational::to_string() const
 {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rational.h"
+#include <cmath>
 #include <istream>
 #include <vector>
 #include <string>
