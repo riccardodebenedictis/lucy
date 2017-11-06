@@ -79,6 +79,7 @@
         "numeric": "cpp"
     },
     "cmake.configureSettings": {
-        "BUILD_GUI": true
+        "BUILD_GUI": true,
+        "CMAKE_CXX_FLAGS": "${CMAKE_CXX_FLAGS} /W4 /EHsc"
     }
 }
