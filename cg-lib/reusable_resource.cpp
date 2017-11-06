@@ -46,11 +46,11 @@ std::vector<flaw *> reusable_resource::get_flaws()
         for (const auto &rr : rr_instances)
         {
             // for each pulse, the atoms starting at that pulse..
-            std::map<double, std::set<atom *>> starting_atoms;
+            std::map<rational, std::set<atom *>> starting_atoms;
             // for each pulse, the atoms ending at that pulse..
-            std::map<double, std::set<atom *>> ending_atoms;
+            std::map<rational, std::set<atom *>> ending_atoms;
             // all the pulses of the timeline..
-            std::set<double> pulses;
+            std::set<rational> pulses;
             // the resource capacity..
             arith_expr capacity = rr.first->get(REUSABLE_RESOURCE_CAPACITY);
 
@@ -58,8 +58,8 @@ std::vector<flaw *> reusable_resource::get_flaws()
             {
                 arith_expr s_expr = a->get("start");
                 arith_expr e_expr = a->get("end");
-                double start = slv.la_th.value(s_expr->l);
-                double end = slv.la_th.value(e_expr->l);
+                rational start = slv.la_th.value(s_expr->l);
+                rational end = slv.la_th.value(e_expr->l);
                 starting_atoms[start].insert(a);
                 ending_atoms[end].insert(a);
                 pulses.insert(start);

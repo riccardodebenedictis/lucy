@@ -80,9 +80,9 @@ public:
   bool_expr new_bool();
   bool_expr new_bool(const bool &val);
   arith_expr new_int();
-  arith_expr new_int(const long &val);
+  arith_expr new_int(const I &val);
   arith_expr new_real();
-  arith_expr new_real(const double &val);
+  arith_expr new_real(const rational &val);
   string_expr new_string();
   string_expr new_string(const std::string &val);
   virtual expr new_enum(const type &tp, const std::unordered_set<item *> &allowed_vals);
@@ -134,7 +134,7 @@ public:
 
   lbool bool_value(const bool_expr &x) const noexcept;
   interval arith_bounds(const arith_expr &x) const noexcept;
-  double arith_value(const arith_expr &x) const noexcept;
+  rational arith_value(const arith_expr &x) const noexcept;
   std::unordered_set<var_value *> enum_value(const var_expr &x) const noexcept;
 
   virtual void solve() = 0;

@@ -34,7 +34,7 @@ interval interval::operator+(const interval &rhs) const { return interval(lb + r
 interval interval::operator-(const interval &rhs) const { return interval(lb - rhs.ub, ub - rhs.lb); }
 interval interval::operator*(const interval &rhs) const
 {
-    interval result(std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity());
+    interval result(rational(1, 0), rational(-1, 0));
     for (const auto &i : {lb * rhs.lb, lb * rhs.ub, ub * rhs.lb, ub * rhs.ub})
     {
         if (i < result.lb)

@@ -4,7 +4,6 @@
 #include "method.h"
 #include "field.h"
 #include "declaration.h"
-#include <limits>
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -95,14 +94,14 @@ arith_expr core::new_int()
     return new arith_item(*this, *types.at(INT_KEYWORD), lin(la_th.new_var(), 1));
 }
 
-arith_expr core::new_int(const long &val)
+arith_expr core::new_int(const I &val)
 {
     std::cerr << "[warning] replacing an integer constant with a real constant.." << std::endl;
     return new arith_item(*this, *types.at(INT_KEYWORD), lin(val));
 }
 
 arith_expr core::new_real() { return new arith_item(*this, *types.at(REAL_KEYWORD), lin(la_th.new_var(), 1)); }
-arith_expr core::new_real(const double &val) { return new arith_item(*this, *types.at(REAL_KEYWORD), lin(val)); }
+arith_expr core::new_real(const rational &val) { return new arith_item(*this, *types.at(REAL_KEYWORD), lin(val)); }
 
 string_expr core::new_string() { return new string_item(*this, ""); }
 string_expr core::new_string(const std::string &val) { return new string_item(*this, val); }
@@ -221,7 +220,7 @@ arith_expr core::div(const std::vector<arith_expr> &exprs)
 {
     assert(exprs.size() > 1);
     assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); }) && "non-linear expression..");
-    double c = la_th.value(exprs[1]->l);
+    rational c = la_th.value(exprs[1]->l);
     for (size_t i = 2; i < exprs.size(); i++)
         c *= la_th.value(exprs.at(i)->l);
     return new arith_item(*this, *types.at(REAL_KEYWORD), exprs[0]->l / c);
@@ -317,7 +316,7 @@ lbool core::bool_value(const bool_expr &x) const noexcept { return sat_cr.value(
 
 interval core::arith_bounds(const arith_expr &x) const noexcept { return la_th.bounds(x->l); }
 
-double core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
+rational core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
 
 std::unordered_set<var_value *> core::enum_value(const var_expr &x) const noexcept { return ov_th.value(x->ev); }
 
@@ -350,11 +349,11 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const no
         else if (arith_item *ai = dynamic_cast<arith_item *>(&*is_it->second))
         {
             interval bnds = la_th.bounds(ai->l);
-            iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : " + std::to_string(la_th.value(ai->l));
-            if (bnds.lb > -std::numeric_limits<double>::infinity())
-                iss += ", \"lb\" : " + std::to_string(bnds.lb);
-            if (bnds.ub < std::numeric_limits<double>::infinity())
-                iss += ", \"ub\" : " + std::to_string(bnds.ub);
+            iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : " + la_th.value(ai->l).to_string();
+            if (!bnds.lb.is_negative_infinite())
+                iss += ", \"lb\" : " + bnds.lb.to_string();
+            if (!bnds.ub.is_positive_infinite())
+                iss += ", \"ub\" : " + bnds.ub.to_string();
             iss += " }";
         }
         else if (var_item *ei = dynamic_cast<var_item *>(&*is_it->second))
