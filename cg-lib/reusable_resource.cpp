@@ -149,10 +149,10 @@ void reusable_resource::rr_flaw::compute_resolvers()
 
         bool_expr a0_before_a1 = slv.leq(a0_end, a1_start);
         if (slv.sat_cr.value(a0_before_a1->l) != False)
-            add_resolver(*new order_resolver(slv, lin(0.0), *this, *as[0], *as[1], a0_before_a1->l));
+            add_resolver(*new order_resolver(slv, lin(), *this, *as[0], *as[1], a0_before_a1->l));
         bool_expr a1_before_a0 = slv.leq(a1_end, a0_start);
         if (slv.sat_cr.value(a1_before_a0->l) != False)
-            add_resolver(*new order_resolver(slv, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
+            add_resolver(*new order_resolver(slv, lin(), *this, *as[1], *as[0], a1_before_a0->l));
 
         expr a0_scope = as[0]->get(TAU);
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
@@ -160,7 +160,7 @@ void reusable_resource::rr_flaw::compute_resolvers()
             std::unordered_set<var_value *> a0_scopes = slv.ov_th.value(enum_scope->ev);
             if (a0_scopes.size() > 1)
                 for (const auto &sc : a0_scopes)
-                    add_resolver(*new displace_resolver(slv, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
+                    add_resolver(*new displace_resolver(slv, lin(), *this, *as[0], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
         }
 
         expr a1_scope = as[1]->get(TAU);
@@ -169,7 +169,7 @@ void reusable_resource::rr_flaw::compute_resolvers()
             std::unordered_set<var_value *> a1_scopes = slv.ov_th.value(enum_scope->ev);
             if (a1_scopes.size() > 1)
                 for (const auto &sc : a1_scopes)
-                    add_resolver(*new displace_resolver(slv, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
+                    add_resolver(*new displace_resolver(slv, lin(), *this, *as[1], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
         }
     }
 }
