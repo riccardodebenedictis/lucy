@@ -18,39 +18,39 @@ public:
   I numerator() const { return num; }
   I denominator() const { return den; }
 
-  bool operator!=(const rational &rhs) const;
-  bool operator<(const rational &rhs) const;
-  bool operator<=(const rational &rhs) const;
-  bool operator==(const rational &rhs) const;
-  bool operator>=(const rational &rhs) const;
-  bool operator>(const rational &rhs) const;
+  virtual bool operator!=(const rational &rhs) const;
+  virtual bool operator<(const rational &rhs) const;
+  virtual bool operator<=(const rational &rhs) const;
+  virtual bool operator==(const rational &rhs) const;
+  virtual bool operator>=(const rational &rhs) const;
+  virtual bool operator>(const rational &rhs) const;
 
-  bool operator!=(const I &rhs) const;
-  bool operator<(const I &rhs) const;
-  bool operator<=(const I &rhs) const;
-  bool operator==(const I &rhs) const;
-  bool operator>=(const I &rhs) const;
-  bool operator>(const I &rhs) const;
+  virtual bool operator!=(const I &rhs) const;
+  virtual bool operator<(const I &rhs) const;
+  virtual bool operator<=(const I &rhs) const;
+  virtual bool operator==(const I &rhs) const;
+  virtual bool operator>=(const I &rhs) const;
+  virtual bool operator>(const I &rhs) const;
 
-  rational operator+(const rational &rhs) const;
-  rational operator-(const rational &rhs) const;
-  rational operator*(const rational &rhs) const;
-  rational operator/(const rational &rhs) const;
+  virtual rational operator+(const rational &rhs) const;
+  virtual rational operator-(const rational &rhs) const;
+  virtual rational operator*(const rational &rhs) const;
+  virtual rational operator/(const rational &rhs) const;
 
-  rational operator+(const I &rhs) const;
-  rational operator-(const I &rhs) const;
-  rational operator*(const I &rhs) const;
-  rational operator/(const I &rhs) const;
+  virtual rational operator+(const I &rhs) const;
+  virtual rational operator-(const I &rhs) const;
+  virtual rational operator*(const I &rhs) const;
+  virtual rational operator/(const I &rhs) const;
 
-  rational &operator+=(const rational &rhs);
-  rational &operator-=(const rational &rhs);
-  rational &operator*=(const rational &rhs);
-  rational &operator/=(const rational &rhs);
+  virtual rational &operator+=(const rational &rhs);
+  virtual rational &operator-=(const rational &rhs);
+  virtual rational &operator*=(const rational &rhs);
+  virtual rational &operator/=(const rational &rhs);
 
-  rational &operator+=(const I &rhs);
-  rational &operator-=(const I &rhs);
-  rational &operator*=(const I &rhs);
-  rational &operator/=(const I &rhs);
+  virtual rational &operator+=(const I &rhs);
+  virtual rational &operator-=(const I &rhs);
+  virtual rational &operator*=(const I &rhs);
+  virtual rational &operator/=(const I &rhs);
 
   friend rational operator+(const I &lhs, const rational &rhs);
   friend rational operator-(const I &lhs, const rational &rhs);

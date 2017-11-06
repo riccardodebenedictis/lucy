@@ -143,11 +143,11 @@ rational rational::operator-(const I &rhs) const
 
 rational rational::operator*(const I &rhs) const
 {
-    assert(den != 0 || rhs != 0); // inf*0..
     if (rhs == 1)
         return *this;
     if (den == 0)
     {
+        assert(rhs != 0); // inf*0..
         rational res;
         res.num = rhs > 0 ? num : -num;
         res.den = den;
@@ -309,6 +309,7 @@ rational &rational::operator*=(const I &rhs)
         return *this;
     if (den == 0)
     {
+        assert(rhs != 0); // inf*0..
         num = rhs > 0 ? num : -num;
         return *this;
     }
@@ -325,7 +326,8 @@ rational &rational::operator/=(const I &rhs)
         return *this;
     if (den == 0)
     {
-        num = rhs > 0 ? num : -num;
+        if (rhs != 0)
+            num = rhs > 0 ? num : -num;
         return *this;
     }
     den *= rhs;
@@ -335,10 +337,69 @@ rational &rational::operator/=(const I &rhs)
     return *this;
 }
 
-rational operator+(const I &lhs, const rational &rhs) { return (lhs * rhs.den + rhs.num, rhs.den); }
-rational operator-(const I &lhs, const rational &rhs) { return (lhs * rhs.den - rhs.num, rhs.den); }
-rational operator*(const I &lhs, const rational &rhs) { return (lhs * rhs.num, rhs.den); }
-rational operator/(const I &lhs, const rational &rhs) { return (lhs * rhs.den, rhs.num); }
+rational operator+(const I &lhs, const rational &rhs)
+{
+    if (lhs == 0 || rhs.den == 0)
+        return rhs;
+    if (rhs.den == 1)
+        return rhs.num + lhs;
+
+    rational res;
+    res.num = rhs.num + lhs * rhs.den;
+    res.den = rhs.den;
+    return res;
+}
+
+rational operator-(const I &lhs, const rational &rhs)
+{
+    if (lhs == 0 || rhs.den == 0)
+        return rhs;
+    if (rhs.den == 1)
+        return rhs.num - lhs;
+
+    rational res;
+    res.num = rhs.num - lhs * rhs.den;
+    res.den = rhs.den;
+    return res;
+}
+
+rational operator*(const I &lhs, const rational &rhs)
+{
+    if (lhs == 1)
+        return rhs;
+    if (rhs.den == 0)
+    {
+        assert(lhs != 0); // 0*inf..
+        rational res;
+        res.num = lhs > 0 ? rhs.num : -rhs.num;
+        res.den = rhs.den;
+        return res;
+    }
+    if (rhs.den == 1)
+        return rhs.num * lhs;
+
+    return rational(rhs.num * lhs, rhs.den);
+}
+rational operator/(const I &lhs, const rational &rhs)
+{
+    if (lhs == 1)
+    {
+        rational res;
+        res.num = rhs.den;
+        res.den = rhs.num;
+        return res;
+    }
+    if (rhs.den == 0)
+    {
+        assert(lhs != 0); // 0/0..
+        rational res;
+        res.num = lhs > 0 ? rhs.num : -rhs.num;
+        res.den = rhs.den;
+        return res;
+    }
+
+    return rational(rhs.num, rhs.den * lhs);
+}
 
 rational rational::operator-() const { return (-num, den); }
 
