@@ -220,7 +220,7 @@ arith_expr core::div(const std::vector<arith_expr> &exprs)
 {
     assert(exprs.size() > 1);
     assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); }) && "non-linear expression..");
-    rational c = la_th.value(exprs[1]->l);
+    inf_rational c = la_th.value(exprs[1]->l);
     for (size_t i = 2; i < exprs.size(); i++)
         c *= la_th.value(exprs.at(i)->l);
     return new arith_item(*this, *types.at(REAL_KEYWORD), exprs[0]->l / c);
@@ -306,7 +306,7 @@ lbool core::bool_value(const bool_expr &x) const noexcept { return sat_cr.value(
 
 interval core::arith_bounds(const arith_expr &x) const noexcept { return la_th.bounds(x->l); }
 
-rational core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
+inf_rational core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
 
 std::unordered_set<var_value *> core::enum_value(const var_expr &x) const noexcept { return ov_th.value(x->ev); }
 

@@ -29,16 +29,16 @@ public:
   const var &get_rho() const { return rho; }
   flaw &get_effect() const { return effect; }
   std::vector<flaw *> get_preconditions() const { return preconditions; }
-  rational get_cost() const;
+  inf_rational get_cost() const;
 
   virtual std::string get_label() const = 0;
 
 protected:
-  solver &slv;                        // the solver this resolver belongs to..
-  const var rho;                      // the propositional variable indicating whether the resolver is active or not..
-  const lin cost;                     // the intrinsic cost of the resolver..
-  std::vector<flaw *> preconditions;  // the preconditions of this resolver..
-  flaw &effect;                       // the flaw solved by this resolver..
-  rational est_cost = rational(1, 0); // the estimated cost of the resolver..
+  solver &slv;                                // the solver this resolver belongs to..
+  const var rho;                              // the propositional variable indicating whether the resolver is active or not..
+  const lin cost;                             // the intrinsic cost of the resolver..
+  std::vector<flaw *> preconditions;          // the preconditions of this resolver..
+  flaw &effect;                               // the flaw solved by this resolver..
+  inf_rational est_cost = inf_rational(1, 0); // the estimated cost of the resolver..
 };
 }

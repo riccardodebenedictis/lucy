@@ -18,5 +18,5 @@ void resolver::init()
     }
 }
 
-rational resolver::get_cost() const { return slv.la_th.value(cost) + est_cost; }
+inf_rational resolver::get_cost() const { return slv.la_th.value(cost) + est_cost; }
 }

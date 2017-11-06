@@ -2,12 +2,12 @@
 
 #include "lit.h"
 #include "lin.h"
+#include "rational.h"
 #include <vector>
 
 namespace smt
 {
 
-class inf_rational;
 class la_theory;
 
 enum op

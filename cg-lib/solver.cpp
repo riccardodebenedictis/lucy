@@ -369,14 +369,14 @@ void solver::new_causal_link(flaw &f, resolver &r)
 #endif
 }
 
-void solver::set_est_cost(resolver &r, const rational &cst)
+void solver::set_est_cost(resolver &r, const inf_rational &cst)
 {
     if (r.est_cost != cst)
     {
         if (!trail.empty())
             trail.back().old_costs.insert({&r, r.est_cost});
         // this is the current cost of the resolver's effect..
-        rational f_cost = r.effect.get_cost();
+        inf_rational f_cost = r.effect.get_cost();
         // we update the resolver's estimated cost..
         r.est_cost = cst;
 
@@ -396,10 +396,10 @@ void solver::set_est_cost(resolver &r, const rational &cst)
             while (!resolver_q.empty())
             {
                 resolver &c_res = *resolver_q.front(); // the current resolver whose cost might require an update..
-                rational r_cost(-1, 0);
+                inf_rational r_cost(-1, 0);
                 for (const auto &f : c_res.preconditions)
                 {
-                    rational c = f->get_cost();
+                    inf_rational c = f->get_cost();
                     if (c > r_cost)
                         r_cost = c;
                 }
@@ -466,11 +466,11 @@ flaw *solver::select_flaw()
 
 resolver &solver::select_resolver(flaw &f)
 {
-    rational r_cost(1, 0);
+    inf_rational r_cost(1, 0);
     resolver *r_next = nullptr; // this is the next resolver to be selected (i.e., the cheapest one)..
     for (const auto &r : f.resolvers)
     {
-        rational c_cost = r->get_cost();
+        inf_rational c_cost = r->get_cost();
         if (c_cost < r_cost)
         {
             r_cost = c_cost;

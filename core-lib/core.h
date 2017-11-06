@@ -134,7 +134,7 @@ public:
 
   lbool bool_value(const bool_expr &x) const noexcept;
   interval arith_bounds(const arith_expr &x) const noexcept;
-  rational arith_value(const arith_expr &x) const noexcept;
+  inf_rational arith_value(const arith_expr &x) const noexcept;
   std::unordered_set<var_value *> enum_value(const var_expr &x) const noexcept;
 
   virtual void solve() = 0;

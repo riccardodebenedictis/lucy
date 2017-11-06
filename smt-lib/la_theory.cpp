@@ -1,4 +1,3 @@
-#include "inf_rational.h"
 #include "la_theory.h"
 #include "sat_core.h"
 #include "la_constr.h"
@@ -33,12 +32,12 @@ const var la_theory::new_lt(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            rational c = expr.vars[v];
+            inf_rational c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
 
-    const inf_rational c_right = inf_rational(-expr.known_term, -1);
+    const inf_rational c_right = inf_rational(-expr.known_term.get_rational(), -expr.known_term.get_infinitesimal() - 1);
     expr.known_term = 0;
     const interval i = bounds(expr);
 
@@ -70,12 +69,12 @@ const var la_theory::new_leq(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            rational c = expr.vars[v];
+            inf_rational c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
 
-    const rational c_right = -expr.known_term;
+    const inf_rational c_right = -expr.known_term;
     expr.known_term = 0;
     const interval i = bounds(expr);
 
@@ -107,12 +106,12 @@ const var la_theory::new_geq(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            rational c = expr.vars[v];
+            inf_rational c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
 
-    const rational c_right = -expr.known_term;
+    const inf_rational c_right = -expr.known_term;
     expr.known_term = 0;
     const interval i = bounds(expr);
 
@@ -144,12 +143,12 @@ const var la_theory::new_gt(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            rational c = expr.vars[v];
+            inf_rational c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
 
-    const inf_rational c_right = inf_rational(-expr.known_term, 1);
+    const inf_rational c_right = inf_rational(-expr.known_term.get_rational(), -expr.known_term.get_infinitesimal() + 1);
     expr.known_term = 0;
     const interval i = bounds(expr);
 
@@ -219,7 +218,7 @@ bool la_theory::check(std::vector<lit> &cnfl)
         const row *f_row = (*x_i_it).second;
         if (value(x_i) < lb(x_i))
         {
-            const auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, rational> &v) { return (f_row->l.vars.at(v.first).is_positive() && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first).is_negative() && value(v.first) > lb(v.first)); });
+            const auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, inf_rational> &v) { return (f_row->l.vars.at(v.first).is_positive() && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first).is_negative() && value(v.first) > lb(v.first)); });
             if (x_j_it != f_row->l.vars.end()) // var x_j can be used to increase the value of x_i..
                 pivot_and_update(x_i, (*x_j_it).first, lb(x_i));
             else
@@ -236,7 +235,7 @@ bool la_theory::check(std::vector<lit> &cnfl)
         }
         else if (value(x_i) > ub(x_i))
         {
-            const auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, rational> &v) { return (f_row->l.vars.at(v.first).is_negative() && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first).is_positive() && value(v.first) > lb(v.first)); });
+            const auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, inf_rational> &v) { return (f_row->l.vars.at(v.first).is_negative() && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first).is_positive() && value(v.first) > lb(v.first)); });
             if (x_j_it != f_row->l.vars.end()) // var x_j can be used to decrease the value of x_i..
                 pivot_and_update(x_i, (*x_j_it).first, ub(x_i));
             else
@@ -393,7 +392,7 @@ void la_theory::pivot(const var x_i, const var x_j)
         t_watches[c.first].erase(ex_row);
     delete ex_row;
 
-    const rational c = expr.vars.at(x_j);
+    const inf_rational c = expr.vars.at(x_j);
     expr.vars.erase(x_j);
     expr /= -c;
     expr.vars.insert({x_i, 1 / c});
@@ -402,7 +401,7 @@ void la_theory::pivot(const var x_i, const var x_j)
     {
         for (const auto &term : r->l.vars)
             t_watches[term.first].erase(r);
-        rational cc = r->l.vars.at(x_j);
+        inf_rational cc = r->l.vars.at(x_j);
         r->l.vars.erase(x_j);
         r->l += expr * cc;
         for (const auto &term : r->l.vars)

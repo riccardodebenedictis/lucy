@@ -49,9 +49,9 @@ private:
   void new_resolver(resolver &r);
   void new_causal_link(flaw &f, resolver &r);
 
-  void set_est_cost(resolver &r, const rational &cst); // sets the estimated cost of the given resolver and propagates it to other resolvers..
-  flaw *select_flaw();                                 // selects the most expensive flaw from the 'flaws' set, returns a nullptr if there are no active flaws..
-  resolver &select_resolver(flaw &f);                  // selects the least expensive resolver for the given flaw..
+  void set_est_cost(resolver &r, const inf_rational &cst); // sets the estimated cost of the given resolver and propagates it to other resolvers..
+  flaw *select_flaw();                                     // selects the most expensive flaw from the 'flaws' set, returns a nullptr if there are no active flaws..
+  resolver &select_resolver(flaw &f);                      // selects the least expensive resolver for the given flaw..
 
   bool propagate(const lit &p, std::vector<lit> &cnfl) override;
   bool check(std::vector<lit> &cnfl) override;
@@ -65,9 +65,9 @@ private:
     layer(resolver *const r) : r(r) {}
 
     resolver *const r;
-    std::unordered_map<resolver *, rational> old_costs; // the old estimated resolvers' costs..
-    std::unordered_set<flaw *> new_flaws;               // the just activated flaws..
-    std::unordered_set<flaw *> solved_flaws;            // the just solved flaws..
+    std::unordered_map<resolver *, inf_rational> old_costs; // the old estimated resolvers' costs..
+    std::unordered_set<flaw *> new_flaws;                   // the just activated flaws..
+    std::unordered_set<flaw *> solved_flaws;                // the just solved flaws..
   };
 
   std::vector<cg_listener *> listeners;                  // the causal-graph listeners..

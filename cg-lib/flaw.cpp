@@ -15,9 +15,9 @@ flaw::flaw(solver &slv, const std::vector<resolver *> &causes, const bool &exclu
 
 flaw::~flaw() {}
 
-rational flaw::get_cost() const
+inf_rational flaw::get_cost() const
 {
-    rational min_cost(1, 0);
+    inf_rational min_cost(1, 0);
     for (const auto &r : resolvers)
         if (r->get_cost() < min_cost)
             min_cost = r->get_cost();

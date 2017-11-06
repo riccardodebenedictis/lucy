@@ -3,7 +3,6 @@
 #include "theory.h"
 #include "lin.h"
 #include "interval.h"
-#include "inf_rational.h"
 #include <unordered_map>
 #include <list>
 
