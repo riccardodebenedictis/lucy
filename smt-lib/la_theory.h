@@ -39,13 +39,13 @@ public:
     return b;
   }
 
-  double lb(const var &v) const { return assigns[lb_index(v)].value; } // the current lower bound of variable 'v'..
-  double ub(const var &v) const { return assigns[ub_index(v)].value; } // the current upper bound of variable 'v'..
-  double value(const var &v) const { return vals[v]; }                 // the current value of variable 'v'..
+  rational lb(const var &v) const { return assigns[lb_index(v)].value; } // the current lower bound of variable 'v'..
+  rational ub(const var &v) const { return assigns[ub_index(v)].value; } // the current upper bound of variable 'v'..
+  rational value(const var &v) const { return vals[v]; }                 // the current value of variable 'v'..
 
-  double value(const lin &l) const
+  rational value(const lin &l) const
   {
-    double v(l.known_term);
+    rational v(l.known_term);
     for (const auto &term : l.vars)
       v += value(term.first) * term.second;
     return v;
@@ -59,10 +59,10 @@ private:
   void push() override;
   void pop() override;
 
-  bool assert_lower(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl);
-  bool assert_upper(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl);
-  void update(const var &x_i, const double v);
-  void pivot_and_update(const var &x_i, const var &x_j, const double v);
+  bool assert_lower(const var &x_i, const rational &val, const lit &p, std::vector<lit> &cnfl);
+  bool assert_upper(const var &x_i, const rational &val, const lit &p, std::vector<lit> &cnfl);
+  void update(const var &x_i, const rational &v);
+  void pivot_and_update(const var &x_i, const var &x_j, const rational &v);
   void pivot(const var x_i, const var x_j);
 
   void listen(const var &v, la_value_listener *const l);
@@ -77,12 +77,12 @@ public:
 private:
   struct bound
   {
-    double value; // the value of the bound..
-    lit *reason;  // the reason for the value..
+    rational value; // the value of the bound..
+    lit *reason;    // the reason for the value..
   };
 
   std::vector<bound> assigns;                            // the current assignments..
-  std::vector<double> vals;                              // the current values..
+  std::vector<rational> vals;                            // the current values..
   std::map<var, row *> tableau;                          // the sparse matrix..
   std::unordered_map<std::string, var> exprs;            // the expressions (string to numeric variable) for which already exist slack variables..
   std::unordered_map<std::string, var> s_asrts;          // the assertions (string to boolean variable) used for reducing the number of boolean variables..

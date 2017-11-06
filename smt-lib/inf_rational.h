@@ -117,6 +117,10 @@ public:
     return *this;
   }
 
+  rational operator-() const override { return inf_rational(rational::operator-(), -inf); }
+
+  std::string to_string() const override { return rational::to_string() + (inf != 0 ? (" + " + inf.to_string() + "eps") : ""); };
+
 private:
   rational inf; // the infinitesimal part..
 };

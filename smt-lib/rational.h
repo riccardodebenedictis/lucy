@@ -18,6 +18,12 @@ public:
   I numerator() const { return num; }
   I denominator() const { return den; }
 
+  bool is_positive() const { return num > 0; }
+  bool is_negative() const { return num < 0; }
+  bool is_infinite() const { return den == 0; }
+  bool is_positive_infinite() const { return is_positive() && is_infinite(); }
+  bool is_negative_infinite() const { return is_negative() && is_infinite(); }
+
   virtual bool operator!=(const rational &rhs) const;
   virtual bool operator<(const rational &rhs) const;
   virtual bool operator<=(const rational &rhs) const;
@@ -57,9 +63,9 @@ public:
   friend rational operator*(const I &lhs, const rational &rhs);
   friend rational operator/(const I &lhs, const rational &rhs);
 
-  rational operator-() const;
+  virtual rational operator-() const;
 
-  std::string to_string();
+  virtual std::string to_string() const;
 
 private:
   void normalize()

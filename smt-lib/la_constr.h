@@ -21,7 +21,7 @@ class assertion
   friend class row;
 
 public:
-  assertion(la_theory &th, const op o, const var b, const var x, const double v);
+  assertion(la_theory &th, const op o, const var b, const var x, const rational &v);
   assertion(const assertion &orig) = delete;
   virtual ~assertion();
 
@@ -36,7 +36,7 @@ private:
   const op o;
   const var b;
   const var x;
-  const double v;
+  const rational v;
 };
 
 class row

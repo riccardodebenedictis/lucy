@@ -403,7 +403,7 @@ rational operator/(const I &lhs, const rational &rhs)
 
 rational rational::operator-() const { return (-num, den); }
 
-std::string rational::to_string()
+std::string rational::to_string() const
 {
     switch (den)
     {
