@@ -30,7 +30,7 @@ rational rational::operator+(const rational &rhs) const
     if (den == 1 && rhs.den == 1)
         return num + rhs.num;
 
-    rational res;
+    rational res(*this);
     I r_num = rhs.num;
     I r_den = rhs.den;
 
@@ -51,7 +51,7 @@ rational rational::operator-(const rational &rhs) const
     if (den == 1 && rhs.den == 1)
         return num - rhs.num;
 
-    rational res;
+    rational res(*this);
     I r_num = rhs.num;
     I r_den = rhs.den;
 
@@ -72,15 +72,19 @@ rational rational::operator*(const rational &rhs) const
         return *this;
     if (num == 1 && den == 1)
         return rhs;
+    if (den == 0 || rhs.den == 0)
+    {
+        rational res;
+        res.num = ((num >= 0 && rhs.num >= 0) || (num <= 0 && rhs.num <= 0)) ? 1 : -1;
+        res.den = 0;
+        return res;
+    }
 
+    I gcd1 = gcd(num, rhs.den);
+    I gcd2 = gcd(rhs.num, den);
     rational res;
-    I r_num = rhs.num;
-    I r_den = rhs.den;
-
-    I gcd1 = gcd(num, r_den);
-    I gcd2 = gcd(r_num, den);
-    res.num = (num / gcd1) * (r_num / gcd2);
-    res.den = (den / gcd2) * (r_den / gcd1);
+    res.num = (num / gcd1) * (rhs.num / gcd2);
+    res.den = (den / gcd2) * (rhs.den / gcd1);
     return res;
 }
 
@@ -97,15 +101,19 @@ rational rational::operator/(const rational &rhs) const
         res.den = rhs.num;
         return res;
     }
+    if (den == 0 || rhs.num == 0)
+    {
+        rational res;
+        res.num = ((num >= 0 && rhs.num >= 0) || (num <= 0 && rhs.num <= 0)) ? 1 : -1;
+        res.den = 0;
+        return res;
+    }
 
+    I gcd1 = gcd(num, rhs.num);
+    I gcd2 = gcd(rhs.den, den);
     rational res;
-    I r_num = rhs.num;
-    I r_den = rhs.den;
-
-    I gcd1 = gcd(num, r_num);
-    I gcd2 = gcd(r_den, den);
-    res.num = (num / gcd1) * (r_den / gcd2);
-    res.den = (den / gcd2) * (r_num / gcd1);
+    res.num = (num / gcd1) * (rhs.den / gcd2);
+    res.den = (den / gcd2) * (rhs.num / gcd1);
 
     if (res.den < 0)
     {
@@ -235,14 +243,18 @@ rational &rational::operator*=(const rational &rhs)
         den = rhs.den;
         return *this;
     }
+    if (den == 0 || rhs.den == 0)
+    {
+        rational res;
+        num = ((num >= 0 && rhs.num >= 0) || (num <= 0 && rhs.num <= 0)) ? 1 : -1;
+        den = 0;
+        return *this;
+    }
 
-    I r_num = rhs.num;
-    I r_den = rhs.den;
-
-    I gcd1 = gcd(num, r_den);
-    I gcd2 = gcd(r_num, den);
-    num = (num / gcd1) * (r_num / gcd2);
-    den = (den / gcd2) * (r_den / gcd1);
+    I gcd1 = gcd(num, rhs.den);
+    I gcd2 = gcd(rhs.num, den);
+    num = (num / gcd1) * (rhs.num / gcd2);
+    den = (den / gcd2) * (rhs.den / gcd1);
     return *this;
 }
 
@@ -258,14 +270,18 @@ rational &rational::operator/=(const rational &rhs)
         den = rhs.num;
         return *this;
     }
+    if (den == 0 || rhs.num == 0)
+    {
+        rational res;
+        num = ((num >= 0 && rhs.num >= 0) || (num <= 0 && rhs.num <= 0)) ? 1 : -1;
+        den = 0;
+        return *this;
+    }
 
-    I r_num = rhs.num;
-    I r_den = rhs.den;
-
-    I gcd1 = gcd(num, r_num);
-    I gcd2 = gcd(r_den, den);
-    num = (num / gcd1) * (r_den / gcd2);
-    den = (den / gcd2) * (r_num / gcd1);
+    I gcd1 = gcd(num, rhs.num);
+    I gcd2 = gcd(rhs.den, den);
+    num = (num / gcd1) * (rhs.den / gcd2);
+    den = (den / gcd2) * (rhs.num / gcd1);
 
     if (den < 0)
     {
