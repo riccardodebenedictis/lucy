@@ -1,3 +1,4 @@
+#include "inf_rational.h"
 #include "la_theory.h"
 #include "sat_core.h"
 #include "la_constr.h"
@@ -21,6 +22,43 @@ const var la_theory::new_var()
     a_watches.push_back(std::vector<assertion *>());
     t_watches.push_back(std::set<row *>());
     return id;
+}
+
+const var la_theory::new_lt(const lin &left, const lin &right)
+{
+    lin expr = left - right;
+    std::vector<var> vars;
+    for (const auto &term : expr.vars)
+        vars.push_back(term.first);
+    for (const auto &v : vars)
+        if (tableau.find(v) != tableau.end())
+        {
+            rational c = expr.vars[v];
+            expr.vars.erase(v);
+            expr += tableau[v]->l * c;
+        }
+
+    const rational c_right = inf_rational(-expr.known_term, -1);
+    expr.known_term = 0;
+    const interval i = bounds(expr);
+
+    if (i <= c_right) // the constraint is already satisfied..
+        return TRUE_var;
+    else if (i > c_right) // the constraint is unsatisfable..
+        return FALSE_var;
+
+    const var slack = mk_slack(expr);
+    const std::string s_assertion = "x" + std::to_string(slack) + " <= " + c_right.to_string();
+    if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
+        return s_asrts.at(s_assertion);
+    else
+    {
+        const var ctr = sat.new_var();
+        bind(ctr);
+        s_asrts.insert({s_assertion, ctr});
+        v_asrts.insert({ctr, new assertion(*this, op::leq, ctr, slack, c_right)});
+        return ctr;
+    }
 }
 
 const var la_theory::new_leq(const lin &left, const lin &right)
@@ -75,6 +113,43 @@ const var la_theory::new_geq(const lin &left, const lin &right)
         }
 
     const rational c_right = -expr.known_term;
+    expr.known_term = 0;
+    const interval i = bounds(expr);
+
+    if (i >= c_right) // the constraint is already satisfied..
+        return TRUE_var;
+    else if (i < c_right) // the constraint is unsatisfable..
+        return FALSE_var;
+
+    const var slack = mk_slack(expr);
+    const std::string s_assertion = "x" + std::to_string(slack) + " >= " + c_right.to_string();
+    if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
+        return s_asrts.at(s_assertion);
+    else
+    {
+        const var ctr = sat.new_var();
+        bind(ctr);
+        s_asrts.insert({s_assertion, ctr});
+        v_asrts.insert({ctr, new assertion(*this, op::geq, ctr, slack, c_right)});
+        return ctr;
+    }
+}
+
+const var la_theory::new_gt(const lin &left, const lin &right)
+{
+    lin expr = left - right;
+    std::vector<var> vars;
+    for (const auto &term : expr.vars)
+        vars.push_back(term.first);
+    for (const auto &v : vars)
+        if (tableau.find(v) != tableau.end())
+        {
+            rational c = expr.vars[v];
+            expr.vars.erase(v);
+            expr += tableau[v]->l * c;
+        }
+
+    const rational c_right = inf_rational(-expr.known_term, -1);
     expr.known_term = 0;
     const interval i = bounds(expr);
 

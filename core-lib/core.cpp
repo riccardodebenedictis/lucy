@@ -228,21 +228,11 @@ arith_expr core::div(const std::vector<arith_expr> &exprs)
 
 arith_expr core::minus(arith_expr ex) { return new arith_item(*this, *types.at(REAL_KEYWORD), -ex->l); }
 
-bool_expr core::lt(arith_expr left, arith_expr right)
-{
-    std::cerr << "[warning] replacing strict inequality (<) with non-strict inequality (<=).." << std::endl;
-    return new bool_item(*this, la_th.new_leq(left->l, right->l));
-}
-
+bool_expr core::lt(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_lt(left->l, right->l)); }
 bool_expr core::leq(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_leq(left->l, right->l)); }
 bool_expr core::eq(arith_expr left, arith_expr right) { return new bool_item(*this, sat_cr.new_conj({la_th.new_leq(left->l, right->l), la_th.new_geq(left->l, right->l)})); }
 bool_expr core::geq(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_geq(left->l, right->l)); }
-
-bool_expr core::gt(arith_expr left, arith_expr right)
-{
-    std::cerr << "[warning] replacing strict inequality (>) with non-strict inequality (>=).." << std::endl;
-    return new bool_item(*this, la_th.new_geq(left->l, right->l));
-}
+bool_expr core::gt(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_gt(left->l, right->l)); }
 
 bool_expr core::eq(expr left, expr right) { return new bool_item(*this, left->eq(*right)); }
 
