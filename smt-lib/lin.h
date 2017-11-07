@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rational.h"
+#include "inf_rational.h"
 #include <map>
 
 namespace smt

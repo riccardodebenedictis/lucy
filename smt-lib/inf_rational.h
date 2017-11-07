@@ -61,25 +61,25 @@ class inf_rational
 
     inf_rational &operator+=(const inf_rational &rhs)
     {
-        rat += rhs.inf;
+        rat += rhs.rat;
         inf += rhs.inf;
         return *this;
     }
     inf_rational &operator-=(const inf_rational &rhs)
     {
-        rat -= rhs.inf;
+        rat -= rhs.rat;
         inf -= rhs.inf;
         return *this;
     }
     inf_rational &operator*=(const inf_rational &rhs)
     {
-        rat *= rhs.inf;
+        rat *= rhs.rat;
         inf *= rhs.inf;
         return *this;
     }
     inf_rational &operator/=(const inf_rational &rhs)
     {
-        rat /= rhs.inf;
+        rat /= rhs.rat;
         inf /= rhs.inf;
         return *this;
     }
@@ -144,14 +144,30 @@ class inf_rational
 
     std::string to_string() const
     {
-        std::string c_str = rat.to_string();
-        if (inf != 0)
-            if (inf == 1)
-                c_str += " +ε";
-            else if (inf == -1)
-                c_str += " -ε";
+        if (rat.is_infinite())
+            return rat.to_string();
+        std::string c_str;
+        if (rat != 0)
+            c_str += rat.to_string();
+        if (inf == 1)
+            if (c_str.empty())
+                c_str += "ε";
             else
-                c_str += " +(" + inf.to_string() + ")ε";
+                c_str += " + ε";
+        else if (inf == -1)
+            if (c_str.empty())
+                c_str += "-ε";
+            else
+                c_str += " - ε";
+        else if (inf.is_negative())
+            if (c_str.empty())
+                c_str += inf.to_string() + "ε";
+            else
+                c_str += " " + inf.to_string() + "ε";
+        else if (c_str.empty())
+            c_str += inf.to_string() + "ε";
+        else
+            c_str += " +" + inf.to_string() + "ε";
         return c_str;
     };
 
