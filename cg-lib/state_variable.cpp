@@ -24,23 +24,18 @@ std::vector<flaw *> state_variable::get_flaws()
         // we collect atoms for each state variable..
         std::unordered_map<item *, std::vector<atom *>> sv_instances;
         for (const auto &atm : atoms)
-        {
-            // we filter out those which are not strictly active..
-            if (slv.sat_cr.value(atm.first->sigma) == True)
+            if (slv.sat_cr.value(atm.first->sigma) == True) // we filter out those which are not strictly active..
             {
                 expr c_scope = atm.first->get(TAU);
                 if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
                 {
                     for (const auto &val : slv.ov_th.value(enum_scope->ev))
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
-                            sv_instances[static_cast<item *>(val)].push_back(atm.first);
+                            sv_instances.at(static_cast<item *>(val)).push_back(atm.first);
                 }
                 else
-                {
-                    sv_instances[static_cast<item *>(&*c_scope)].push_back(atm.first);
-                }
+                    sv_instances.at(static_cast<item *>(&*c_scope)).push_back(atm.first);
             }
-        }
 
         for (const auto &sv : sv_instances)
         {
@@ -66,12 +61,12 @@ std::vector<flaw *> state_variable::get_flaws()
             std::set<atom *> overlapping_atoms;
             for (const auto &p : pulses)
             {
-                if (starting_atoms.find(p) != starting_atoms.end())
-                    for (const auto &a : starting_atoms.at(p))
-                        overlapping_atoms.insert(a);
-                if (ending_atoms.find(p) != ending_atoms.end())
-                    for (const auto &a : ending_atoms.at(p))
-                        overlapping_atoms.erase(a);
+                const auto at_start_p = starting_atoms.find(p);
+                if (at_start_p != starting_atoms.end())
+                    overlapping_atoms.insert(at_start_p->second.begin(), at_start_p->second.end());
+                const auto at_end_p = ending_atoms.find(p);
+                if (at_end_p != ending_atoms.end())
+                    overlapping_atoms.erase(at_end_p->second.begin(), at_end_p->second.end());
 
                 if (overlapping_atoms.size() > 1) // we have a peak..
                     flaws.push_back(new sv_flaw(slv, overlapping_atoms));

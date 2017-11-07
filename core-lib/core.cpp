@@ -250,8 +250,9 @@ void core::assert_facts(const std::vector<lit> &facts)
 
 field &core::get_field(const std::string &name) const
 {
-    if (fields.find(name) != fields.end())
-        return *fields.at(name);
+    const auto at_f = fields.find(name);
+    if (at_f != fields.end())
+        return *at_f->second;
 
     // not found
     throw std::out_of_range(name);
@@ -259,10 +260,11 @@ field &core::get_field(const std::string &name) const
 
 method &core::get_method(const std::string &name, const std::vector<const type *> &ts) const
 {
-    if (methods.find(name) != methods.end())
+    const auto at_m = methods.find(name);
+    if (at_m != methods.end())
     {
         bool found = false;
-        for (const auto &mthd : methods.at(name))
+        for (const auto &mthd : at_m->second)
             if (mthd->args.size() == ts.size())
             {
                 found = true;
@@ -283,8 +285,9 @@ method &core::get_method(const std::string &name, const std::vector<const type *
 
 predicate &core::get_predicate(const std::string &name) const
 {
-    if (predicates.find(name) != predicates.end())
-        return *predicates.at(name);
+    const auto at_p = predicates.find(name);
+    if (at_p != predicates.end())
+        return *at_p->second;
 
     // not found
     throw std::out_of_range(name);
@@ -292,8 +295,9 @@ predicate &core::get_predicate(const std::string &name) const
 
 type &core::get_type(const std::string &name) const
 {
-    if (types.find(name) != types.end())
-        return *types.at(name);
+    const auto at_tp = types.find(name);
+    if (at_tp != types.end())
+        return *at_tp->second;
 
     // not found
     throw std::out_of_range(name);
@@ -301,8 +305,9 @@ type &core::get_type(const std::string &name) const
 
 expr core::get(const std::string &name) const
 {
-    if (items.find(name) != items.end())
-        return items.at(name);
+    const auto at_itm = items.find(name);
+    if (at_itm != items.end())
+        return at_itm->second;
 
     throw std::out_of_range(name);
 }

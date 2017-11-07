@@ -30,12 +30,15 @@ const var la_theory::new_lt(const lin &left, const lin &right)
     for (const auto &term : expr.vars)
         vars.push_back(term.first);
     for (const auto &v : vars)
-        if (tableau.find(v) != tableau.end())
+    {
+        const auto at_v = tableau.find(v);
+        if (at_v != tableau.end())
         {
             rational c = expr.vars.at(v);
             expr.vars.erase(v);
-            expr += tableau.at(v)->l * c;
+            expr += at_v->second->l * c;
         }
+    }
 
     const inf_rational c_right = inf_rational(-expr.known_term, -1);
     expr.known_term = 0;
@@ -47,8 +50,9 @@ const var la_theory::new_lt(const lin &left, const lin &right)
 
     const var slack = mk_slack(expr);
     const std::string s_assertion = "x" + std::to_string(slack) + " <= " + c_right.to_string();
-    if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
-        return s_asrts.at(s_assertion);
+    const auto at_asrt = s_asrts.find(s_assertion);
+    if (at_asrt != s_asrts.end()) // this assertion already exists..
+        return at_asrt->second;
     else
     {
         const var ctr = sat.new_var();
@@ -66,12 +70,15 @@ const var la_theory::new_leq(const lin &left, const lin &right)
     for (const auto &term : expr.vars)
         vars.push_back(term.first);
     for (const auto &v : vars)
-        if (tableau.find(v) != tableau.end())
+    {
+        const auto at_v = tableau.find(v);
+        if (at_v != tableau.end())
         {
             rational c = expr.vars.at(v);
             expr.vars.erase(v);
-            expr += tableau.at(v)->l * c;
+            expr += at_v->second->l * c;
         }
+    }
 
     const inf_rational c_right = -expr.known_term;
     expr.known_term = 0;
@@ -83,8 +90,9 @@ const var la_theory::new_leq(const lin &left, const lin &right)
 
     const var slack = mk_slack(expr);
     const std::string s_assertion = "x" + std::to_string(slack) + " <= " + c_right.to_string();
-    if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
-        return s_asrts.at(s_assertion);
+    const auto at_asrt = s_asrts.find(s_assertion);
+    if (at_asrt != s_asrts.end()) // this assertion already exists..
+        return at_asrt->second;
     else
     {
         const var ctr = sat.new_var();
@@ -102,12 +110,15 @@ const var la_theory::new_geq(const lin &left, const lin &right)
     for (const auto &term : expr.vars)
         vars.push_back(term.first);
     for (const auto &v : vars)
-        if (tableau.find(v) != tableau.end())
+    {
+        const auto at_v = tableau.find(v);
+        if (at_v != tableau.end())
         {
             rational c = expr.vars.at(v);
             expr.vars.erase(v);
-            expr += tableau.at(v)->l * c;
+            expr += at_v->second->l * c;
         }
+    }
 
     const inf_rational c_right = -expr.known_term;
     expr.known_term = 0;
@@ -119,8 +130,9 @@ const var la_theory::new_geq(const lin &left, const lin &right)
 
     const var slack = mk_slack(expr);
     const std::string s_assertion = "x" + std::to_string(slack) + " >= " + c_right.to_string();
-    if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
-        return s_asrts.at(s_assertion);
+    const auto at_asrt = s_asrts.find(s_assertion);
+    if (at_asrt != s_asrts.end()) // this assertion already exists..
+        return at_asrt->second;
     else
     {
         const var ctr = sat.new_var();
@@ -138,12 +150,15 @@ const var la_theory::new_gt(const lin &left, const lin &right)
     for (const auto &term : expr.vars)
         vars.push_back(term.first);
     for (const auto &v : vars)
-        if (tableau.find(v) != tableau.end())
+    {
+        const auto at_v = tableau.find(v);
+        if (at_v != tableau.end())
         {
             rational c = expr.vars.at(v);
             expr.vars.erase(v);
-            expr += tableau.at(v)->l * c;
+            expr += at_v->second->l * c;
         }
+    }
 
     const inf_rational c_right = inf_rational(-expr.known_term, 1);
     expr.known_term = 0;
@@ -155,8 +170,9 @@ const var la_theory::new_gt(const lin &left, const lin &right)
 
     const var slack = mk_slack(expr);
     const std::string s_assertion = "x" + std::to_string(slack) + " >= " + c_right.to_string();
-    if (s_asrts.find(s_assertion) != s_asrts.end()) // this assertion already exists..
-        return s_asrts.at(s_assertion);
+    const auto at_asrt = s_asrts.find(s_assertion);
+    if (at_asrt != s_asrts.end()) // this assertion already exists..
+        return at_asrt->second;
     else
     {
         const var ctr = sat.new_var();
@@ -170,8 +186,9 @@ const var la_theory::new_gt(const lin &left, const lin &right)
 const var la_theory::mk_slack(const lin &l)
 {
     const std::string s_expr = l.to_string();
-    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
-        return exprs.at(s_expr);
+    const auto at_expr = exprs.find(s_expr);
+    if (at_expr != exprs.end()) // the expression already exists..
+        return at_expr->second;
     else // we need to create a new slack variable..
     {
         const var slack = new_var();
@@ -271,7 +288,7 @@ bool la_theory::assert_lower(const var &x_i, const inf_rational &val, const lit 
     else
     {
         if (!layers.empty() && layers.back().find(lb_index(x_i)) == layers.back().end())
-            layers.back().insert({lb_index(x_i), {lb(x_i), assigns[lb_index(x_i)].reason}});
+            layers.back().insert({lb_index(x_i), {lb(x_i), assigns.at(lb_index(x_i)).reason}});
         assigns[lb_index(x_i)] = {val, new lit(p.v, p.sign)};
 
         if (vals.at(x_i) < val && tableau.find(x_i) == tableau.end())
@@ -304,7 +321,7 @@ bool la_theory::assert_upper(const var &x_i, const inf_rational &val, const lit 
     else
     {
         if (!layers.empty() && layers.back().find(ub_index(x_i)) == layers.back().end())
-            layers.back().insert({ub_index(x_i), {ub(x_i), assigns[ub_index(x_i)].reason}});
+            layers.back().insert({ub_index(x_i), {ub(x_i), assigns.at(ub_index(x_i)).reason}});
         assigns[ub_index(x_i)] = {val, new lit(p.v, p.sign)};
 
         if (vals.at(x_i) > val && tableau.find(x_i) == tableau.end())
@@ -330,14 +347,16 @@ void la_theory::update(const var &x_i, const inf_rational &v)
     {
         // x_j = x_j + a_ji(v - x_i)..
         vals[c->x] += c->l.vars.at(x_i) * (v - vals.at(x_i));
-        if (listening.find(c->x) != listening.end())
-            for (const auto &l : listening.at(c->x))
+        const auto at_c_x = listening.find(c->x);
+        if (at_c_x != listening.end())
+            for (const auto &l : at_c_x->second)
                 l->la_value_change(c->x);
     }
     // x_i = v..
     vals[x_i] = v;
-    if (listening.find(x_i) != listening.end())
-        for (const auto &l : listening.at(x_i))
+    const auto at_x_i = listening.find(x_i);
+    if (at_x_i != listening.end())
+        for (const auto &l : at_x_i->second)
             l->la_value_change(x_i);
 }
 
@@ -349,16 +368,19 @@ void la_theory::pivot_and_update(const var &x_i, const var &x_j, const inf_ratio
 
     const inf_rational theta = (v - vals.at(x_i)) / tableau.at(x_i)->l.vars.at(x_j);
     assert(!theta.is_infinite());
+
     // x_i = v
     vals[x_i] = v;
-    if (listening.find(x_i) != listening.end())
-        for (const auto &l : listening.at(x_i))
+    const auto at_x_i = listening.find(x_i);
+    if (at_x_i != listening.end())
+        for (const auto &l : at_x_i->second)
             l->la_value_change(x_i);
 
     // x_j += theta
     vals[x_j] += theta;
-    if (listening.find(x_j) != listening.end())
-        for (const auto &l : listening.at(x_j))
+    const auto at_x_j = listening.find(x_j);
+    if (at_x_j != listening.end())
+        for (const auto &l : at_x_j->second)
             l->la_value_change(x_j);
 
     for (const auto &c : t_watches.at(x_j))
@@ -366,8 +388,9 @@ void la_theory::pivot_and_update(const var &x_i, const var &x_j, const inf_ratio
         {
             // x_k += a_kj * theta..
             vals[c->x] += c->l.vars.at(x_j) * theta;
-            if (listening.find(c->x) != listening.end())
-                for (const auto &l : listening.at(c->x))
+            const auto at_x_c = listening.find(c->x);
+            if (at_x_c != listening.end())
+                for (const auto &l : at_x_c->second)
                     l->la_value_change(c->x);
         }
 

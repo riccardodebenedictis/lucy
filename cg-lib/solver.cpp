@@ -492,8 +492,9 @@ bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
     assert(cnfl.empty());
     if (!building_graph)
     {
-        if (phis.find(p.v) != phis.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
-            for (const auto &f : phis.at(p.v))
+        const auto at_phis_p = phis.find(p.v);
+        if (at_phis_p != phis.end()) // a decision has been taken about the presence of some flaws within the current partial solution..
+            for (const auto &f : at_phis_p->second)
                 if (p.sign) // this flaw has been added to the current partial solution..
                 {
                     flaws.insert(f);
@@ -508,8 +509,9 @@ bool solver::propagate(const lit &p, std::vector<lit> &cnfl)
                 else // this flaw has been removed from the current partial solution..
                     assert(flaws.find(f) == flaws.end());
 
-        if (rhos.find(p.v) != rhos.end() && !p.sign) // a decision has been taken about the removal of some resolvers within the current partial solution..
-            for (const auto &r : rhos.at(p.v))
+        const auto at_rhos_p = rhos.find(p.v);
+        if (at_rhos_p != rhos.end() && !p.sign) // a decision has been taken about the removal of some resolvers within the current partial solution..
+            for (const auto &r : at_rhos_p->second)
                 set_est_cost(*r, std::numeric_limits<double>::infinity());
     }
 

@@ -25,23 +25,18 @@ std::vector<flaw *> reusable_resource::get_flaws()
         // we collect atoms for each state variable..
         std::unordered_map<item *, std::vector<atom *>> rr_instances;
         for (const auto &a : atoms)
-        {
-            // we filter out those which are not strictly active..
-            if (slv.sat_cr.value(a.first->sigma) == True)
+            if (slv.sat_cr.value(a.first->sigma) == True) // we filter out those which are not strictly active..
             {
                 expr c_scope = a.first->get(TAU);
                 if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
                 {
                     for (const auto &val : slv.ov_th.value(enum_scope->ev))
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
-                            rr_instances[static_cast<item *>(val)].push_back(a.first);
+                            rr_instances.at(static_cast<item *>(val)).push_back(a.first);
                 }
                 else
-                {
-                    rr_instances[static_cast<item *>(&*c_scope)].push_back(a.first);
-                }
+                    rr_instances.at(static_cast<item *>(&*c_scope)).push_back(a.first);
             }
-        }
 
         for (const auto &rr : rr_instances)
         {
@@ -69,12 +64,12 @@ std::vector<flaw *> reusable_resource::get_flaws()
             std::set<atom *> overlapping_atoms;
             for (const auto &p : pulses)
             {
-                if (starting_atoms.find(p) != starting_atoms.end())
-                    for (const auto &a : starting_atoms.at(p))
-                        overlapping_atoms.insert(a);
-                if (ending_atoms.find(p) != ending_atoms.end())
-                    for (const auto &a : ending_atoms.at(p))
-                        overlapping_atoms.erase(a);
+                const auto at_start_p = starting_atoms.find(p);
+                if (at_start_p != starting_atoms.end())
+                    overlapping_atoms.insert(at_start_p->second.begin(), at_start_p->second.end());
+                const auto at_end_p = ending_atoms.find(p);
+                if (at_end_p != ending_atoms.end())
+                    overlapping_atoms.erase(at_end_p->second.begin(), at_end_p->second.end());
                 lin resource_usage;
                 for (const auto &a : overlapping_atoms)
                 {

@@ -83,8 +83,9 @@ const var sat_core::new_eq(const lit &left, const lit &right)
     if (left.v > right.v)
         return new_eq(right, left);
     const std::string s_expr = (left.sign ? "b" : "!b") + std::to_string(left.v) + " == " + (right.sign ? "b" : "!b") + std::to_string(right.v);
-    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
-        return exprs.at(s_expr);
+    const auto at_expr = exprs.find(s_expr);
+    if (at_expr != exprs.end()) // the expression already exists..
+        return at_expr->second;
     else
     {
         // we need to create a new variable..
@@ -113,8 +114,9 @@ const var sat_core::new_conj(const std::vector<lit> &ls)
             s_expr += " & ";
         s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
     }
-    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
-        return exprs.at(s_expr);
+    const auto at_expr = exprs.find(s_expr);
+    if (at_expr != exprs.end()) // the expression already exists..
+        return at_expr->second;
     else
     {
         // we need to create a new variable..
@@ -146,8 +148,9 @@ const var sat_core::new_disj(const std::vector<lit> &ls)
             s_expr += " | ";
         s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
     }
-    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
-        return exprs.at(s_expr);
+    const auto at_expr = exprs.find(s_expr);
+    if (at_expr != exprs.end()) // the expression already exists..
+        return at_expr->second;
     else
     {
         // we need to create a new variable..
@@ -179,8 +182,9 @@ const var sat_core::new_exct_one(const std::vector<lit> &ls)
             s_expr += " ^ ";
         s_expr += (it->sign ? "b" : "!b") + std::to_string(it->v);
     }
-    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
-        return exprs.at(s_expr);
+    const auto at_expr = exprs.find(s_expr);
+    if (at_expr != exprs.end()) // the expression already exists..
+        return at_expr->second;
     else
     {
         // we need to create a new variable..
@@ -278,13 +282,13 @@ bool sat_core::propagate(std::vector<lit> &cnfl)
                 // constraint is conflicting..
                 for (size_t j = i + 1; j < tmp.size(); j++)
                     watches[index(prop_q.front())].push_back(tmp[j]);
-                assert(std::count_if(tmp.at(i)->lits.begin(), tmp.at(i)->lits.end(), [&](const lit &p) { return std::find(watches[index(!p)].begin(), watches[index(!p)].end(), tmp[i]) != watches[index(!p)].end(); }) == 2);
+                assert(std::count_if(tmp.at(i)->lits.begin(), tmp.at(i)->lits.end(), [&](const lit &p) { return std::find(watches.at(index(!p)).begin(), watches.at(index(!p)).end(), tmp[i]) != watches.at(index(!p)).end(); }) == 2);
                 while (!prop_q.empty())
                     prop_q.pop();
                 cnfl.insert(cnfl.begin(), tmp.at(i)->lits.begin(), tmp.at(i)->lits.end());
                 return false;
             }
-            assert(std::count_if(tmp.at(i)->lits.begin(), tmp.at(i)->lits.end(), [&](const lit &p) { return std::find(watches[index(!p)].begin(), watches[index(!p)].end(), tmp[i]) != watches[index(!p)].end(); }) == 2);
+            assert(std::count_if(tmp.at(i)->lits.begin(), tmp.at(i)->lits.end(), [&](const lit &p) { return std::find(watches.at(index(!p)).begin(), watches.at(index(!p)).end(), tmp[i]) != watches.at(index(!p)).end(); }) == 2);
         }
 
         // we perform theory propagation..
@@ -392,15 +396,18 @@ bool sat_core::enqueue(const lit &p, clause *const c)
     case False:
         return false;
     case Undefined:
+    {
         assigns[p.v] = p.sign ? True : False;
         level[p.v] = decision_level();
         reason[p.v] = c;
         trail.push_back(p);
         prop_q.push(p);
-        if (listening.find(p.v) != listening.end())
-            for (const auto &l : listening[p.v])
+        const auto at_p = listening.find(p.v);
+        if (at_p != listening.end())
+            for (const auto &l : at_p->second)
                 l->sat_value_change(p.v);
         return true;
+    }
     default:
         std::unexpected();
     }
@@ -413,8 +420,9 @@ void sat_core::pop_one()
     reason[v] = nullptr;
     level[v] = 0;
     trail.pop_back();
-    if (listening.find(v) != listening.end())
-        for (const auto &l : listening[v])
+    const auto at_v = listening.find(v);
+    if (at_v != listening.end())
+        for (const auto &l : at_v->second)
             l->sat_value_change(v);
 }
 
@@ -436,9 +444,9 @@ void sat_core::bind(const var &v, theory &th) { bounds[v].push_back(&th); }
 
 void sat_core::unbind(const var &v, theory &th)
 {
-    const auto &it = std::find(bounds[v].begin(), bounds[v].end(), &th);
-    if (it != bounds[v].end())
-        bounds[v].erase(it);
+    const auto &it = std::find(bounds.at(v).begin(), bounds.at(v).end(), &th);
+    if (it != bounds.at(v).end())
+        bounds.at(v).erase(it);
 }
 
 void sat_core::listen(const var &v, sat_value_listener *const l) { listening[v].push_back(l); }
