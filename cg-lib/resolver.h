@@ -1,6 +1,7 @@
 #pragma once
 
 #include "la_theory.h"
+#include <limits>
 
 using namespace smt;
 
