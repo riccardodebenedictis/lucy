@@ -367,7 +367,7 @@ void la_theory::pivot_and_update(const var &x_i, const var &x_j, const inf_ratio
             // x_k += a_kj * theta..
             vals[c->x] += c->l.vars.at(x_j) * theta;
             if (listening.find(c->x) != listening.end())
-                for (const auto &l : listening[c->x])
+                for (const auto &l : listening.at(c->x))
                     l->la_value_change(c->x);
         }
 
