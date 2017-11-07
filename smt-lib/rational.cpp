@@ -99,6 +99,11 @@ rational rational::operator/(const rational &rhs) const
         rational res;
         res.num = rhs.den;
         res.den = rhs.num;
+        if (res.den < 0)
+        {
+            res.num = -res.num;
+            res.den = -res.den;
+        }
         return res;
     }
     if (den == 0 || rhs.num == 0)
@@ -117,8 +122,8 @@ rational rational::operator/(const rational &rhs) const
 
     if (res.den < 0)
     {
-        res.num = -num;
-        res.den = -den;
+        res.num = -res.num;
+        res.den = -res.den;
     }
     return res;
 }
@@ -268,6 +273,11 @@ rational &rational::operator/=(const rational &rhs)
     {
         num = rhs.den;
         den = rhs.num;
+        if (den < 0)
+        {
+            num = -num;
+            den = -den;
+        }
         return *this;
     }
     if (den == 0 || rhs.num == 0)
@@ -347,6 +357,11 @@ rational &rational::operator/=(const I &rhs)
         return *this;
     }
     den *= rhs;
+    if (den < 0)
+    {
+        num = -num;
+        den = -den;
+    }
     if (den != 1)
         normalize();
 
@@ -403,6 +418,11 @@ rational operator/(const I &lhs, const rational &rhs)
         rational res;
         res.num = rhs.den;
         res.den = rhs.num;
+        if (res.den < 0)
+        {
+            res.num = -res.num;
+            res.den = -res.den;
+        }
         return res;
     }
     if (rhs.den == 0)
@@ -414,7 +434,16 @@ rational operator/(const I &lhs, const rational &rhs)
         return res;
     }
 
-    return rational(rhs.num, rhs.den * lhs);
+    rational res;
+    res.num = rhs.num;
+    res.den = rhs.den * lhs;
+    if (res.den < 0)
+    {
+        res.num = -res.num;
+        res.den = -res.den;
+    }
+    res.normalize();
+    return res;
 }
 
 rational rational::operator-() const { return rational(-num, den); }
