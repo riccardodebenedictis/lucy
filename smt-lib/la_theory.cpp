@@ -32,18 +32,17 @@ const var la_theory::new_lt(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            inf_rational c = expr.vars[v];
+            rational c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
 
-    const inf_rational c_right = inf_rational(-expr.known_term.get_rational(), -expr.known_term.get_infinitesimal() - 1);
+    const inf_rational c_right = inf_rational(-expr.known_term, -1);
     expr.known_term = 0;
-    const interval i = bounds(expr);
 
-    if (i <= c_right) // the constraint is already satisfied..
+    if (ub(expr) <= c_right) // the constraint is already satisfied..
         return TRUE_var;
-    else if (i > c_right) // the constraint is unsatisfable..
+    else if (lb(expr) > c_right) // the constraint is unsatisfable..
         return FALSE_var;
 
     const var slack = mk_slack(expr);
@@ -69,18 +68,17 @@ const var la_theory::new_leq(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            inf_rational c = expr.vars[v];
+            rational c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
 
     const inf_rational c_right = -expr.known_term;
     expr.known_term = 0;
-    const interval i = bounds(expr);
 
-    if (i <= c_right) // the constraint is already satisfied..
+    if (ub(expr) <= c_right) // the constraint is already satisfied..
         return TRUE_var;
-    else if (i > c_right) // the constraint is unsatisfable..
+    else if (lb(expr) > c_right) // the constraint is unsatisfable..
         return FALSE_var;
 
     const var slack = mk_slack(expr);
@@ -106,18 +104,17 @@ const var la_theory::new_geq(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            inf_rational c = expr.vars[v];
+            rational c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
 
     const inf_rational c_right = -expr.known_term;
     expr.known_term = 0;
-    const interval i = bounds(expr);
 
-    if (i >= c_right) // the constraint is already satisfied..
+    if (lb(expr) >= c_right) // the constraint is already satisfied..
         return TRUE_var;
-    else if (i < c_right) // the constraint is unsatisfable..
+    else if (ub(expr) < c_right) // the constraint is unsatisfable..
         return FALSE_var;
 
     const var slack = mk_slack(expr);
@@ -143,18 +140,17 @@ const var la_theory::new_gt(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            inf_rational c = expr.vars[v];
+            rational c = expr.vars[v];
             expr.vars.erase(v);
             expr += tableau[v]->l * c;
         }
 
-    const inf_rational c_right = inf_rational(-expr.known_term.get_rational(), -expr.known_term.get_infinitesimal() + 1);
+    const inf_rational c_right = inf_rational(-expr.known_term, 1);
     expr.known_term = 0;
-    const interval i = bounds(expr);
 
-    if (i >= c_right) // the constraint is already satisfied..
+    if (lb(expr) >= c_right) // the constraint is already satisfied..
         return TRUE_var;
-    else if (i < c_right) // the constraint is unsatisfable..
+    else if (ub(expr) < c_right) // the constraint is unsatisfable..
         return FALSE_var;
 
     const var slack = mk_slack(expr);
@@ -392,7 +388,7 @@ void la_theory::pivot(const var x_i, const var x_j)
         t_watches[c.first].erase(ex_row);
     delete ex_row;
 
-    const inf_rational c = expr.vars.at(x_j);
+    const rational c = expr.vars.at(x_j);
     expr.vars.erase(x_j);
     expr /= -c;
     expr.vars.insert({x_i, 1 / c});
@@ -401,7 +397,7 @@ void la_theory::pivot(const var x_i, const var x_j)
     {
         for (const auto &term : r->l.vars)
             t_watches[term.first].erase(r);
-        inf_rational cc = r->l.vars.at(x_j);
+        rational cc = r->l.vars.at(x_j);
         r->l.vars.erase(x_j);
         r->l += expr * cc;
         for (const auto &term : r->l.vars)

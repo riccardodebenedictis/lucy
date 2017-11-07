@@ -132,10 +132,11 @@ public:
 
   expr get(const std::string &name) const override;
 
-  lbool bool_value(const bool_expr &x) const noexcept;
-  interval arith_bounds(const arith_expr &x) const noexcept;
-  inf_rational arith_value(const arith_expr &x) const noexcept;
-  std::unordered_set<var_value *> enum_value(const var_expr &x) const noexcept;
+  lbool bool_value(const bool_expr &x) const noexcept;                          // the current value of the given boolean expression..
+  inf_rational arith_lb(const arith_expr &x) const noexcept;                    // the current lower bound of the given arith expression..
+  inf_rational arith_ub(const arith_expr &x) const noexcept;                    // the current upper bound of the given arith expression..
+  inf_rational arith_value(const arith_expr &x) const noexcept;                 // the current value of the given arith expression..
+  std::unordered_set<var_value *> enum_value(const var_expr &x) const noexcept; // the current allowed values of the given enum expression..
 
   virtual void solve() = 0;
 

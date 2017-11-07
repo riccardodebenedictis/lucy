@@ -205,13 +205,14 @@ arith_expr core::sub(const std::vector<arith_expr> &exprs)
 arith_expr core::mult(const std::vector<arith_expr> &exprs)
 {
     assert(exprs.size() > 1);
-    arith_expr ae = *std::find_if(exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); });
+    arith_expr ae = *std::find_if(exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.lb(ae->l) == la_th.ub(ae->l); });
     lin l = ae->l;
     for (const auto &aex : exprs)
         if (aex != ae)
         {
-            assert(la_th.bounds(aex->l).constant() && "non-linear expression..");
-            l *= la_th.value(aex->l);
+            assert(la_th.lb(aex->l) == la_th.ub(aex->l) && "non-linear expression..");
+            assert(la_th.value(aex->l).get_infinitesimal() == 0);
+            l *= la_th.value(aex->l).get_rational();
         }
     return new arith_item(*this, *types.at(REAL_KEYWORD), l);
 }
@@ -219,10 +220,14 @@ arith_expr core::mult(const std::vector<arith_expr> &exprs)
 arith_expr core::div(const std::vector<arith_expr> &exprs)
 {
     assert(exprs.size() > 1);
-    assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); }) && "non-linear expression..");
-    inf_rational c = la_th.value(exprs[1]->l);
+    assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.lb(ae->l) == la_th.ub(ae->l); }) && "non-linear expression..");
+    assert(la_th.value(exprs.at(1)->l).get_infinitesimal() == 0);
+    rational c = la_th.value(exprs.at(1)->l).get_rational();
     for (size_t i = 2; i < exprs.size(); i++)
-        c *= la_th.value(exprs.at(i)->l);
+    {
+        assert(la_th.value(exprs.at(i)->l).get_infinitesimal() == 0);
+        c *= la_th.value(exprs.at(i)->l).get_rational();
+    }
     return new arith_item(*this, *types.at(REAL_KEYWORD), exprs[0]->l / c);
 }
 
@@ -303,11 +308,9 @@ expr core::get(const std::string &name) const
 }
 
 lbool core::bool_value(const bool_expr &x) const noexcept { return sat_cr.value(x->l); }
-
-interval core::arith_bounds(const arith_expr &x) const noexcept { return la_th.bounds(x->l); }
-
+inf_rational core::arith_lb(const arith_expr &x) const noexcept { return la_th.lb(x->l); }
+inf_rational core::arith_ub(const arith_expr &x) const noexcept { return la_th.ub(x->l); }
 inf_rational core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
-
 std::unordered_set<var_value *> core::enum_value(const var_expr &x) const noexcept { return ov_th.value(x->ev); }
 
 std::string core::to_string(const std::map<std::string, expr> &c_items) const noexcept
@@ -338,12 +341,28 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const no
         }
         else if (arith_item *ai = dynamic_cast<arith_item *>(&*is_it->second))
         {
-            interval bnds = la_th.bounds(ai->l);
-            iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : " + la_th.value(ai->l).to_string();
-            if (!bnds.lb.is_negative_infinite())
-                iss += ", \"lb\" : " + bnds.lb.to_string();
-            if (!bnds.ub.is_positive_infinite())
-                iss += ", \"ub\" : " + bnds.ub.to_string();
+            const auto val = la_th.value(ai->l);
+            iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : ";
+            iss += "{ \"num\" : " + std::to_string(val.get_rational().numerator()) + ", \"den\" : " + std::to_string(val.get_rational().denominator());
+            if (val.get_infinitesimal() != 0)
+                iss += ", \"inf\" : { \"num\" : " + std::to_string(val.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(val.get_infinitesimal().denominator()) + " }";
+            iss += " }";
+            const auto lb = la_th.lb(ai->l);
+            if (!lb.is_negative_infinite())
+            {
+                iss += ", \"lb\" : { \"num\" : " + std::to_string(lb.get_rational().numerator()) + ", \"den\" : " + std::to_string(lb.get_rational().denominator());
+                if (val.get_infinitesimal() != 0)
+                    iss += ", \"inf\" : { \"num\" : " + std::to_string(lb.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(lb.get_infinitesimal().denominator()) + " }";
+                iss += " }";
+            }
+            const auto ub = la_th.ub(ai->l);
+            if (!ub.is_positive_infinite())
+            {
+                iss += ", \"ub\" : { \"num\" : " + std::to_string(ub.get_rational().numerator()) + ", \"den\" : " + std::to_string(ub.get_rational().denominator());
+                if (val.get_infinitesimal() != 0)
+                    iss += ", \"inf\" : { \"num\" : " + std::to_string(ub.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(ub.get_infinitesimal().denominator()) + " }";
+                iss += " }";
+            }
             iss += " }";
         }
         else if (var_item *ei = dynamic_cast<var_item *>(&*is_it->second))

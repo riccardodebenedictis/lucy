@@ -2,7 +2,7 @@
 
 #include "lit.h"
 #include "lin.h"
-#include "rational.h"
+#include "inf_rational.h"
 #include <vector>
 
 namespace smt

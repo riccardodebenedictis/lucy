@@ -2,7 +2,7 @@
 
 #include "theory.h"
 #include "lin.h"
-#include "interval.h"
+#include "inf_rational.h"
 #include <unordered_map>
 #include <list>
 
@@ -31,20 +31,24 @@ public:
   const var new_geq(const lin &left, const lin &right);
   const var new_gt(const lin &left, const lin &right);
 
-  interval bounds(const var &v) const { return interval(assigns[lb_index(v)].value, assigns[ub_index(v)].value); }
-
-  interval bounds(const lin &l) const
-  {
-    interval b(l.known_term);
-    for (const auto &term : l.vars)
-      b += bounds(term.first) * term.second;
-    return b;
-  }
-
   inf_rational lb(const var &v) const { return assigns[lb_index(v)].value; } // the current lower bound of variable 'v'..
   inf_rational ub(const var &v) const { return assigns[ub_index(v)].value; } // the current upper bound of variable 'v'..
   inf_rational value(const var &v) const { return vals[v]; }                 // the current value of variable 'v'..
 
+  inf_rational lb(const lin &l) const // the current lower bound of linear expression 'l'..
+  {
+    inf_rational b(l.known_term);
+    for (const auto &term : l.vars)
+      b += (term.second.is_positive() ? lb(term.first) : ub(term.first)) * term.second;
+    return b;
+  }
+  inf_rational ub(const lin &l) const // the current upper bound of linear expression 'l'..
+  {
+    inf_rational b(l.known_term);
+    for (const auto &term : l.vars)
+      b += (term.second.is_positive() ? ub(term.first) : lb(term.first)) * term.second;
+    return b;
+  }
   inf_rational value(const lin &l) const
   {
     inf_rational v(l.known_term);

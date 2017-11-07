@@ -5,8 +5,8 @@ namespace smt
 {
 
 lin::lin() : known_term(0) {}
-lin::lin(const inf_rational &known_term) : known_term(known_term) {}
-lin::lin(const var v, const inf_rational &c) : known_term(0) { vars.insert({v, c}); }
+lin::lin(const rational &known_term) : known_term(known_term) {}
+lin::lin(const var v, const rational &c) : known_term(0) { vars.insert({v, c}); }
 
 lin lin::operator+(const lin &right) const
 {
@@ -25,14 +25,14 @@ lin lin::operator+(const lin &right) const
     return res;
 }
 
-lin lin::operator+(const inf_rational &right) const
+lin lin::operator+(const rational &right) const
 {
     lin res = *this;
     res.known_term += right;
     return res;
 }
 
-lin operator+(const inf_rational &lhs, const lin &rhs)
+lin operator+(const rational &lhs, const lin &rhs)
 {
     lin res = rhs;
     res.known_term += lhs;
@@ -56,21 +56,21 @@ lin lin::operator-(const lin &right) const
     return res;
 }
 
-lin lin::operator-(const inf_rational &right) const
+lin lin::operator-(const rational &right) const
 {
     lin res = *this;
     res.known_term -= right;
     return res;
 }
 
-lin operator-(const inf_rational &lhs, const lin &rhs)
+lin operator-(const rational &lhs, const lin &rhs)
 {
     lin res = -rhs;
     res.known_term += lhs;
     return res;
 }
 
-lin lin::operator*(const inf_rational &right) const
+lin lin::operator*(const rational &right) const
 {
     lin res = *this;
     for (auto &term : res.vars)
@@ -81,7 +81,7 @@ lin lin::operator*(const inf_rational &right) const
     return res;
 }
 
-lin operator*(const inf_rational &lhs, const lin &rhs)
+lin operator*(const rational &lhs, const lin &rhs)
 {
     lin res = rhs;
     for (auto &term : res.vars)
@@ -90,7 +90,7 @@ lin operator*(const inf_rational &lhs, const lin &rhs)
     return res;
 }
 
-lin lin::operator/(const inf_rational &right) const
+lin lin::operator/(const rational &right) const
 {
     lin res = *this;
     for (auto &term : res.vars)
@@ -115,7 +115,7 @@ lin lin::operator+=(const lin &right)
     return *this;
 }
 
-lin lin::operator+=(const std::pair<var, inf_rational> &term)
+lin lin::operator+=(const std::pair<var, rational> &term)
 {
     if (vars.find(term.first) == vars.end())
         vars.insert({term.first, -term.second});
@@ -127,7 +127,7 @@ lin lin::operator+=(const std::pair<var, inf_rational> &term)
     return *this;
 }
 
-lin lin::operator+=(const inf_rational &right)
+lin lin::operator+=(const rational &right)
 {
     known_term += right;
     return *this;
@@ -149,7 +149,7 @@ lin lin::operator-=(const lin &right)
     return *this;
 }
 
-lin lin::operator-=(const std::pair<var, inf_rational> &term)
+lin lin::operator-=(const std::pair<var, rational> &term)
 {
     if (vars.find(term.first) == vars.end())
         vars.insert({term.first, -term.second});
@@ -160,13 +160,13 @@ lin lin::operator-=(const std::pair<var, inf_rational> &term)
     return *this;
 }
 
-lin lin::operator-=(const inf_rational &right)
+lin lin::operator-=(const rational &right)
 {
     known_term -= right;
     return *this;
 }
 
-lin lin::operator*=(const inf_rational &right)
+lin lin::operator*=(const rational &right)
 {
     for (auto &term : vars)
         term.second *= right;
@@ -179,7 +179,7 @@ lin lin::operator*=(const inf_rational &right)
     return *this;
 }
 
-lin lin::operator/=(const inf_rational &right)
+lin lin::operator/=(const rational &right)
 {
     for (auto &term : vars)
         term.second /= right;
@@ -207,7 +207,7 @@ std::string lin::to_string() const
         return known_term.to_string();
 
     std::string s;
-    for (std::map<var, inf_rational>::const_iterator it = vars.begin(); it != vars.end(); ++it)
+    for (std::map<var, rational>::const_iterator it = vars.begin(); it != vars.end(); ++it)
     {
         if (it == vars.begin())
         {

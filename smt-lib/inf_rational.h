@@ -46,8 +46,6 @@ class inf_rational
 
     inf_rational operator+(const inf_rational &rhs) const { return inf_rational(rat + rhs.rat, inf + rhs.inf); };
     inf_rational operator-(const inf_rational &rhs) const { return inf_rational(rat - rhs.rat, inf - rhs.inf); };
-    inf_rational operator*(const inf_rational &rhs) const { return inf_rational(rat * rhs.rat, inf * rhs.inf); };
-    inf_rational operator/(const inf_rational &rhs) const { return inf_rational(rat / rhs.rat, inf / rhs.inf); };
 
     inf_rational operator+(const rational &rhs) const { return inf_rational(rat + rhs, inf); };
     inf_rational operator-(const rational &rhs) const { return inf_rational(rat - rhs, inf); };
@@ -69,18 +67,6 @@ class inf_rational
     {
         rat -= rhs.rat;
         inf -= rhs.inf;
-        return *this;
-    }
-    inf_rational &operator*=(const inf_rational &rhs)
-    {
-        rat *= rhs.rat;
-        inf *= rhs.inf;
-        return *this;
-    }
-    inf_rational &operator/=(const inf_rational &rhs)
-    {
-        rat /= rhs.rat;
-        inf /= rhs.inf;
         return *this;
     }
 
