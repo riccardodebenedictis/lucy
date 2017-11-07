@@ -130,7 +130,7 @@ class inf_rational
 
     std::string to_string() const
     {
-        if (rat.is_infinite())
+        if (rat.is_infinite() || inf == 0)
             return rat.to_string();
         std::string c_str;
         if (rat != 0)

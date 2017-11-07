@@ -14,9 +14,9 @@ la_theory::~la_theory() {}
 const var la_theory::new_var()
 {
     const var id = vals.size();
-    assigns.push_back({rational(-1, 0), nullptr});
-    assigns.push_back({rational(1, 0), nullptr});
-    vals.push_back(rational(0));
+    assigns.push_back({rational(-1, 0), nullptr}); // we set the lower bound at -inf..
+    assigns.push_back({rational(1, 0), nullptr});  // we set the upper bound at +inf..
+    vals.push_back(rational(0));                   // we set the current value at 0..
     exprs.insert({"x" + std::to_string(id), id});
     a_watches.push_back(std::vector<assertion *>());
     t_watches.push_back(std::set<row *>());
@@ -32,9 +32,9 @@ const var la_theory::new_lt(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            rational c = expr.vars[v];
+            rational c = expr.vars.at(v);
             expr.vars.erase(v);
-            expr += tableau[v]->l * c;
+            expr += tableau.at(v)->l * c;
         }
 
     const inf_rational c_right = inf_rational(-expr.known_term, -1);
@@ -68,9 +68,9 @@ const var la_theory::new_leq(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            rational c = expr.vars[v];
+            rational c = expr.vars.at(v);
             expr.vars.erase(v);
-            expr += tableau[v]->l * c;
+            expr += tableau.at(v)->l * c;
         }
 
     const inf_rational c_right = -expr.known_term;
@@ -104,9 +104,9 @@ const var la_theory::new_geq(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            rational c = expr.vars[v];
+            rational c = expr.vars.at(v);
             expr.vars.erase(v);
-            expr += tableau[v]->l * c;
+            expr += tableau.at(v)->l * c;
         }
 
     const inf_rational c_right = -expr.known_term;
@@ -140,9 +140,9 @@ const var la_theory::new_gt(const lin &left, const lin &right)
     for (const auto &v : vars)
         if (tableau.find(v) != tableau.end())
         {
-            rational c = expr.vars[v];
+            rational c = expr.vars.at(v);
             expr.vars.erase(v);
-            expr += tableau[v]->l * c;
+            expr += tableau.at(v)->l * c;
         }
 
     const inf_rational c_right = inf_rational(-expr.known_term, 1);
@@ -172,15 +172,12 @@ const var la_theory::mk_slack(const lin &l)
     const std::string s_expr = l.to_string();
     if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
         return exprs.at(s_expr);
-    else
+    else // we need to create a new slack variable..
     {
-        // we need to create a new slack variable..
         const var slack = new_var();
         exprs.insert({s_expr, slack});
-        // we set the initial value of the new slack variable..
-        vals[slack] = value(l);
-        // we add a new row into the tableau..
-        tableau.insert({slack, new row(*this, slack, l)});
+        vals[slack] = value(l);                            // we set the initial value of the new slack variable..
+        tableau.insert({slack, new row(*this, slack, l)}); // we add a new row into the tableau..
         return slack;
     }
 }
@@ -217,15 +214,14 @@ bool la_theory::check(std::vector<lit> &cnfl)
             const auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, inf_rational> &v) { return (f_row->l.vars.at(v.first).is_positive() && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first).is_negative() && value(v.first) > lb(v.first)); });
             if (x_j_it != f_row->l.vars.end()) // var x_j can be used to increase the value of x_i..
                 pivot_and_update(x_i, (*x_j_it).first, lb(x_i));
-            else
+            else // we generate an explanation for the conflict..
             {
-                // we generate an explanation for the conflict..
                 for (const auto &term : f_row->l.vars)
                     if (term.second.is_positive())
-                        cnfl.push_back(!*assigns[la_theory::ub_index(term.first)].reason);
+                        cnfl.push_back(!*assigns.at(la_theory::ub_index(term.first)).reason);
                     else if (term.second.is_negative())
-                        cnfl.push_back(!*assigns[la_theory::lb_index(term.first)].reason);
-                cnfl.push_back(!*assigns[la_theory::lb_index(x_i)].reason);
+                        cnfl.push_back(!*assigns.at(la_theory::lb_index(term.first)).reason);
+                cnfl.push_back(!*assigns.at(la_theory::lb_index(x_i)).reason);
                 return false;
             }
         }
@@ -234,15 +230,14 @@ bool la_theory::check(std::vector<lit> &cnfl)
             const auto x_j_it = std::find_if(f_row->l.vars.begin(), f_row->l.vars.end(), [&](const std::pair<var, inf_rational> &v) { return (f_row->l.vars.at(v.first).is_negative() && value(v.first) < ub(v.first)) || (f_row->l.vars.at(v.first).is_positive() && value(v.first) > lb(v.first)); });
             if (x_j_it != f_row->l.vars.end()) // var x_j can be used to decrease the value of x_i..
                 pivot_and_update(x_i, (*x_j_it).first, ub(x_i));
-            else
+            else // we generate an explanation for the conflict..
             {
-                // we generate an explanation for the conflict..
                 for (const auto &term : f_row->l.vars)
                     if (term.second.is_positive())
-                        cnfl.push_back(!*assigns[la_theory::lb_index(term.first)].reason);
+                        cnfl.push_back(!*assigns.at(la_theory::lb_index(term.first)).reason);
                     else if (term.second.is_negative())
-                        cnfl.push_back(!*assigns[la_theory::ub_index(term.first)].reason);
-                cnfl.push_back(!*assigns[la_theory::ub_index(x_i)].reason);
+                        cnfl.push_back(!*assigns.at(la_theory::ub_index(term.first)).reason);
+                cnfl.push_back(!*assigns.at(la_theory::ub_index(x_i)).reason);
                 return false;
             }
         }
@@ -256,7 +251,7 @@ void la_theory::pop()
     // we restore the variables' bounds and their reason..
     for (const auto &b : layers.back())
     {
-        delete assigns[b.first].reason;
+        delete assigns.at(b.first).reason;
         assigns[b.first] = b.second;
     }
     layers.pop_back();
@@ -269,8 +264,8 @@ bool la_theory::assert_lower(const var &x_i, const inf_rational &val, const lit 
         return true;
     else if (val > ub(x_i))
     {
-        cnfl.push_back(!p);                              // either the literal 'p' is false ..
-        cnfl.push_back(!*assigns[ub_index(x_i)].reason); // or what asserted the upper bound is false..
+        cnfl.push_back(!p);                                 // either the literal 'p' is false ..
+        cnfl.push_back(!*assigns.at(ub_index(x_i)).reason); // or what asserted the upper bound is false..
         return false;
     }
     else
@@ -279,15 +274,15 @@ bool la_theory::assert_lower(const var &x_i, const inf_rational &val, const lit 
             layers.back().insert({lb_index(x_i), {lb(x_i), assigns[lb_index(x_i)].reason}});
         assigns[lb_index(x_i)] = {val, new lit(p.v, p.sign)};
 
-        if (vals[x_i] < val && tableau.find(x_i) == tableau.end())
+        if (vals.at(x_i) < val && tableau.find(x_i) == tableau.end())
             update(x_i, val);
 
         // unate propagation..
-        for (const auto &c : a_watches[x_i])
+        for (const auto &c : a_watches.at(x_i))
             if (!c->propagate_lb(x_i, cnfl))
                 return false;
         // bound propagation..
-        for (const auto &c : t_watches[x_i])
+        for (const auto &c : t_watches.at(x_i))
             if (!c->propagate_lb(x_i, cnfl))
                 return false;
 
@@ -302,8 +297,8 @@ bool la_theory::assert_upper(const var &x_i, const inf_rational &val, const lit 
         return true;
     else if (val < lb(x_i))
     {
-        cnfl.push_back(!p);                              // either the literal 'p' is false ..
-        cnfl.push_back(!*assigns[lb_index(x_i)].reason); // or what asserted the lower bound is false..
+        cnfl.push_back(!p);                                 // either the literal 'p' is false ..
+        cnfl.push_back(!*assigns.at(lb_index(x_i)).reason); // or what asserted the lower bound is false..
         return false;
     }
     else
@@ -312,15 +307,15 @@ bool la_theory::assert_upper(const var &x_i, const inf_rational &val, const lit 
             layers.back().insert({ub_index(x_i), {ub(x_i), assigns[ub_index(x_i)].reason}});
         assigns[ub_index(x_i)] = {val, new lit(p.v, p.sign)};
 
-        if (vals[x_i] > val && tableau.find(x_i) == tableau.end())
+        if (vals.at(x_i) > val && tableau.find(x_i) == tableau.end())
             update(x_i, val);
 
         // unate propagation..
-        for (const auto &c : a_watches[x_i])
+        for (const auto &c : a_watches.at(x_i))
             if (!c->propagate_ub(x_i, cnfl))
                 return false;
         // bound propagation..
-        for (const auto &c : t_watches[x_i])
+        for (const auto &c : t_watches.at(x_i))
             if (!c->propagate_ub(x_i, cnfl))
                 return false;
 
@@ -331,18 +326,18 @@ bool la_theory::assert_upper(const var &x_i, const inf_rational &val, const lit 
 void la_theory::update(const var &x_i, const inf_rational &v)
 {
     assert(tableau.find(x_i) == tableau.end() && "x_i should be a non-basic variable..");
-    for (const auto &c : t_watches[x_i])
+    for (const auto &c : t_watches.at(x_i))
     {
         // x_j = x_j + a_ji(v - x_i)..
-        vals[c->x] += c->l.vars[x_i] * (v - vals[x_i]);
+        vals[c->x] += c->l.vars.at(x_i) * (v - vals.at(x_i));
         if (listening.find(c->x) != listening.end())
-            for (const auto &l : listening[c->x])
+            for (const auto &l : listening.at(c->x))
                 l->la_value_change(c->x);
     }
     // x_i = v..
     vals[x_i] = v;
     if (listening.find(x_i) != listening.end())
-        for (const auto &l : listening[x_i])
+        for (const auto &l : listening.at(x_i))
             l->la_value_change(x_i);
 }
 
@@ -350,26 +345,27 @@ void la_theory::pivot_and_update(const var &x_i, const var &x_j, const inf_ratio
 {
     assert(tableau.find(x_i) != tableau.end() && "x_i should be a basic variable..");
     assert(tableau.find(x_j) == tableau.end() && "x_j should be a non-basic variable..");
-    assert(tableau[x_i]->l.vars.find(x_j) != tableau[x_i]->l.vars.end());
+    assert(tableau.at(x_i)->l.vars.find(x_j) != tableau.at(x_i)->l.vars.end());
 
-    const inf_rational theta = (v - vals[x_i]) / tableau.at(x_i)->l.vars.at(x_j);
+    const inf_rational theta = (v - vals.at(x_i)) / tableau.at(x_i)->l.vars.at(x_j);
+    assert(!theta.is_infinite());
     // x_i = v
     vals[x_i] = v;
     if (listening.find(x_i) != listening.end())
-        for (const auto &l : listening[x_i])
+        for (const auto &l : listening.at(x_i))
             l->la_value_change(x_i);
 
-    // x_j = x_j + theta
+    // x_j += theta
     vals[x_j] += theta;
     if (listening.find(x_j) != listening.end())
-        for (const auto &l : listening[x_j])
+        for (const auto &l : listening.at(x_j))
             l->la_value_change(x_j);
 
-    for (const auto &c : t_watches[x_j])
+    for (const auto &c : t_watches.at(x_j))
         if (c->x != x_i)
         {
-            // x_k = x_k + a_kj * theta..
-            vals[c->x] += c->l.vars[x_j] * theta;
+            // x_k += a_kj * theta..
+            vals[c->x] += c->l.vars.at(x_j) * theta;
             if (listening.find(c->x) != listening.end())
                 for (const auto &l : listening[c->x])
                     l->la_value_change(c->x);
@@ -385,7 +381,7 @@ void la_theory::pivot(const var x_i, const var x_j)
     lin expr = std::move(ex_row->l);
     tableau.erase(x_i);
     for (const auto &c : expr.vars)
-        t_watches[c.first].erase(ex_row);
+        t_watches.at(c.first).erase(ex_row);
     delete ex_row;
 
     const rational c = expr.vars.at(x_j);
@@ -393,15 +389,15 @@ void la_theory::pivot(const var x_i, const var x_j)
     expr /= -c;
     expr.vars.insert({x_i, 1 / c});
 
-    for (const auto &r : std::vector<row *>(t_watches[x_j].begin(), t_watches[x_j].end())) // these are the rows in which x_j appears..
+    for (const auto &r : std::vector<row *>(t_watches.at(x_j).begin(), t_watches.at(x_j).end())) // these are the rows in which x_j appears..
     {
         for (const auto &term : r->l.vars)
-            t_watches[term.first].erase(r);
+            t_watches.at(term.first).erase(r);
         rational cc = r->l.vars.at(x_j);
         r->l.vars.erase(x_j);
         r->l += expr * cc;
         for (const auto &term : r->l.vars)
-            t_watches[term.first].insert(r);
+            t_watches.at(term.first).insert(r);
     }
 
     // we add a new row into the tableau..
