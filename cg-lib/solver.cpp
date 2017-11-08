@@ -221,6 +221,8 @@ void solver::add_layer()
             // we remove the flaw from the current flaws..
             flaws.erase(it++);
         }
+        else
+            ++it;
 
     std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaws.begin(), flaws.end()), 2);
     flaw_q.clear();
