@@ -2,11 +2,13 @@
 #include "enum_flaw.h"
 #include "disjunction_flaw.h"
 #include "atom_flaw.h"
+#include "super_flaw.h"
 #include "smart_type.h"
 #include "state_variable.h"
 #include "reusable_resource.h"
 #include "propositional_agent.h"
 #include "propositional_state.h"
+#include "combinations.h"
 #ifdef BUILD_GUI
 #include "cg_listener.h"
 #endif
@@ -210,31 +212,16 @@ void solver::add_layer()
 #endif
     assert(sat_cr.root_level());
 
-    std::list<flaw *> f_q(flaw_q);
-    while (std::all_of(f_q.begin(), f_q.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); }))
+    std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaw_q.begin(), flaw_q.end()), 2);
+    flaw_q.clear();
+    for (const auto &fs : fss)
     {
-        if (flaw_q.empty())
-            throw unsolvable_exception();
-        std::list<flaw *> c_q = std::move(flaw_q);
-        for (const auto &f : c_q)
-        {
-            assert(!f->expanded);
-            if (sat_cr.value(f->phi) != False) // we expand the flaw..
-                expand_flaw(*f);
-        }
+        // we create a new super flaw..
+        super_flaw *sf = new super_flaw(*this, res, fs);
+        new_flaw(*sf);
     }
-
-    // we create a new graph var..
-    gamma = sat_cr.new_var();
-#ifndef NDEBUG
-    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
-#endif
-    // these flaws have not been expanded, hence, cannot have a solution..
-    for (const auto &f : flaw_q)
-        sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
-    // we use the new graph var to allow search within the new graph..
-    if (!sat_cr.assume(gamma) || !sat_cr.check())
-        throw unsolvable_exception();
+    // we restart the building graph procedure..
+    build();
 }
 
 bool solver::has_inconsistencies()
@@ -295,7 +282,15 @@ void solver::expand_flaw(flaw &f)
 {
     building_graph = true;
     // we expand the flaw..
-    f.expand();
+    if (super_flaw *sf = dynamic_cast<super_flaw *>(&f))
+    {
+        for (const auto &c_f : sf->flaws)
+            if (!c_f->expanded)
+                c_f->expand();
+    }
+    else
+        f.expand();
+
     if (!sat_cr.check())
     {
         building_graph = false;

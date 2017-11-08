@@ -18,6 +18,20 @@ super_flaw::~super_flaw() {}
 
 void super_flaw::compute_resolvers()
 {
+    std::vector<lit> res_vars;
+    std::queue<const flaw *> q;
+    q.push(this);
+    while (!q.empty())
+    {
+        for (const auto &c : q.front()->get_causes())
+            if (slv.sat_cr.value(c->get_rho()) != False) // if false, the edge is broken..
+            {
+                res_vars.push_back(c->get_rho());
+                q.push(&c->get_effect()); // we push its effect..
+            }
+        q.pop();
+    }
+
     std::vector<std::vector<resolver *>> rs;
     for (const auto &f : flaws)
         rs.push_back(f->get_resolvers());
@@ -30,7 +44,11 @@ void super_flaw::compute_resolvers()
             cst += r->get_intrinsic_cost();
             vs.push_back(r->get_rho());
         }
-        add_resolver(*new super_resolver(slv, *this, slv.sat_cr.new_conj(vs), cst, rp));
+        var res_var = slv.sat_cr.new_conj(vs);
+        res_vars.push_back(res_var);
+        if (slv.sat_cr.check(res_vars))
+            add_resolver(*new super_resolver(slv, *this, res_var, cst, rp));
+        res_vars.pop_back();
     }
 }
 

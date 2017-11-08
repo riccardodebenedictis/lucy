@@ -8,6 +8,8 @@ namespace cg
 
 class super_flaw : public flaw
 {
+  friend class solver;
+
 public:
   super_flaw(solver &slv, resolver *const cause, const std::vector<flaw *> &fs);
   super_flaw(const super_flaw &orig) = delete;
