@@ -30,6 +30,7 @@ public:
   const var &get_rho() const { return rho; }
   flaw &get_effect() const { return effect; }
   std::vector<flaw *> get_preconditions() const { return preconditions; }
+  const lin get_intrinsic_cost() const { return cost; }
   double get_cost() const;
 
   virtual std::string get_label() const = 0;
