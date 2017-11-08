@@ -14,7 +14,10 @@ public:
   rational(I n);
   rational(I n, I d);
 
-public:
+  static const rational ZERO;
+  static const rational POSITIVE_INFINITY;
+  static const rational NEGATIVE_INFINITY;
+
   I numerator() const { return num; }
   I denominator() const { return den; }
 
@@ -72,7 +75,7 @@ private:
   {
     if (den != 1)
     {
-      I c_gcd = std::abs(gcd(num, den));
+      I c_gcd = gcd(num, den);
       if (den < 0)
         c_gcd = -c_gcd;
       num /= c_gcd;
@@ -82,6 +85,10 @@ private:
 
   static I gcd(I u, I v) // computes the greatest common divisor..
   {
+    if (u < 0)
+      u = -u;
+    if (v < 0)
+      v = -v;
     while (v != 0)
     {
       I r = u % v;
@@ -89,6 +96,15 @@ private:
       v = r;
     }
     return u;
+  }
+
+  static I lcm(I u, I v) // computes the least common multiplier..
+  {
+    if (u < 0)
+      u = -u;
+    if (v < 0)
+      v = -v;
+    return u * (v / gcd(u, v));
   }
 
 private:
