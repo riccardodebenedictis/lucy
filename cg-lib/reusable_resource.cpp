@@ -32,10 +32,10 @@ std::vector<flaw *> reusable_resource::get_flaws()
                 {
                     for (const auto &val : slv.ov_th.value(enum_scope->ev))
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
-                            rr_instances.at(static_cast<item *>(val)).push_back(a.first);
+                            rr_instances[static_cast<item *>(val)].push_back(a.first);
                 }
                 else
-                    rr_instances.at(static_cast<item *>(&*c_scope)).push_back(a.first);
+                    rr_instances[static_cast<item *>(&*c_scope)].push_back(a.first);
             }
 
         for (const auto &rr : rr_instances)
@@ -69,7 +69,8 @@ std::vector<flaw *> reusable_resource::get_flaws()
                     overlapping_atoms.insert(at_start_p->second.begin(), at_start_p->second.end());
                 const auto at_end_p = ending_atoms.find(p);
                 if (at_end_p != ending_atoms.end())
-                    overlapping_atoms.erase(at_end_p->second.begin(), at_end_p->second.end());
+                    for (const auto &a : at_end_p->second)
+                        overlapping_atoms.erase(a);
                 lin resource_usage;
                 for (const auto &a : overlapping_atoms)
                 {

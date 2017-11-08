@@ -31,10 +31,10 @@ std::vector<flaw *> state_variable::get_flaws()
                 {
                     for (const auto &val : slv.ov_th.value(enum_scope->ev))
                         if (to_check.find(static_cast<item *>(val)) != to_check.end())
-                            sv_instances.at(static_cast<item *>(val)).push_back(atm.first);
+                            sv_instances[static_cast<item *>(val)].push_back(atm.first);
                 }
                 else
-                    sv_instances.at(static_cast<item *>(&*c_scope)).push_back(atm.first);
+                    sv_instances[static_cast<item *>(&*c_scope)].push_back(atm.first);
             }
 
         for (const auto &sv : sv_instances)
@@ -66,7 +66,8 @@ std::vector<flaw *> state_variable::get_flaws()
                     overlapping_atoms.insert(at_start_p->second.begin(), at_start_p->second.end());
                 const auto at_end_p = ending_atoms.find(p);
                 if (at_end_p != ending_atoms.end())
-                    overlapping_atoms.erase(at_end_p->second.begin(), at_end_p->second.end());
+                    for (const auto &a : at_end_p->second)
+                        overlapping_atoms.erase(a);
 
                 if (overlapping_atoms.size() > 1) // we have a peak..
                     flaws.push_back(new sv_flaw(slv, overlapping_atoms));
