@@ -13,6 +13,7 @@ namespace cg
 class atom_flaw : public flaw
 {
   friend class smart_type;
+  friend class super_flaw;
 
 public:
   atom_flaw(solver &slv, resolver *const cause, atom &a, const bool is_fact);

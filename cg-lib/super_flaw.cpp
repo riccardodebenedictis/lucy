@@ -1,4 +1,5 @@
 #include "super_flaw.h"
+#include "atom_flaw.h"
 #include "solver.h"
 #include "cartesian_product.h"
 #include "combinations.h"
@@ -57,18 +58,38 @@ super_flaw::super_resolver::super_resolver(solver &slv, super_flaw &s_flaw, cons
 super_flaw::super_resolver::~super_resolver() {}
 void super_flaw::super_resolver::apply()
 {
-    std::vector<flaw *> all_precs;
+    bool is_super_unification = true;
+    double preconditions_cost = -std::numeric_limits<double>::infinity();
     for (const auto &r : resolvers)
-        for (const auto &pre : r->get_preconditions())
-            all_precs.push_back(pre);
+        if (atom_flaw::unify_atom *ua_res = dynamic_cast<atom_flaw::unify_atom *>(r))
+        {
+            if (preconditions_cost < ua_res->get_cost())
+                preconditions_cost = ua_res->get_cost();
+        }
+        else
+        {
+            is_super_unification = false;
+            break;
+        }
+    assert(!is_super_unification || preconditions_cost < std::numeric_limits<double>::infinity());
 
-    if (all_precs.size() >= 2)
+    if (is_super_unification)
+        slv.set_est_cost(*this, preconditions_cost);
+    else
     {
-        std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(all_precs.begin(), all_precs.end()), 2);
-        for (const auto &fs : fss) // we create a new super flaw..
-            slv.new_flaw(*new super_flaw(slv, this, fs));
+        std::vector<flaw *> all_precs;
+        for (const auto &r : resolvers)
+            for (const auto &pre : r->get_preconditions())
+                all_precs.push_back(pre);
+
+        if (all_precs.size() >= 2)
+        {
+            std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(all_precs.begin(), all_precs.end()), 2);
+            for (const auto &fs : fss) // we create a new super flaw..
+                slv.new_flaw(*new super_flaw(slv, this, fs));
+        }
+        else // we create a new super flaw..
+            slv.new_flaw(*new super_flaw(slv, this, std::vector<flaw *>(all_precs.begin(), all_precs.end())));
     }
-    else // we create a new super flaw..
-        slv.new_flaw(*new super_flaw(slv, this, std::vector<flaw *>(all_precs.begin(), all_precs.end())));
 }
 }
