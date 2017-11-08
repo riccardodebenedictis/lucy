@@ -15,6 +15,7 @@ public:
   rational(I n, I d);
 
   static const rational ZERO;
+  static const rational ONE;
   static const rational POSITIVE_INFINITY;
   static const rational NEGATIVE_INFINITY;
 
@@ -80,6 +81,11 @@ private:
         c_gcd = -c_gcd;
       num /= c_gcd;
       den /= c_gcd;
+    }
+    if (den < 0)
+    {
+      den = -den;
+      num = -num;
     }
   }
 
