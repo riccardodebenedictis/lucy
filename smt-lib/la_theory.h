@@ -2,7 +2,7 @@
 
 #include "theory.h"
 #include "lin.h"
-#include "interval.h"
+#include "inf_rational.h"
 #include <unordered_map>
 #include <list>
 
@@ -26,26 +26,32 @@ public:
 
   const var new_var();
 
+  const var new_lt(const lin &left, const lin &right);
   const var new_leq(const lin &left, const lin &right);
   const var new_geq(const lin &left, const lin &right);
+  const var new_gt(const lin &left, const lin &right);
 
-  interval bounds(const var &v) const { return interval(assigns[lb_index(v)].value, assigns[ub_index(v)].value); }
+  inf_rational lb(const var &v) const { return assigns[lb_index(v)].value; } // the current lower bound of variable 'v'..
+  inf_rational ub(const var &v) const { return assigns[ub_index(v)].value; } // the current upper bound of variable 'v'..
+  inf_rational value(const var &v) const { return vals[v]; }                 // the current value of variable 'v'..
 
-  interval bounds(const lin &l) const
+  inf_rational lb(const lin &l) const // the current lower bound of linear expression 'l'..
   {
-    interval b(l.known_term);
+    inf_rational b(l.known_term);
     for (const auto &term : l.vars)
-      b += bounds(term.first) * term.second;
+      b += (term.second.is_positive() ? lb(term.first) : ub(term.first)) * term.second;
     return b;
   }
-
-  double lb(const var &v) const { return assigns[lb_index(v)].value; } // the current lower bound of variable 'v'..
-  double ub(const var &v) const { return assigns[ub_index(v)].value; } // the current upper bound of variable 'v'..
-  double value(const var &v) const { return vals[v]; }                 // the current value of variable 'v'..
-
-  double value(const lin &l) const
+  inf_rational ub(const lin &l) const // the current upper bound of linear expression 'l'..
   {
-    double v(l.known_term);
+    inf_rational b(l.known_term);
+    for (const auto &term : l.vars)
+      b += (term.second.is_positive() ? ub(term.first) : lb(term.first)) * term.second;
+    return b;
+  }
+  inf_rational value(const lin &l) const
+  {
+    inf_rational v(l.known_term);
     for (const auto &term : l.vars)
       v += value(term.first) * term.second;
     return v;
@@ -59,10 +65,10 @@ private:
   void push() override;
   void pop() override;
 
-  bool assert_lower(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl);
-  bool assert_upper(const var &x_i, const double val, const lit &p, std::vector<lit> &cnfl);
-  void update(const var &x_i, const double v);
-  void pivot_and_update(const var &x_i, const var &x_j, const double v);
+  bool assert_lower(const var &x_i, const inf_rational &val, const lit &p, std::vector<lit> &cnfl);
+  bool assert_upper(const var &x_i, const inf_rational &val, const lit &p, std::vector<lit> &cnfl);
+  void update(const var &x_i, const inf_rational &v);
+  void pivot_and_update(const var &x_i, const var &x_j, const inf_rational &v);
   void pivot(const var x_i, const var x_j);
 
   void listen(const var &v, la_value_listener *const l);
@@ -77,12 +83,12 @@ public:
 private:
   struct bound
   {
-    double value; // the value of the bound..
-    lit *reason;  // the reason for the value..
+    inf_rational value; // the value of the bound..
+    lit *reason;        // the reason for the value..
   };
 
   std::vector<bound> assigns;                            // the current assignments..
-  std::vector<double> vals;                              // the current values..
+  std::vector<inf_rational> vals;                        // the current values..
   std::map<var, row *> tableau;                          // the sparse matrix..
   std::unordered_map<std::string, var> exprs;            // the expressions (string to numeric variable) for which already exist slack variables..
   std::unordered_map<std::string, var> s_asrts;          // the assertions (string to boolean variable) used for reducing the number of boolean variables..

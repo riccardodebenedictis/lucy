@@ -44,8 +44,9 @@ const var ov_theory::new_var(const std::vector<var> &vars, const std::vector<var
 
 const var ov_theory::allows(const var &left, var_value &right) const
 {
-    if (assigns[left].find(&right) != assigns[left].end())
-        return assigns[left].at(&right);
+    const auto at_right = assigns.at(left).find(&right);
+    if (at_right != assigns.at(left).end())
+        return at_right->second;
     else
         return FALSE_var;
 }
@@ -59,13 +60,14 @@ const var ov_theory::eq(const var &left, const var &right)
         return eq(right, left);
 
     std::string s_expr = "e" + std::to_string(left) + " == " + "e" + std::to_string(right);
-    if (exprs.find(s_expr) != exprs.end()) // the expression already exists..
-        return exprs.at(s_expr);
+    const auto at_expr = exprs.find(s_expr);
+    if (at_expr != exprs.end()) // the expression already exists..
+        return at_expr->second;
     else
     {
         std::unordered_set<var_value *> intersection;
-        for (const auto &v : assigns[left])
-            if (assigns[right].find(v.first) != assigns[right].end())
+        for (const auto &v : assigns.at(left))
+            if (assigns.at(right).find(v.first) != assigns.at(right).end())
                 intersection.insert(v.first);
 
         if (intersection.empty())
@@ -113,9 +115,12 @@ bool ov_theory::propagate(const lit &p, std::vector<lit> &cnfl)
 {
     assert(cnfl.empty());
     for (const auto &v : is_contained_in.at(p.v))
-        if (listening.find(v) != listening.end())
-            for (const auto &l : listening[v])
+    {
+        const auto at_v = listening.find(v);
+        if (at_v != listening.end())
+            for (const auto &l : at_v->second)
                 l->set_value_change(v);
+    }
     return true;
 }
 
@@ -130,9 +135,12 @@ void ov_theory::push() { layers.push_back(layer()); }
 void ov_theory::pop()
 {
     for (const auto &v : layers.back().vars)
-        if (listening.find(v) != listening.end())
-            for (const auto &l : listening[v])
+    {
+        const auto at_v = listening.find(v);
+        if (at_v != listening.end())
+            for (const auto &l : at_v->second)
                 l->set_value_change(v);
+    }
     layers.pop_back();
 }
 

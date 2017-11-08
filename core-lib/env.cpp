@@ -11,8 +11,9 @@ env::~env() { assert(!ref_count || (this == &*ctx && ref_count)); }
 
 expr env::get(const std::string &name) const
 {
-    if (items.find(name) != items.end())
-        return items.at(name);
+    const auto at_itm = items.find(name);
+    if (at_itm != items.end())
+        return at_itm->second;
 
     // if not here, check any enclosing environment
     return ctx->get(name);

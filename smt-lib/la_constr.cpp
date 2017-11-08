@@ -1,13 +1,12 @@
 #include "la_constr.h"
 #include "la_theory.h"
 #include "sat_core.h"
-#include <limits>
 #include <cassert>
 
 namespace smt
 {
 
-assertion::assertion(la_theory &th, const op o, const var b, const var x, const double v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
+assertion::assertion(la_theory &th, const op o, const var b, const var x, const inf_rational &v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
 assertion::~assertion() {}
 
 std::string assertion::to_string() const
@@ -36,7 +35,7 @@ std::string assertion::to_string() const
         asrt += " >= ";
         break;
     }
-    asrt += std::to_string(v) + "\" }";
+    asrt += v.to_string() + "\" }";
     return asrt;
 }
 
@@ -121,12 +120,12 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
     assert(cnfl.empty());
     // we make room for the first literal..
     cnfl.push_back(lit());
-    if (l.vars.at(v) > 0)
+    if (l.vars.at(v).is_positive())
     {
-        double lb = 0;
+        inf_rational lb(0);
         for (const auto &term : l.vars)
-            if (term.second > 0)
-                if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
+            if (term.second.is_positive())
+                if (th.lb(term.first).is_negative_infinite())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -137,8 +136,8 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
                     lb += term.second * th.lb(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
-            else if (term.second < 0)
-                if (th.ub(term.first) == std::numeric_limits<double>::infinity())
+            else if (term.second.is_negative())
+                if (th.ub(term.first).is_positive_infinite())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -179,10 +178,10 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
     }
     else
     {
-        double ub = 0;
+        inf_rational ub(0);
         for (const auto &term : l.vars)
-            if (term.second > 0)
-                if (th.ub(term.first) == std::numeric_limits<double>::infinity())
+            if (term.second.is_positive())
+                if (th.ub(term.first).is_positive_infinite())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -193,8 +192,8 @@ bool row::propagate_lb(const var &v, std::vector<lit> &cnfl)
                     ub += term.second * th.ub(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
-            else if (term.second < 0)
-                if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
+            else if (term.second.is_negative())
+                if (th.lb(term.first).is_negative_infinite())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -243,12 +242,12 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
     assert(cnfl.empty());
     // we make room for the first literal..
     cnfl.push_back(lit());
-    if (l.vars.at(v) > 0)
+    if (l.vars.at(v).is_positive())
     {
-        double ub = 0;
+        inf_rational ub(0);
         for (const auto &term : l.vars)
-            if (term.second > 0)
-                if (th.ub(term.first) == std::numeric_limits<double>::infinity())
+            if (term.second.is_positive())
+                if (th.ub(term.first).is_positive_infinite())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -259,8 +258,8 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
                     ub += term.second * th.ub(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::ub_index(term.first)].reason);
                 }
-            else if (term.second < 0)
-                if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
+            else if (term.second.is_negative())
+                if (th.lb(term.first).is_negative_infinite())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -301,10 +300,10 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
     }
     else
     {
-        double lb = 0;
+        inf_rational lb(0);
         for (const auto &term : l.vars)
-            if (term.second > 0)
-                if (th.lb(term.first) == -std::numeric_limits<double>::infinity())
+            if (term.second.is_positive())
+                if (th.lb(term.first).is_negative_infinite())
                 {
                     // nothing to propagate..
                     cnfl.clear();
@@ -315,8 +314,8 @@ bool row::propagate_ub(const var &v, std::vector<lit> &cnfl)
                     lb += term.second * th.lb(term.first);
                     cnfl.push_back(!*th.assigns[la_theory::lb_index(term.first)].reason);
                 }
-            else if (term.second < 0)
-                if (th.ub(term.first) == std::numeric_limits<double>::infinity())
+            else if (term.second.is_negative())
+                if (th.ub(term.first).is_positive_infinite())
                 {
                     // nothing to propagate..
                     cnfl.clear();

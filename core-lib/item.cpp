@@ -111,11 +111,7 @@ bool arith_item::equates(const item &i) const noexcept
 	if (this == &i)
 		return true;
 	else if (const arith_item *ae = dynamic_cast<const arith_item *>(&i))
-	{
-		interval c_val = cr.la_th.bounds(l);
-		interval i_val = cr.la_th.bounds(ae->l);
-		return c_val.intersecting(i_val);
-	}
+		return cr.la_th.ub(l) >= cr.la_th.lb(ae->l) && cr.la_th.lb(l) <= cr.la_th.ub(ae->l); // the two intervals intersect..
 	else
 		return false;
 }

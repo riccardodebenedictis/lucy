@@ -75,7 +75,8 @@
         "cwctype": "cpp",
         "cmakeccompilerid.c": "cpp",
         "atomic": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "numeric": "cpp"
     },
     "cmake.configureSettings": {
         "BUILD_GUI": true,

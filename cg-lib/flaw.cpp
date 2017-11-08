@@ -1,7 +1,6 @@
 #include "flaw.h"
 #include "resolver.h"
 #include "solver.h"
-#include <limits>
 #include <cassert>
 
 namespace cg

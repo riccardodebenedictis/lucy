@@ -24,9 +24,7 @@ std::vector<flaw *> state_variable::get_flaws()
         // we collect atoms for each state variable..
         std::unordered_map<item *, std::vector<atom *>> sv_instances;
         for (const auto &atm : atoms)
-        {
-            // we filter out those which are not strictly active..
-            if (slv.sat_cr.value(atm.first->sigma) == True)
+            if (slv.sat_cr.value(atm.first->sigma) == True) // we filter out those which are not strictly active..
             {
                 expr c_scope = atm.first->get(TAU);
                 if (var_item *enum_scope = dynamic_cast<var_item *>(&*c_scope))
@@ -36,27 +34,24 @@ std::vector<flaw *> state_variable::get_flaws()
                             sv_instances[static_cast<item *>(val)].push_back(atm.first);
                 }
                 else
-                {
                     sv_instances[static_cast<item *>(&*c_scope)].push_back(atm.first);
-                }
             }
-        }
 
         for (const auto &sv : sv_instances)
         {
             // for each pulse, the atoms starting at that pulse..
-            std::map<double, std::set<atom *>> starting_atoms;
+            std::map<inf_rational, std::set<atom *>> starting_atoms;
             // for each pulse, the atoms ending at that pulse..
-            std::map<double, std::set<atom *>> ending_atoms;
+            std::map<inf_rational, std::set<atom *>> ending_atoms;
             // all the pulses of the timeline..
-            std::set<double> pulses;
+            std::set<inf_rational> pulses;
 
             for (const auto &atm : sv.second)
             {
                 arith_expr s_expr = atm->get("start");
                 arith_expr e_expr = atm->get("end");
-                double start = slv.la_th.value(s_expr->l);
-                double end = slv.la_th.value(e_expr->l);
+                inf_rational start = slv.la_th.value(s_expr->l);
+                inf_rational end = slv.la_th.value(e_expr->l);
                 starting_atoms[start].insert(atm);
                 ending_atoms[end].insert(atm);
                 pulses.insert(start);
@@ -66,11 +61,12 @@ std::vector<flaw *> state_variable::get_flaws()
             std::set<atom *> overlapping_atoms;
             for (const auto &p : pulses)
             {
-                if (starting_atoms.find(p) != starting_atoms.end())
-                    for (const auto &a : starting_atoms.at(p))
-                        overlapping_atoms.insert(a);
-                if (ending_atoms.find(p) != ending_atoms.end())
-                    for (const auto &a : ending_atoms.at(p))
+                const auto at_start_p = starting_atoms.find(p);
+                if (at_start_p != starting_atoms.end())
+                    overlapping_atoms.insert(at_start_p->second.begin(), at_start_p->second.end());
+                const auto at_end_p = ending_atoms.find(p);
+                if (at_end_p != ending_atoms.end())
+                    for (const auto &a : at_end_p->second)
                         overlapping_atoms.erase(a);
 
                 if (overlapping_atoms.size() > 1) // we have a peak..
@@ -146,10 +142,10 @@ void state_variable::sv_flaw::compute_resolvers()
 
         bool_expr a0_before_a1 = slv.leq(a0_end, a1_start);
         if (slv.sat_cr.value(a0_before_a1->l) != False)
-            add_resolver(*new order_resolver(slv, lin(0.0), *this, *as[0], *as[1], a0_before_a1->l));
+            add_resolver(*new order_resolver(slv, lin(), *this, *as[0], *as[1], a0_before_a1->l));
         bool_expr a1_before_a0 = slv.leq(a1_end, a0_start);
         if (slv.sat_cr.value(a1_before_a0->l) != False)
-            add_resolver(*new order_resolver(slv, lin(0.0), *this, *as[1], *as[0], a1_before_a0->l));
+            add_resolver(*new order_resolver(slv, lin(), *this, *as[1], *as[0], a1_before_a0->l));
 
         expr a0_scope = as[0]->get(TAU);
         if (var_item *enum_scope = dynamic_cast<var_item *>(&*a0_scope))
@@ -157,7 +153,7 @@ void state_variable::sv_flaw::compute_resolvers()
             std::unordered_set<var_value *> a0_scopes = slv.ov_th.value(enum_scope->ev);
             if (a0_scopes.size() > 1)
                 for (const auto &sc : a0_scopes)
-                    add_resolver(*new displace_resolver(slv, lin(0.0), *this, *as[0], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
+                    add_resolver(*new displace_resolver(slv, lin(), *this, *as[0], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
         }
 
         expr a1_scope = as[1]->get(TAU);
@@ -166,7 +162,7 @@ void state_variable::sv_flaw::compute_resolvers()
             std::unordered_set<var_value *> a1_scopes = slv.ov_th.value(enum_scope->ev);
             if (a1_scopes.size() > 1)
                 for (const auto &sc : a1_scopes)
-                    add_resolver(*new displace_resolver(slv, lin(0.0), *this, *as[1], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
+                    add_resolver(*new displace_resolver(slv, lin(), *this, *as[1], *static_cast<item *>(sc), lit(slv.ov_th.allows(enum_scope->ev, *sc), false)));
         }
     }
 }

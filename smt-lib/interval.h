@@ -9,8 +9,8 @@ class interval
 {
 public:
   interval();
-  interval(double value);
-  interval(double lb, double ub);
+  interval(const double &value);
+  interval(const double &lb, const double &ub);
 
   bool consistent() const;
   bool constant() const;
@@ -24,37 +24,41 @@ public:
   bool operator>=(const interval &right) const;
   bool operator>(const interval &right) const;
 
-  interval operator&&(const interval &rhs);
+  bool operator!=(const double &right) const;
+  bool operator<(const double &right) const;
+  bool operator<=(const double &right) const;
+  bool operator==(const double &right) const;
+  bool operator>=(const double &right) const;
+  bool operator>(const double &right) const;
 
-  interval operator+(const interval &rhs);
-  interval operator+(const double &rhs);
-  friend interval operator+(const double &lhs, const interval &rhs);
+  interval operator&&(const interval &rhs) const;
 
-  interval operator-(const interval &rhs);
-  interval operator-(const double &rhs);
-  friend interval operator-(const double &lhs, const interval &rhs);
+  interval operator+(const interval &rhs) const;
+  interval operator-(const interval &rhs) const;
+  interval operator*(const interval &rhs) const;
+  interval operator/(const interval &rhs) const;
 
-  interval operator*(const interval &rhs);
-  interval operator*(const double &rhs);
-  friend interval operator*(const double &lhs, const interval &rhs);
+  interval operator+(const double &rhs) const;
+  interval operator-(const double &rhs) const;
+  interval operator*(const double &rhs) const;
+  interval operator/(const double &rhs) const;
 
-  interval operator/(const interval &rhs);
-  interval operator/(const double &rhs);
-  friend interval operator/(const double &lhs, const interval &rhs);
+  interval &operator+=(const interval &right);
+  interval &operator-=(const interval &right);
+  interval &operator*=(const interval &right);
+  interval &operator/=(const interval &right);
 
-  interval operator+=(const interval &right);
-  interval operator+=(const double &right);
-
-  interval operator-=(const interval &right);
-  interval operator-=(const double &right);
-
-  interval operator*=(const interval &right);
-  interval operator*=(const double &right);
-
-  interval operator/=(const interval &right);
-  interval operator/=(const double &right);
+  interval &operator+=(const double &right);
+  interval &operator-=(const double &right);
+  interval &operator*=(const double &right);
+  interval &operator/=(const double &right);
 
   interval operator-() const;
+
+  friend interval operator+(const double &lhs, const interval &rhs);
+  friend interval operator-(const double &lhs, const interval &rhs);
+  friend interval operator*(const double &lhs, const interval &rhs);
+  friend interval operator/(const double &lhs, const interval &rhs);
 
   std::string to_string() const;
 

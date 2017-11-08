@@ -4,7 +4,6 @@
 #include "method.h"
 #include "field.h"
 #include "declaration.h"
-#include <limits>
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -95,14 +94,14 @@ arith_expr core::new_int()
     return new arith_item(*this, *types.at(INT_KEYWORD), lin(la_th.new_var(), 1));
 }
 
-arith_expr core::new_int(const long &val)
+arith_expr core::new_int(const I &val)
 {
     std::cerr << "[warning] replacing an integer constant with a real constant.." << std::endl;
     return new arith_item(*this, *types.at(INT_KEYWORD), lin(val));
 }
 
 arith_expr core::new_real() { return new arith_item(*this, *types.at(REAL_KEYWORD), lin(la_th.new_var(), 1)); }
-arith_expr core::new_real(const double &val) { return new arith_item(*this, *types.at(REAL_KEYWORD), lin(val)); }
+arith_expr core::new_real(const rational &val) { return new arith_item(*this, *types.at(REAL_KEYWORD), lin(val)); }
 
 string_expr core::new_string() { return new string_item(*this, ""); }
 string_expr core::new_string(const std::string &val) { return new string_item(*this, val); }
@@ -206,13 +205,14 @@ arith_expr core::sub(const std::vector<arith_expr> &exprs)
 arith_expr core::mult(const std::vector<arith_expr> &exprs)
 {
     assert(exprs.size() > 1);
-    arith_expr ae = *std::find_if(exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); });
+    arith_expr ae = *std::find_if(exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.lb(ae->l) == la_th.ub(ae->l); });
     lin l = ae->l;
     for (const auto &aex : exprs)
         if (aex != ae)
         {
-            assert(la_th.bounds(aex->l).constant() && "non-linear expression..");
-            l *= la_th.value(aex->l);
+            assert(la_th.lb(aex->l) == la_th.ub(aex->l) && "non-linear expression..");
+            assert(la_th.value(aex->l).get_infinitesimal() == rational::ZERO);
+            l *= la_th.value(aex->l).get_rational();
         }
     return new arith_item(*this, *types.at(REAL_KEYWORD), l);
 }
@@ -220,30 +220,24 @@ arith_expr core::mult(const std::vector<arith_expr> &exprs)
 arith_expr core::div(const std::vector<arith_expr> &exprs)
 {
     assert(exprs.size() > 1);
-    assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.bounds(ae->l).constant(); }) && "non-linear expression..");
-    double c = la_th.value(exprs[1]->l);
+    assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.lb(ae->l) == la_th.ub(ae->l); }) && "non-linear expression..");
+    assert(la_th.value(exprs.at(1)->l).get_infinitesimal() == rational::ZERO);
+    rational c = la_th.value(exprs.at(1)->l).get_rational();
     for (size_t i = 2; i < exprs.size(); i++)
-        c *= la_th.value(exprs.at(i)->l);
-    return new arith_item(*this, *types.at(REAL_KEYWORD), exprs[0]->l / c);
+    {
+        assert(la_th.value(exprs.at(i)->l).get_infinitesimal() == rational::ZERO);
+        c *= la_th.value(exprs.at(i)->l).get_rational();
+    }
+    return new arith_item(*this, *types.at(REAL_KEYWORD), exprs.at(0)->l / c);
 }
 
 arith_expr core::minus(arith_expr ex) { return new arith_item(*this, *types.at(REAL_KEYWORD), -ex->l); }
 
-bool_expr core::lt(arith_expr left, arith_expr right)
-{
-    std::cerr << "[warning] replacing strict inequality (<) with non-strict inequality (<=).." << std::endl;
-    return new bool_item(*this, la_th.new_leq(left->l, right->l));
-}
-
+bool_expr core::lt(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_lt(left->l, right->l)); }
 bool_expr core::leq(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_leq(left->l, right->l)); }
 bool_expr core::eq(arith_expr left, arith_expr right) { return new bool_item(*this, sat_cr.new_conj({la_th.new_leq(left->l, right->l), la_th.new_geq(left->l, right->l)})); }
 bool_expr core::geq(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_geq(left->l, right->l)); }
-
-bool_expr core::gt(arith_expr left, arith_expr right)
-{
-    std::cerr << "[warning] replacing strict inequality (>) with non-strict inequality (>=).." << std::endl;
-    return new bool_item(*this, la_th.new_geq(left->l, right->l));
-}
+bool_expr core::gt(arith_expr left, arith_expr right) { return new bool_item(*this, la_th.new_gt(left->l, right->l)); }
 
 bool_expr core::eq(expr left, expr right) { return new bool_item(*this, left->eq(*right)); }
 
@@ -256,8 +250,9 @@ void core::assert_facts(const std::vector<lit> &facts)
 
 field &core::get_field(const std::string &name) const
 {
-    if (fields.find(name) != fields.end())
-        return *fields.at(name);
+    const auto at_f = fields.find(name);
+    if (at_f != fields.end())
+        return *at_f->second;
 
     // not found
     throw std::out_of_range(name);
@@ -265,10 +260,11 @@ field &core::get_field(const std::string &name) const
 
 method &core::get_method(const std::string &name, const std::vector<const type *> &ts) const
 {
-    if (methods.find(name) != methods.end())
+    const auto at_m = methods.find(name);
+    if (at_m != methods.end())
     {
         bool found = false;
-        for (const auto &mthd : methods.at(name))
+        for (const auto &mthd : at_m->second)
             if (mthd->args.size() == ts.size())
             {
                 found = true;
@@ -289,8 +285,9 @@ method &core::get_method(const std::string &name, const std::vector<const type *
 
 predicate &core::get_predicate(const std::string &name) const
 {
-    if (predicates.find(name) != predicates.end())
-        return *predicates.at(name);
+    const auto at_p = predicates.find(name);
+    if (at_p != predicates.end())
+        return *at_p->second;
 
     // not found
     throw std::out_of_range(name);
@@ -298,8 +295,9 @@ predicate &core::get_predicate(const std::string &name) const
 
 type &core::get_type(const std::string &name) const
 {
-    if (types.find(name) != types.end())
-        return *types.at(name);
+    const auto at_tp = types.find(name);
+    if (at_tp != types.end())
+        return *at_tp->second;
 
     // not found
     throw std::out_of_range(name);
@@ -307,18 +305,17 @@ type &core::get_type(const std::string &name) const
 
 expr core::get(const std::string &name) const
 {
-    if (items.find(name) != items.end())
-        return items.at(name);
+    const auto at_itm = items.find(name);
+    if (at_itm != items.end())
+        return at_itm->second;
 
     throw std::out_of_range(name);
 }
 
 lbool core::bool_value(const bool_expr &x) const noexcept { return sat_cr.value(x->l); }
-
-interval core::arith_bounds(const arith_expr &x) const noexcept { return la_th.bounds(x->l); }
-
-double core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
-
+inf_rational core::arith_lb(const arith_expr &x) const noexcept { return la_th.lb(x->l); }
+inf_rational core::arith_ub(const arith_expr &x) const noexcept { return la_th.ub(x->l); }
+inf_rational core::arith_value(const arith_expr &x) const noexcept { return la_th.value(x->l); }
 std::unordered_set<var_value *> core::enum_value(const var_expr &x) const noexcept { return ov_th.value(x->ev); }
 
 std::string core::to_string(const std::map<std::string, expr> &c_items) const noexcept
@@ -349,12 +346,28 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const no
         }
         else if (arith_item *ai = dynamic_cast<arith_item *>(&*is_it->second))
         {
-            interval bnds = la_th.bounds(ai->l);
-            iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : " + std::to_string(la_th.value(ai->l));
-            if (bnds.lb > -std::numeric_limits<double>::infinity())
-                iss += ", \"lb\" : " + std::to_string(bnds.lb);
-            if (bnds.ub < std::numeric_limits<double>::infinity())
-                iss += ", \"ub\" : " + std::to_string(bnds.ub);
+            const auto val = la_th.value(ai->l);
+            iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : ";
+            iss += "{ \"num\" : " + std::to_string(val.get_rational().numerator()) + ", \"den\" : " + std::to_string(val.get_rational().denominator());
+            if (val.get_infinitesimal() != rational::ZERO)
+                iss += ", \"inf\" : { \"num\" : " + std::to_string(val.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(val.get_infinitesimal().denominator()) + " }";
+            iss += " }";
+            const auto lb = la_th.lb(ai->l);
+            if (!lb.is_negative_infinite())
+            {
+                iss += ", \"lb\" : { \"num\" : " + std::to_string(lb.get_rational().numerator()) + ", \"den\" : " + std::to_string(lb.get_rational().denominator());
+                if (val.get_infinitesimal() != rational::ZERO)
+                    iss += ", \"inf\" : { \"num\" : " + std::to_string(lb.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(lb.get_infinitesimal().denominator()) + " }";
+                iss += " }";
+            }
+            const auto ub = la_th.ub(ai->l);
+            if (!ub.is_positive_infinite())
+            {
+                iss += ", \"ub\" : { \"num\" : " + std::to_string(ub.get_rational().numerator()) + ", \"den\" : " + std::to_string(ub.get_rational().denominator());
+                if (val.get_infinitesimal() != rational::ZERO)
+                    iss += ", \"inf\" : { \"num\" : " + std::to_string(ub.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(ub.get_infinitesimal().denominator()) + " }";
+                iss += " }";
+            }
             iss += " }";
         }
         else if (var_item *ei = dynamic_cast<var_item *>(&*is_it->second))

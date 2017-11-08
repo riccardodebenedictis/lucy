@@ -92,11 +92,11 @@ string_literal_expression::string_literal_expression(const std::string &l) : lit
 string_literal_expression::~string_literal_expression() {}
 expr string_literal_expression::evaluate(const scope &scp, context &) const { return scp.get_core().new_string(literal); }
 
-int_literal_expression::int_literal_expression(const long &l) : literal(l) {}
+int_literal_expression::int_literal_expression(const I &l) : literal(l) {}
 int_literal_expression::~int_literal_expression() {}
 expr int_literal_expression::evaluate(const scope &scp, context &) const { return scp.get_core().new_int(literal); }
 
-real_literal_expression::real_literal_expression(const double &l) : literal(l) {}
+real_literal_expression::real_literal_expression(const rational &l) : literal(l) {}
 real_literal_expression::~real_literal_expression() {}
 expr real_literal_expression::evaluate(const scope &scp, context &) const { return scp.get_core().new_real(literal); }
 

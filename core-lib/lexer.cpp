@@ -13,7 +13,7 @@ lexer::~lexer() {}
 
 token *lexer::next()
 {
-    ch = is.get();
+    ch = static_cast<char>(is.get());
     switch (ch)
     {
     case '"': // string literal
@@ -22,7 +22,7 @@ token *lexer::next()
         end_pos++;
         while (true)
         {
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             switch (ch)
             {
             case '"':
@@ -31,7 +31,7 @@ token *lexer::next()
             case '\\':
                 // read escaped char
                 end_pos++;
-                ch = is.get();
+                ch = static_cast<char>(is.get());
                 str.push_back(ch);
                 break;
             case '\r':
@@ -46,14 +46,14 @@ token *lexer::next()
     }
     case '/':
         end_pos++;
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         switch (ch)
         {
         case '/': // in single-line comment
             end_pos++;
             while (true)
             {
-                ch = is.get();
+                ch = static_cast<char>(is.get());
                 end_pos++;
                 switch (ch)
                 {
@@ -72,12 +72,12 @@ token *lexer::next()
             end_pos++;
             while (true)
             {
-                ch = is.get();
+                ch = static_cast<char>(is.get());
                 end_pos++;
                 switch (ch)
                 {
                 case '*':
-                    ch = is.get();
+                    ch = static_cast<char>(is.get());
                     end_pos++;
                     if (ch == '/')
                         return next();
@@ -96,7 +96,7 @@ token *lexer::next()
         return mk_token(SLASH_ID);
     case '=':
         end_pos++;
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch == '=')
         {
             end_pos++;
@@ -106,7 +106,7 @@ token *lexer::next()
         return mk_token(EQ_ID);
     case '>':
         end_pos++;
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch == '=')
         {
             end_pos++;
@@ -116,7 +116,7 @@ token *lexer::next()
         return mk_token(GT_ID);
     case '<':
         end_pos++;
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch == '=')
         {
             end_pos++;
@@ -144,16 +144,15 @@ token *lexer::next()
         return mk_token(BANG_ID);
     case '.':
         end_pos++;
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         end_pos++;
         if ('0' <= ch && ch <= '9') // in a number literal..
         {
-            std::vector<char> num;
-            num.push_back('.');
-            num.push_back(ch);
+            std::vector<char> dec;
+            dec.push_back(ch);
             while (true)
             {
-                ch = is.get();
+                ch = static_cast<char>(is.get());
                 switch (ch)
                 {
                 case '0':
@@ -167,13 +166,13 @@ token *lexer::next()
                 case '8':
                 case '9':
                     end_pos++;
-                    num.push_back(ch);
+                    dec.push_back(ch);
                     break;
                 case '.':
                     error("invalid numeric literal..");
                 default:
                     is.unget();
-                    return mk_numeric_token(std::string(num.begin(), num.end()));
+                    return mk_rational_token("", std::string(dec.begin(), dec.end()));
                 }
             }
         }
@@ -219,12 +218,11 @@ token *lexer::next()
     case '9':
     {
         end_pos++;
-        bool fraction = false;
-        std::vector<char> num;
-        num.push_back(ch);
+        std::vector<char> intgr; // the integer part..
+        intgr.push_back(ch);
         while (true)
         {
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             switch (ch)
             {
             case '0':
@@ -238,23 +236,42 @@ token *lexer::next()
             case '8':
             case '9':
                 end_pos++;
-                num.push_back(ch);
+                intgr.push_back(ch);
                 break;
             case '.':
-                if (!fraction)
+            {
+                end_pos++;
+                std::vector<char> dcml; // the decimal part..
+                while (true)
                 {
-                    end_pos++;
-                    num.push_back(ch);
-                    fraction = true;
+                    ch = static_cast<char>(is.get());
+                    switch (ch)
+                    {
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        end_pos++;
+                        dcml.push_back(ch);
+                        break;
+                    case '.':
+                        error("invalid numeric literal..");
+                        break;
+                    default:
+                        is.unget();
+                        return mk_rational_token(std::string(intgr.begin(), intgr.end()), std::string(dcml.begin(), dcml.end()));
+                    }
                 }
-                else
-                {
-                    error("invalid numeric literal..");
-                }
-                break;
+            }
             default:
                 is.unget();
-                return mk_numeric_token(std::string(num.begin(), num.end()));
+                return mk_integer_token(std::string(intgr.begin(), intgr.end()));
             }
         }
     }
@@ -263,7 +280,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'o')
         {
             is.unget();
@@ -271,7 +288,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'o')
         {
             is.unget();
@@ -279,7 +296,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'l')
         {
             is.unget();
@@ -287,7 +304,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -304,7 +321,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'l')
         {
             is.unget();
@@ -312,7 +329,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'a')
         {
             is.unget();
@@ -320,7 +337,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 's')
         {
             is.unget();
@@ -328,7 +345,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 's')
         {
             is.unget();
@@ -336,7 +353,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -353,7 +370,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'n')
         {
             is.unget();
@@ -361,7 +378,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'u')
         {
             is.unget();
@@ -369,7 +386,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'm')
         {
             is.unget();
@@ -377,7 +394,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -394,7 +411,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'a')
         {
             is.unget();
@@ -402,13 +419,13 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         switch (ch)
         {
         case 'c':
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 't')
             {
                 is.unget();
@@ -416,7 +433,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (!is_id_part(ch))
             {
                 is.unget();
@@ -430,7 +447,7 @@ token *lexer::next()
         case 'l':
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 's')
             {
                 is.unget();
@@ -438,7 +455,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'e')
             {
                 is.unget();
@@ -446,7 +463,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (!is_id_part(ch))
             {
                 is.unget();
@@ -466,7 +483,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'o')
         {
             is.unget();
@@ -474,7 +491,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'a')
         {
             is.unget();
@@ -482,7 +499,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'l')
         {
             is.unget();
@@ -490,7 +507,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -507,7 +524,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'n')
         {
             is.unget();
@@ -515,7 +532,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 't')
         {
             is.unget();
@@ -523,7 +540,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -540,7 +557,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'e')
         {
             is.unget();
@@ -548,7 +565,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'w')
         {
             is.unget();
@@ -556,7 +573,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -573,7 +590,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'r')
         {
             is.unget();
@@ -581,7 +598,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -598,7 +615,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'r')
         {
             is.unget();
@@ -606,7 +623,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'e')
         {
             is.unget();
@@ -614,7 +631,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'd')
         {
             is.unget();
@@ -622,7 +639,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'i')
         {
             is.unget();
@@ -630,7 +647,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'c')
         {
             is.unget();
@@ -638,7 +655,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'a')
         {
             is.unget();
@@ -646,7 +663,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 't')
         {
             is.unget();
@@ -654,7 +671,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'e')
         {
             is.unget();
@@ -662,7 +679,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -679,7 +696,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'e')
         {
             is.unget();
@@ -687,13 +704,13 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         switch (ch)
         {
         case 'a':
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'l')
             {
                 is.unget();
@@ -701,7 +718,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (!is_id_part(ch))
             {
                 is.unget();
@@ -715,7 +732,7 @@ token *lexer::next()
         case 't':
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'u')
             {
                 is.unget();
@@ -723,7 +740,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'r')
             {
                 is.unget();
@@ -731,7 +748,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'n')
             {
                 is.unget();
@@ -739,7 +756,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (!is_id_part(ch))
             {
                 is.unget();
@@ -759,7 +776,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 't')
         {
             is.unget();
@@ -767,7 +784,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'r')
         {
             is.unget();
@@ -775,7 +792,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'i')
         {
             is.unget();
@@ -783,7 +800,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'n')
         {
             is.unget();
@@ -791,7 +808,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'g')
         {
             is.unget();
@@ -799,7 +816,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -816,13 +833,13 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         switch (ch)
         {
         case 'r':
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'u')
             {
                 is.unget();
@@ -830,7 +847,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'e')
             {
                 is.unget();
@@ -838,7 +855,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (!is_id_part(ch))
             {
                 is.unget();
@@ -852,7 +869,7 @@ token *lexer::next()
         case 'y':
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'p')
             {
                 is.unget();
@@ -860,7 +877,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'e')
             {
                 is.unget();
@@ -868,7 +885,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'd')
             {
                 is.unget();
@@ -876,7 +893,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'e')
             {
                 is.unget();
@@ -884,7 +901,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (ch != 'f')
             {
                 is.unget();
@@ -892,7 +909,7 @@ token *lexer::next()
             }
             end_pos++;
             str.push_back(ch);
-            ch = is.get();
+            ch = static_cast<char>(is.get());
             if (!is_id_part(ch))
             {
                 is.unget();
@@ -912,7 +929,7 @@ token *lexer::next()
         end_pos++;
         std::vector<char> str;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'o')
         {
             is.unget();
@@ -920,7 +937,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'i')
         {
             is.unget();
@@ -928,7 +945,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (ch != 'd')
         {
             is.unget();
@@ -936,7 +953,7 @@ token *lexer::next()
         }
         end_pos++;
         str.push_back(ch);
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (!is_id_part(ch))
         {
             is.unget();
@@ -1021,7 +1038,7 @@ token *lexer::finish_id(std::vector<char> &str)
 {
     while (true)
     {
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         if (str.empty() && ch >= '0' && ch <= '9')
             error("identifiers cannot start with numbers..");
         if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || (ch >= '0' && ch <= '9'))
@@ -1041,7 +1058,7 @@ token *lexer::finish_whitespaces()
 {
     while (true)
     {
-        ch = is.get();
+        ch = static_cast<char>(is.get());
         switch (ch)
         {
         case '\t':

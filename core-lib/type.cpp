@@ -104,8 +104,9 @@ constructor &type::get_constructor(const std::vector<const type *> &ts) const
 
 field &type::get_field(const std::string &f_name) const
 {
-    if (fields.find(f_name) != fields.end())
-        return *fields.at(f_name);
+    const auto at_f = fields.find(f_name);
+    if (at_f != fields.end())
+        return *at_f->second;
 
     // if not here, check any enclosing scope
     try
@@ -133,10 +134,11 @@ field &type::get_field(const std::string &f_name) const
 
 method &type::get_method(const std::string &m_name, const std::vector<const type *> &ts) const
 {
-    if (methods.find(m_name) != methods.end())
+    const auto at_m = methods.find(m_name);
+    if (at_m != methods.end())
     {
         bool found = false;
-        for (const auto &mthd : methods.at(m_name))
+        for (const auto &mthd : at_m->second)
             if (mthd->args.size() == ts.size())
             {
                 found = true;
@@ -177,8 +179,9 @@ method &type::get_method(const std::string &m_name, const std::vector<const type
 
 predicate &type::get_predicate(const std::string &p_name) const
 {
-    if (predicates.find(p_name) != predicates.end())
-        return *predicates.at(p_name);
+    const auto at_p = predicates.find(p_name);
+    if (at_p != predicates.end())
+        return *at_p->second;
 
     // if not here, check any enclosing scope
     try
@@ -206,8 +209,9 @@ predicate &type::get_predicate(const std::string &p_name) const
 
 type &type::get_type(const std::string &t_name) const
 {
-    if (types.find(t_name) != types.end())
-        return *types.at(t_name);
+    const auto at_tp = types.find(t_name);
+    if (at_tp != types.end())
+        return *at_tp->second;
 
     // if not here, check any enclosing scope
     try

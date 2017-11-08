@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rational.h"
+#include <cmath>
 #include <istream>
 #include <vector>
 #include <string>
@@ -86,21 +88,21 @@ public:
 class int_token : public token
 {
 public:
-  int_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const long &val) : token(IntLiteral_ID, start_line, start_pos, end_line, end_pos), val(val) {}
+  int_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const smt::I &val) : token(IntLiteral_ID, start_line, start_pos, end_line, end_pos), val(val) {}
   virtual ~int_token() {}
 
 public:
-  const long val;
+  const smt::I val;
 };
 
 class real_token : public token
 {
 public:
-  real_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const double &val) : token(RealLiteral_ID, start_line, start_pos, end_line, end_pos), val(val) {}
+  real_token(const int &start_line, const int &start_pos, const int &end_line, const int &end_pos, const smt::rational &val) : token(RealLiteral_ID, start_line, start_pos, end_line, end_pos), val(val) {}
   virtual ~real_token() {}
 
 public:
-  const double val;
+  const smt::rational val;
 };
 
 class string_token : public token
@@ -139,13 +141,17 @@ private:
     return tk;
   }
 
-  token *mk_numeric_token(const std::string &str)
+  token *mk_integer_token(const std::string &str)
   {
-    token *tk = nullptr;
-    if (str.find('.') == str.npos)
-      tk = new int_token(start_line, start_pos, end_line, end_pos, std::stol(str));
-    else
-      tk = new real_token(start_line, start_pos, end_line, end_pos, std::stod(str));
+    token *tk = new int_token(start_line, start_pos, end_line, end_pos, std::stol(str));
+    start_line = end_line;
+    start_pos = end_pos;
+    return tk;
+  }
+
+  token *mk_rational_token(const std::string &intgr, const std::string &dec)
+  {
+    token *tk = new real_token(start_line, start_pos, end_line, end_pos, smt::rational(std::stol(intgr + dec), static_cast<smt::I>(std::pow(10, dec.size()))));
     start_line = end_line;
     start_pos = end_pos;
     return tk;
