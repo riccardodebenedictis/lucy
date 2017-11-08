@@ -72,8 +72,16 @@ rational rational::operator*(const rational &rhs) const
 rational rational::operator/(const rational &rhs) const
 {
     rational rec;
-    rec.num = rhs.den;
-    rec.den = rhs.num;
+    if (rhs.num >= 0)
+    {
+        rec.num = rhs.den;
+        rec.den = rhs.num;
+    }
+    else
+    {
+        rec.num = -rhs.den;
+        rec.den = -rhs.num;
+    }
     return operator*(rec);
 }
 
@@ -117,6 +125,16 @@ rational rational::operator/(const I &rhs) const
     rational rec;
     rec.num = 1;
     rec.den = rhs;
+    if (rhs >= 0)
+    {
+        rec.num = 1;
+        rec.den = rhs;
+    }
+    else
+    {
+        rec.num = -1;
+        rec.den = -rhs;
+    }
     return operator*(rec);
 }
 
@@ -191,6 +209,16 @@ rational &rational::operator/=(const rational &rhs)
     rational rec;
     rec.num = rhs.den;
     rec.den = rhs.num;
+    if (rhs.num >= 0)
+    {
+        rec.num = rhs.den;
+        rec.den = rhs.num;
+    }
+    else
+    {
+        rec.num = -rhs.den;
+        rec.den = -rhs.num;
+    }
     return operator*=(rec);
 }
 
@@ -246,6 +274,16 @@ rational &rational::operator/=(const I &rhs)
     rational rec;
     rec.num = 1;
     rec.den = rhs;
+    if (rhs >= 0)
+    {
+        rec.num = 1;
+        rec.den = rhs;
+    }
+    else
+    {
+        rec.num = -1;
+        rec.den = -rhs;
+    }
     return operator*=(rec);
 }
 

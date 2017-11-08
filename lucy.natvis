@@ -27,6 +27,12 @@
   <Type Name="smt::la_theory">
     <DisplayString>{{linear arithmetic theory}}</DisplayString>
   </Type>
+  <Type Name="smt::rational">
+    <DisplayString Condition="den == 0 &amp;&amp; num == 1">+inf</DisplayString>
+    <DisplayString Condition="den == 0 &amp;&amp; num == -1">-inf</DisplayString>
+    <DisplayString Condition="den == 1">{num}</DisplayString>
+    <DisplayString>{num} / {den}</DisplayString>
+  </Type>
   <Type Name="smt::ov_theory">
     <DisplayString>{{set theory}}</DisplayString>
   </Type>
