@@ -10,15 +10,16 @@ typedef long I;
 class rational
 {
 public:
-  rational();
-  rational(I n);
-  rational(I n, I d);
-
   static const rational ZERO;
   static const rational ONE;
   static const rational POSITIVE_INFINITY;
   static const rational NEGATIVE_INFINITY;
 
+  rational();
+  rational(I n);
+  rational(I n, I d);
+
+  operator double() const { return static_cast<double>(num) / den; }
   I numerator() const { return num; }
   I denominator() const { return den; }
 

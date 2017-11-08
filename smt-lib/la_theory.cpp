@@ -14,9 +14,9 @@ la_theory::~la_theory() {}
 const var la_theory::new_var()
 {
     const var id = vals.size();
-    assigns.push_back({rational(-1, 0), nullptr}); // we set the lower bound at -inf..
-    assigns.push_back({rational(1, 0), nullptr});  // we set the upper bound at +inf..
-    vals.push_back(rational(0));                   // we set the current value at 0..
+    assigns.push_back({rational::NEGATIVE_INFINITY, nullptr}); // we set the lower bound at -inf..
+    assigns.push_back({rational::POSITIVE_INFINITY, nullptr}); // we set the upper bound at +inf..
+    vals.push_back(rational::ZERO);                            // we set the current value at 0..
     exprs.insert({"x" + std::to_string(id), id});
     a_watches.push_back(std::vector<assertion *>());
     t_watches.push_back(std::set<row *>());
@@ -410,7 +410,7 @@ void la_theory::pivot(const var x_i, const var x_j)
     const rational c = expr.vars.at(x_j);
     expr.vars.erase(x_j);
     expr /= -c;
-    expr.vars.insert({x_i, 1 / c});
+    expr.vars.insert({x_i, rational::ONE / c});
 
     for (const auto &r : std::vector<row *>(t_watches.at(x_j).begin(), t_watches.at(x_j).end())) // these are the rows in which x_j appears..
     {

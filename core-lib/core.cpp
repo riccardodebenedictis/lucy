@@ -211,7 +211,7 @@ arith_expr core::mult(const std::vector<arith_expr> &exprs)
         if (aex != ae)
         {
             assert(la_th.lb(aex->l) == la_th.ub(aex->l) && "non-linear expression..");
-            assert(la_th.value(aex->l).get_infinitesimal() == 0);
+            assert(la_th.value(aex->l).get_infinitesimal() == rational::ZERO);
             l *= la_th.value(aex->l).get_rational();
         }
     return new arith_item(*this, *types.at(REAL_KEYWORD), l);
@@ -221,14 +221,14 @@ arith_expr core::div(const std::vector<arith_expr> &exprs)
 {
     assert(exprs.size() > 1);
     assert(std::all_of(++exprs.begin(), exprs.end(), [&](arith_expr ae) { return la_th.lb(ae->l) == la_th.ub(ae->l); }) && "non-linear expression..");
-    assert(la_th.value(exprs.at(1)->l).get_infinitesimal() == 0);
+    assert(la_th.value(exprs.at(1)->l).get_infinitesimal() == rational::ZERO);
     rational c = la_th.value(exprs.at(1)->l).get_rational();
     for (size_t i = 2; i < exprs.size(); i++)
     {
-        assert(la_th.value(exprs.at(i)->l).get_infinitesimal() == 0);
+        assert(la_th.value(exprs.at(i)->l).get_infinitesimal() == rational::ZERO);
         c *= la_th.value(exprs.at(i)->l).get_rational();
     }
-    return new arith_item(*this, *types.at(REAL_KEYWORD), exprs[0]->l / c);
+    return new arith_item(*this, *types.at(REAL_KEYWORD), exprs.at(0)->l / c);
 }
 
 arith_expr core::minus(arith_expr ex) { return new arith_item(*this, *types.at(REAL_KEYWORD), -ex->l); }
@@ -349,14 +349,14 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const no
             const auto val = la_th.value(ai->l);
             iss += "{ \"lin\" : \"" + ai->l.to_string() + "\", \"val\" : ";
             iss += "{ \"num\" : " + std::to_string(val.get_rational().numerator()) + ", \"den\" : " + std::to_string(val.get_rational().denominator());
-            if (val.get_infinitesimal() != 0)
+            if (val.get_infinitesimal() != rational::ZERO)
                 iss += ", \"inf\" : { \"num\" : " + std::to_string(val.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(val.get_infinitesimal().denominator()) + " }";
             iss += " }";
             const auto lb = la_th.lb(ai->l);
             if (!lb.is_negative_infinite())
             {
                 iss += ", \"lb\" : { \"num\" : " + std::to_string(lb.get_rational().numerator()) + ", \"den\" : " + std::to_string(lb.get_rational().denominator());
-                if (val.get_infinitesimal() != 0)
+                if (val.get_infinitesimal() != rational::ZERO)
                     iss += ", \"inf\" : { \"num\" : " + std::to_string(lb.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(lb.get_infinitesimal().denominator()) + " }";
                 iss += " }";
             }
@@ -364,7 +364,7 @@ std::string core::to_string(const std::map<std::string, expr> &c_items) const no
             if (!ub.is_positive_infinite())
             {
                 iss += ", \"ub\" : { \"num\" : " + std::to_string(ub.get_rational().numerator()) + ", \"den\" : " + std::to_string(ub.get_rational().denominator());
-                if (val.get_infinitesimal() != 0)
+                if (val.get_infinitesimal() != rational::ZERO)
                     iss += ", \"inf\" : { \"num\" : " + std::to_string(ub.get_infinitesimal().numerator()) + ", \"den\" : " + std::to_string(ub.get_infinitesimal().denominator()) + " }";
                 iss += " }";
             }

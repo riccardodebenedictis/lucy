@@ -130,17 +130,17 @@ class inf_rational
 
     std::string to_string() const
     {
-        if (rat.is_infinite() || inf == 0)
+        if (rat.is_infinite() || inf == rational::ZERO)
             return rat.to_string();
         std::string c_str;
-        if (rat != 0)
+        if (rat != rational::ZERO)
             c_str += rat.to_string();
-        if (inf == 1)
+        if (inf == rational::ONE)
             if (c_str.empty())
                 c_str += "ε";
             else
                 c_str += " + ε";
-        else if (inf == -1)
+        else if (inf == -rational::ONE)
             if (c_str.empty())
                 c_str += "-ε";
             else

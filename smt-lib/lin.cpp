@@ -17,7 +17,7 @@ lin lin::operator+(const lin &right) const
         else
             res.vars[term.first] += term.second;
     for (auto it = res.vars.begin(); it != res.vars.end();)
-        if (it->second == 0)
+        if (it->second == rational::ZERO)
             it = res.vars.erase(it);
         else
             ++it;
@@ -48,7 +48,7 @@ lin lin::operator-(const lin &right) const
         else
             res.vars[term.first] -= term.second;
     for (auto it = res.vars.begin(); it != res.vars.end();)
-        if (it->second == 0)
+        if (it->second == rational::ZERO)
             it = res.vars.erase(it);
         else
             ++it;
@@ -107,7 +107,7 @@ lin lin::operator+=(const lin &right)
         else
             vars[term.first] += term.second;
     for (auto it = vars.begin(); it != vars.end();)
-        if (it->second == 0)
+        if (it->second == rational::ZERO)
             it = vars.erase(it);
         else
             ++it;
@@ -122,7 +122,7 @@ lin lin::operator+=(const std::pair<var, rational> &term)
     else
         vars[term.first] += term.second;
 
-    if (vars[term.first] == 0)
+    if (vars[term.first] == rational::ZERO)
         vars.erase(term.first);
     return *this;
 }
@@ -141,7 +141,7 @@ lin lin::operator-=(const lin &right)
         else
             vars[term.first] -= term.second;
     for (auto it = vars.begin(); it != vars.end();)
-        if (it->second == 0)
+        if (it->second == rational::ZERO)
             it = vars.erase(it);
         else
             ++it;
@@ -155,7 +155,7 @@ lin lin::operator-=(const std::pair<var, rational> &term)
         vars.insert({term.first, -term.second});
     else
         vars[term.first] -= term.second;
-    if (vars[term.first] == 0)
+    if (vars[term.first] == rational::ZERO)
         vars.erase(term.first);
     return *this;
 }
@@ -172,7 +172,7 @@ lin lin::operator*=(const rational &right)
         term.second *= right;
     known_term *= right;
     for (auto it = vars.begin(); it != vars.end();)
-        if (it->second == 0)
+        if (it->second == rational::ZERO)
             it = vars.erase(it);
         else
             ++it;
@@ -185,7 +185,7 @@ lin lin::operator/=(const rational &right)
         term.second /= right;
     known_term /= right;
     for (auto it = vars.begin(); it != vars.end();)
-        if (it->second == 0)
+        if (it->second == rational::ZERO)
             it = vars.erase(it);
         else
             ++it;
@@ -211,18 +211,18 @@ std::string lin::to_string() const
     {
         if (it == vars.begin())
         {
-            if (it->second == 1)
+            if (it->second == rational::ONE)
                 s += "x" + std::to_string(it->first);
-            else if (it->second == -1)
+            else if (it->second == -rational::ONE)
                 s += "-x" + std::to_string(it->first);
             else
                 s += it->second.to_string() + "*x" + std::to_string(it->first);
         }
         else
         {
-            if (it->second == 1)
+            if (it->second == rational::ONE)
                 s += " + x" + std::to_string(it->first);
-            else if (it->second == -1)
+            else if (it->second == -rational::ONE)
                 s += " - x" + std::to_string(it->first);
             else if (it->second.is_positive())
                 s += " + " + it->second.to_string() + "*x" + std::to_string(it->first);
