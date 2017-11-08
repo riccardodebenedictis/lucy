@@ -212,7 +212,17 @@ void solver::add_layer()
 #endif
     assert(sat_cr.root_level());
 
-    std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaw_q.begin(), flaw_q.end()), 2);
+    // we clean up trivial and already solved flaws..
+    for (auto it = flaws.begin(); it != flaws.end();)
+        if (std::any_of((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return sat_cr.value(r->rho) == True; }))
+        {
+            // we have either a trivial (i.e. has only one resolver) or an already solved flaw..
+            assert(sat_cr.value((*std::find_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return sat_cr.value(r->rho) != False; }))->rho) == True);
+            // we remove the flaw from the current flaws..
+            flaws.erase(it++);
+        }
+
+    std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaws.begin(), flaws.end()), 2);
     flaw_q.clear();
     for (const auto &fs : fss)
     {
@@ -220,6 +230,7 @@ void solver::add_layer()
         super_flaw *sf = new super_flaw(*this, res, fs);
         new_flaw(*sf);
     }
+
     // we restart the building graph procedure..
     build();
 }
