@@ -224,14 +224,15 @@ void solver::add_layer()
         else
             ++it;
 
-    std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaws.begin(), flaws.end()), 2);
     flaw_q.clear();
-    for (const auto &fs : fss)
+    if (flaws.size() >= 2)
     {
-        // we create a new super flaw..
-        super_flaw *sf = new super_flaw(*this, res, fs);
-        new_flaw(*sf);
+        std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaws.begin(), flaws.end()), 2);
+        for (const auto &fs : fss) // we create a new super flaw..
+            new_flaw(*new super_flaw(*this, res, fs));
     }
+    else // we create a new super flaw..
+        new_flaw(*new super_flaw(*this, res, std::vector<flaw *>(flaws.begin(), flaws.end())));
 
     // we restart the building graph procedure..
     build();

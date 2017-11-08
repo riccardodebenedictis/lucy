@@ -16,6 +16,7 @@ class solver : public core, public theory
 {
   friend class flaw;
   friend class atom_flaw;
+  friend class super_flaw;
   friend class resolver;
   friend class cg_listener;
 

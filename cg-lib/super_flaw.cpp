@@ -1,6 +1,7 @@
 #include "super_flaw.h"
 #include "solver.h"
 #include "cartesian_product.h"
+#include "combinations.h"
 
 namespace cg
 {
@@ -54,5 +55,20 @@ void super_flaw::compute_resolvers()
 
 super_flaw::super_resolver::super_resolver(solver &slv, super_flaw &s_flaw, const var &app_r, const lin &c, const std::vector<resolver *> &rs) : resolver(slv, app_r, c, s_flaw), resolvers(rs) {}
 super_flaw::super_resolver::~super_resolver() {}
-void super_flaw::super_resolver::apply() {}
+void super_flaw::super_resolver::apply()
+{
+    std::vector<flaw *> all_precs;
+    for (const auto &r : resolvers)
+        for (const auto &pre : r->get_preconditions())
+            all_precs.push_back(pre);
+
+    if (all_precs.size() >= 2)
+    {
+        std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(all_precs.begin(), all_precs.end()), 2);
+        for (const auto &fs : fss) // we create a new super flaw..
+            slv.new_flaw(*new super_flaw(slv, this, fs));
+    }
+    else // we create a new super flaw..
+        slv.new_flaw(*new super_flaw(slv, this, std::vector<flaw *>(all_precs.begin(), all_precs.end())));
+}
 }
