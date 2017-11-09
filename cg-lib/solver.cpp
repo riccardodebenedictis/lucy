@@ -335,16 +335,16 @@ void solver::expand_flaw(flaw &f)
     {
         for (const auto &c_f : sf->flaws)
             if (!c_f->expanded)
+            {
+                // we expand the enclosing flaw..
                 c_f->expand();
+                // .. and remove it from the flaw queue..
+                flaw_q.erase(std::find(flaw_q.begin(), flaw_q.end(), c_f));
+            }
     }
     f.expand();
 
-    if (!sat_cr.check())
-    {
-        building_graph = false;
-        throw unsolvable_exception();
-    }
-
+    // we apply the resolvers..
     for (const auto &r : f.resolvers)
     {
         res = r;
@@ -362,18 +362,15 @@ void solver::expand_flaw(flaw &f)
             }
         }
 
-        if (!sat_cr.check())
-        {
-            building_graph = false;
-            throw unsolvable_exception();
-        }
-
         restore_var();
         res = nullptr;
         if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
             set_est_cost(*r, 0);
     }
     building_graph = false;
+
+    if (!sat_cr.check())
+        throw unsolvable_exception();
 }
 
 void solver::new_flaw(flaw &f)
