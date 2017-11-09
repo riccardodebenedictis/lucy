@@ -302,8 +302,7 @@ void solver::expand_flaw(flaw &f)
             if (!c_f->expanded)
                 c_f->expand();
     }
-    else
-        f.expand();
+    f.expand();
 
     if (!sat_cr.check())
     {
