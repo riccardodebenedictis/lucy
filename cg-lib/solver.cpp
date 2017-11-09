@@ -107,7 +107,7 @@ void solver::solve()
     {
         assert(sat_cr.value(gamma) == False);
         // we have exhausted the search within the graph: we extend the graph..
-        add_layer();
+        increase_accuracy();
     }
 
     while (true)
@@ -212,6 +212,41 @@ void solver::add_layer()
 #endif
     assert(sat_cr.root_level());
 
+    std::list<flaw *> f_q(flaw_q);
+    while (std::all_of(f_q.begin(), f_q.end(), [&](flaw *f) { return f->get_cost() == std::numeric_limits<double>::infinity(); }))
+    {
+        if (flaw_q.empty())
+            throw unsolvable_exception();
+        std::list<flaw *> c_q = std::move(flaw_q);
+        for (const auto &f : c_q)
+        {
+            assert(!f->expanded);
+            if (sat_cr.value(f->phi) != False) // we expand the flaw..
+                expand_flaw(*f);
+        }
+    }
+
+    // we create a new graph var..
+    gamma = sat_cr.new_var();
+#ifndef NDEBUG
+    std::cout << "graph var is: γ" << std::to_string(gamma) << std::endl;
+#endif
+    // these flaws have not been expanded, hence, cannot have a solution..
+    for (const auto &f : flaw_q)
+        sat_cr.new_clause({lit(gamma, false), lit(f->phi, false)});
+    // we use the new graph var to allow search within the new graph..
+    if (!sat_cr.assume(gamma) || !sat_cr.check())
+        throw unsolvable_exception();
+}
+
+void solver::increase_accuracy()
+{
+#ifndef NDEBUG
+    std::cout << "heuristic accuracy is: " + std::to_string(accuracy + 1) << std::endl;
+#endif
+    accuracy++;
+    assert(sat_cr.root_level());
+
     // we clean up trivial and already solved flaws..
     for (auto it = flaws.begin(); it != flaws.end();)
         if (std::any_of((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return sat_cr.value(r->rho) == True; }))
@@ -225,9 +260,9 @@ void solver::add_layer()
             ++it;
 
     flaw_q.clear();
-    if (flaws.size() >= 2)
+    if (flaws.size() >= accuracy)
     {
-        std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaws.begin(), flaws.end()), 2);
+        std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaws.begin(), flaws.end()), accuracy);
         for (const auto &fs : fss) // we create a new super flaw..
             new_flaw(*new super_flaw(*this, res, fs));
     }

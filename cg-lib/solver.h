@@ -43,6 +43,7 @@ private:
   void build();                // builds the planning graph..
   bool is_deferrable(flaw &f); // checks whether the given flaw is deferrable..
   void add_layer();            // adds a layer to the current planning graph..
+  void increase_accuracy();    // increases the heuristic accuracy by one..
   bool has_inconsistencies();  // checks whether the types have some inconsistency..
   void expand_flaw(flaw &f);   // expands the given flaw into the planning graph..
 
@@ -74,6 +75,7 @@ private:
   std::vector<cg_listener *> listeners;                  // the causal-graph listeners..
   resolver *res = nullptr;                               // the current resolver (will be into the trail)..
   var gamma;                                             // this variable represents the validity of the current graph..
+  unsigned short accuracy = 1;                           // the current heuristic accuracy..
   bool building_graph = false;                           // we are either in a building graph phase or in a solving phase..
   std::list<flaw *> flaw_q;                              // the flaw queue (for graph building procedure)..
   std::unordered_set<flaw *> flaws;                      // the current active flaws..

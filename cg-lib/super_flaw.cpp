@@ -82,9 +82,9 @@ void super_flaw::super_resolver::apply()
             for (const auto &pre : r->get_preconditions())
                 all_precs.push_back(pre);
 
-        if (all_precs.size() >= 2)
+        if (all_precs.size() >= slv.accuracy)
         {
-            std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(all_precs.begin(), all_precs.end()), 2);
+            std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(all_precs.begin(), all_precs.end()), slv.accuracy);
             for (const auto &fs : fss) // we create a new super flaw..
                 slv.new_flaw(*new super_flaw(slv, this, fs));
         }
