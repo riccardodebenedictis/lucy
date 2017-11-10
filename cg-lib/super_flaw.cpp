@@ -58,38 +58,33 @@ super_flaw::super_resolver::super_resolver(solver &slv, super_flaw &s_flaw, cons
 super_flaw::super_resolver::~super_resolver() {}
 void super_flaw::super_resolver::apply()
 {
-    bool is_super_unification = true;
-    double preconditions_cost = -std::numeric_limits<double>::infinity();
+    std::vector<flaw *> precs;                                // all the resolver's preconditions..
+    double r_cost = -std::numeric_limits<double>::infinity(); // the estimated resolver's cost..
     for (const auto &r : resolvers)
         if (atom_flaw::unify_atom *ua_res = dynamic_cast<atom_flaw::unify_atom *>(r))
         {
-            if (preconditions_cost < ua_res->get_cost())
-                preconditions_cost = ua_res->get_cost();
+            if (r_cost < ua_res->get_cost())
+                r_cost = ua_res->get_cost();
+        }
+        else if (r->get_preconditions().empty())
+        {
+            if (r_cost < r->get_cost())
+                r_cost = r->get_cost();
         }
         else
-        {
-            is_super_unification = false;
-            break;
-        }
-    assert(!is_super_unification || preconditions_cost < std::numeric_limits<double>::infinity());
-
-    if (is_super_unification)
-        slv.set_est_cost(*this, preconditions_cost);
-    else
-    {
-        std::vector<flaw *> all_precs;
-        for (const auto &r : resolvers)
             for (const auto &pre : r->get_preconditions())
-                all_precs.push_back(pre);
+                precs.push_back(pre);
+    assert(!precs.empty() || r_cost > std::numeric_limits<double>::infinity());
 
-        if (all_precs.size() >= slv.accuracy)
-        {
-            std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(all_precs.begin(), all_precs.end()), slv.accuracy);
-            for (const auto &fs : fss) // we create a new super flaw..
-                slv.new_flaw(*new super_flaw(slv, this, fs));
-        }
-        else // we create a new super flaw..
-            slv.new_flaw(*new super_flaw(slv, this, std::vector<flaw *>(all_precs.begin(), all_precs.end())));
+    if (precs.empty()) // we have an estimated solution for this resolver..
+        slv.set_est_cost(*this, r_cost);
+    else if (precs.size() >= slv.accuracy) // we create sets having the size of the accuracy..
+    {
+        std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(precs.begin(), precs.end()), slv.accuracy);
+        for (const auto &fs : fss) // we create a new super flaw..
+            slv.new_flaw(*new super_flaw(slv, this, fs));
     }
+    else // we create a new super flaw including all the preconditions of this resolver..
+        slv.new_flaw(*new super_flaw(slv, this, std::vector<flaw *>(precs.begin(), precs.end())));
 }
 }
