@@ -76,7 +76,7 @@ void super_flaw::super_resolver::apply()
         else
             for (const auto &pre : r->get_preconditions())
                 precs.push_back(pre);
-    assert(!precs.empty() || r_cost > std::numeric_limits<double>::infinity());
+    assert(!precs.empty() || r_cost > -std::numeric_limits<double>::infinity());
 
     if (precs.empty()) // we have an estimated solution for this resolver..
         slv.set_est_cost(*this, r_cost);
