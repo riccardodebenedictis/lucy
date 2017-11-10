@@ -78,7 +78,7 @@ void super_flaw::super_resolver::apply()
 
     if (precs.empty()) // we have an estimated solution for this resolver..
         slv.set_est_cost(*this, r_cost);
-    else if (precs.size() >= slv.accuracy) // we create sets having the size of the accuracy..
+    else if (precs.size() > slv.accuracy) // we create sets having the size of the accuracy..
     {
         std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(precs.begin(), precs.end()), slv.accuracy);
         for (const auto &fs : fss) // we create a new super flaw..
