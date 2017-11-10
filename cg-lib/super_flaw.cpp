@@ -39,11 +39,13 @@ void super_flaw::compute_resolvers()
         rs.push_back(f->get_resolvers());
     for (const auto &rp : cartesian_product(rs))
     {
-        lin cst;
+        // the resolver's cost is given by the maximum of the enclosing resolvers' costs..
+        lin cst(rational::NEGATIVE_INFINITY);
         std::vector<lit> vs;
         for (const auto &r : rp)
         {
-            cst += r->get_intrinsic_cost();
+            if (slv.la_th.value(cst) < slv.la_th.value(r->get_intrinsic_cost()))
+                cst = r->get_intrinsic_cost();
             vs.push_back(r->get_rho());
         }
         var res_var = slv.sat_cr.new_conj(vs);
