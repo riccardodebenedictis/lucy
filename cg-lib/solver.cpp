@@ -247,9 +247,12 @@ void solver::increase_accuracy()
     accuracy++;
     assert(sat_cr.root_level());
 
-    // we clean up trivial and already solved flaws..
+    // we clean up super-flaws trivial flaws and already solved flaws..
     for (auto it = flaws.begin(); it != flaws.end();)
-        if (std::any_of((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return sat_cr.value(r->rho) == True; }))
+        if (super_flaw *sf = dynamic_cast<super_flaw *>(*it))
+            // we remove the super-flaw from the current flaws..
+            flaws.erase(it++);
+        else if (std::any_of((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return sat_cr.value(r->rho) == True; }))
         {
             // we have either a trivial (i.e. has only one resolver) or an already solved flaw..
             assert(sat_cr.value((*std::find_if((*it)->resolvers.begin(), (*it)->resolvers.end(), [&](resolver *r) { return sat_cr.value(r->rho) != False; }))->rho) == True);
