@@ -259,7 +259,6 @@ void solver::increase_accuracy()
         else
             ++it;
 
-    flaw_q.clear();
     if (flaws.size() >= accuracy)
     {
         std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(flaws.begin(), flaws.end()), accuracy);
@@ -332,19 +331,18 @@ void solver::expand_flaw(flaw &f)
     building_graph = true;
     // we expand the flaw..
     if (super_flaw *sf = dynamic_cast<super_flaw *>(&f))
-    {
+        // we expand the unexpanded enclosing flaws..
         for (const auto &c_f : sf->flaws)
             if (!c_f->expanded)
             {
                 // we expand the enclosing flaw..
                 c_f->expand();
-                // .. and remove it from the flaw queue..
+                // ..and remove it from the flaw queue..
                 flaw_q.erase(std::find(flaw_q.begin(), flaw_q.end(), c_f));
             }
-    }
     f.expand();
 
-    // we apply the resolvers..
+    // we apply the flaw's resolvers..
     for (const auto &r : f.resolvers)
     {
         res = r;
