@@ -342,6 +342,30 @@ void solver::expand_flaw(flaw &f)
                 c_f->expand();
                 // ..and remove it from the flaw queue..
                 flaw_q.erase(std::find(flaw_q.begin(), flaw_q.end(), c_f));
+
+                // we apply the enclosing flaw's resolvers..
+                for (const auto &r : c_f->resolvers)
+                {
+                    res = r;
+                    set_var(r->rho);
+                    try
+                    {
+                        r->apply();
+                    }
+                    catch (const inconsistency_exception &)
+                    {
+                        if (!sat_cr.new_clause({lit(r->rho, false)}))
+                        {
+                            building_graph = false;
+                            throw unsolvable_exception();
+                        }
+                    }
+
+                    restore_var();
+                    res = nullptr;
+                    if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
+                        set_est_cost(*r, 0);
+                }
             }
     f.expand();
 
