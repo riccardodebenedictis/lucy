@@ -392,6 +392,15 @@ void solver::apply_resolver(resolver &r)
         }
         if (sat_cr.check(res_vars)) // we check whether the resolver can be actually applied..
             set_est_cost(r, 0);     // it can! we have an estimated solution for this resolver..
+        else
+        {
+            // we try to learn something..
+            std::vector<lit> n_vars;
+            for (const auto &v : res_vars)
+                n_vars.push_back(!v);
+            if (!sat_cr.new_clause(n_vars))
+                throw unsolvable_exception();
+        }
     }
 }
 

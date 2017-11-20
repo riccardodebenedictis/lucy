@@ -34,7 +34,9 @@ void super_flaw::compute_resolvers()
                 cst = r->get_intrinsic_cost();
             vs.push_back(r->get_rho());
         }
-        add_resolver(*new super_resolver(slv, *this, slv.sat_cr.new_conj(vs), cst, rp));
+        var res_var = slv.sat_cr.new_conj(vs);
+        if (slv.sat_cr.value(res_var) != False)
+            add_resolver(*new super_resolver(slv, *this, res_var, cst, rp));
     }
 }
 
