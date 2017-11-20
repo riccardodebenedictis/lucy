@@ -20,20 +20,6 @@ super_flaw::~super_flaw() {}
 
 void super_flaw::compute_resolvers()
 {
-    std::vector<lit> res_vars;
-    std::queue<const flaw *> q;
-    q.push(this);
-    while (!q.empty())
-    {
-        for (const auto &c : q.front()->get_causes())
-            if (slv.sat_cr.value(c->get_rho()) != False) // if false, the edge is broken..
-            {
-                res_vars.push_back(c->get_rho());
-                q.push(&c->get_effect()); // we push its effect..
-            }
-        q.pop();
-    }
-
     std::vector<std::vector<resolver *>> rs;
     for (const auto &f : flaws)
         rs.push_back(f->get_resolvers());
@@ -48,11 +34,7 @@ void super_flaw::compute_resolvers()
                 cst = r->get_intrinsic_cost();
             vs.push_back(r->get_rho());
         }
-        var res_var = slv.sat_cr.new_conj(vs);
-        res_vars.push_back(res_var);
-        if (slv.sat_cr.check(res_vars))
-            add_resolver(*new super_resolver(slv, *this, res_var, cst, rp));
-        res_vars.pop_back();
+        add_resolver(*new super_resolver(slv, *this, slv.sat_cr.new_conj(vs), cst, rp));
     }
 }
 
@@ -60,26 +42,34 @@ super_flaw::super_resolver::super_resolver(solver &slv, super_flaw &s_flaw, cons
 super_flaw::super_resolver::~super_resolver() {}
 void super_flaw::super_resolver::apply()
 {
-    std::vector<flaw *> precs;                                // all the resolver's preconditions..
-    double r_cost = -std::numeric_limits<double>::infinity(); // the estimated resolver's cost..
+    // all the resolver's preconditions..
+    std::vector<flaw *> precs;
     for (const auto &r : resolvers)
-        if (atom_flaw::unify_atom *ua_res = dynamic_cast<atom_flaw::unify_atom *>(r))
-        {
-            if (r_cost < ua_res->get_cost())
-                r_cost = ua_res->get_cost();
-        }
-        else if (r->get_preconditions().empty())
-        {
-            if (r_cost < r->get_cost())
-                r_cost = r->get_cost();
-        }
-        else
-            for (const auto &pre : r->get_preconditions())
-                precs.push_back(pre);
-    assert(!precs.empty() || r_cost > -std::numeric_limits<double>::infinity());
+        for (const auto &pre : r->get_preconditions())
+            precs.push_back(pre);
 
-    if (precs.empty()) // we have an estimated solution for this resolver..
-        slv.set_est_cost(*this, r_cost);
+    // we check whether we might have an estimated solution thanks to this resolver..
+    if (precs.empty() && slv.sat_cr.value(rho) != False)
+    {
+        std::vector<lit> res_vars;
+        res_vars.push_back(rho);
+        std::queue<const flaw *> q;
+        q.push(&effect);
+        while (!q.empty())
+        {
+            for (const auto &c : q.front()->get_causes())
+                if (slv.sat_cr.value(c->get_rho()) != False) // if false, the edge is broken..
+                {
+                    res_vars.push_back(c->get_rho());
+                    q.push(&c->get_effect()); // we push its effect..
+                }
+            q.pop();
+        }
+        if (slv.sat_cr.check(res_vars))                                            // we check whether the resolver can be actually applied..
+            slv.set_est_cost(*this, 0);                                            // it can! we have an estimated solution for this resolver..
+        else if (!slv.sat_cr.new_clause({lit(rho, false)}) || !slv.sat_cr.check()) // it can't! we set its rho variable to false..
+            throw unsolvable_exception();
+    }
     else if (precs.size() > slv.accuracy) // we create sets having the size of the accuracy..
     {
         std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(precs.begin(), precs.end()), slv.accuracy);
