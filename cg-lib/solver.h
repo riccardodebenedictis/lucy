@@ -9,6 +9,7 @@ namespace cg
 
 class flaw;
 class atom_flaw;
+class super_flaw;
 class resolver;
 class cg_listener;
 

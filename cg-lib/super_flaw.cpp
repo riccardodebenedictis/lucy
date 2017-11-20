@@ -40,7 +40,7 @@ void super_flaw::compute_resolvers()
             vs.push_back(r->get_rho());
         }
         var res_var = slv.sat_cr.new_conj(vs);
-        if (slv.sat_cr.value(res_var) != False)
+        if (slv.sat_cr.check({res_var}))
             add_resolver(*new super_resolver(slv, *this, res_var, cst, rp));
     }
 }
