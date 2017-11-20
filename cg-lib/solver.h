@@ -40,12 +40,13 @@ public:
   atom_flaw &get_flaw(const atom &atm) const { return *reason.at(&atm); } // returns the flaw which has given rise to the atom..
 
 private:
-  void build();                // builds the planning graph..
-  bool is_deferrable(flaw &f); // checks whether the given flaw is deferrable..
-  void add_layer();            // adds a layer to the current planning graph..
-  void increase_accuracy();    // increases the heuristic accuracy by one..
-  bool has_inconsistencies();  // checks whether the types have some inconsistency..
-  void expand_flaw(flaw &f);   // expands the given flaw into the planning graph..
+  void build();                     // builds the planning graph..
+  bool is_deferrable(flaw &f);      // checks whether the given flaw is deferrable..
+  void add_layer();                 // adds a layer to the current planning graph..
+  void increase_accuracy();         // increases the heuristic accuracy by one..
+  bool has_inconsistencies();       // checks whether the types have some inconsistency..
+  void expand_flaw(flaw &f);        // expands the given flaw into the planning graph..
+  void apply_resolver(resolver &r); // applies the given resolver. if the resolver has no preconditions, chechs whether the resolver is applicable and updates its estimated cost..
 
   void new_flaw(flaw &f);
   void new_resolver(resolver &r);

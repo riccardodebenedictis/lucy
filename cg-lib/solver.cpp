@@ -345,57 +345,54 @@ void solver::expand_flaw(flaw &f)
 
                 // we apply the enclosing flaw's resolvers..
                 for (const auto &r : c_f->resolvers)
-                {
-                    res = r;
-                    set_var(r->rho);
-                    try
-                    {
-                        r->apply();
-                    }
-                    catch (const inconsistency_exception &)
-                    {
-                        if (!sat_cr.new_clause({lit(r->rho, false)}))
-                        {
-                            building_graph = false;
-                            throw unsolvable_exception();
-                        }
-                    }
-
-                    restore_var();
-                    res = nullptr;
-                    if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
-                        set_est_cost(*r, 0);
-                }
+                    apply_resolver(*r);
             }
     f.expand();
 
     // we apply the flaw's resolvers..
     for (const auto &r : f.resolvers)
-    {
-        res = r;
-        set_var(r->rho);
-        try
-        {
-            r->apply();
-        }
-        catch (const inconsistency_exception &)
-        {
-            if (!sat_cr.new_clause({lit(r->rho, false)}))
-            {
-                building_graph = false;
-                throw unsolvable_exception();
-            }
-        }
-
-        restore_var();
-        res = nullptr;
-        if (r->preconditions.empty() && sat_cr.value(r->rho) != False) // there are no requirements for this resolver..
-            set_est_cost(*r, 0);
-    }
+        apply_resolver(*r);
     building_graph = false;
 
     if (!sat_cr.check())
         throw unsolvable_exception();
+}
+
+void solver::apply_resolver(resolver &r)
+{
+    res = &r;
+    set_var(r.rho);
+    try
+    {
+        r.apply();
+    }
+    catch (const inconsistency_exception &)
+    {
+        if (!sat_cr.new_clause({lit(r.rho, false)}))
+            throw unsolvable_exception();
+    }
+    restore_var();
+    res = nullptr;
+
+    if (r.preconditions.empty() && sat_cr.value(r.rho) != False) // there are no preconditions for this resolver..
+    {
+        std::vector<lit> res_vars;
+        res_vars.push_back(r.rho);
+        std::queue<const flaw *> q;
+        q.push(&r.effect);
+        while (!q.empty())
+        {
+            for (const auto &c : q.front()->get_causes())
+                if (sat_cr.value(c->get_rho()) != False) // if false, the edge is broken..
+                {
+                    res_vars.push_back(c->get_rho());
+                    q.push(&c->get_effect()); // we push its effect..
+                }
+            q.pop();
+        }
+        if (sat_cr.check(res_vars))             // we check whether the resolver can be actually applied..
+            set_est_cost(r, r.cost.known_term); // it can! we have an estimated solution for this resolver..
+    }
 }
 
 void solver::new_flaw(flaw &f)

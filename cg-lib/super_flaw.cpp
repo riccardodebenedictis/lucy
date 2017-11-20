@@ -48,35 +48,13 @@ void super_flaw::super_resolver::apply()
         for (const auto &pre : r->get_preconditions())
             precs.push_back(pre);
 
-    // we check whether we might have an estimated solution thanks to this resolver..
-    if (precs.empty() && slv.sat_cr.value(rho) != False)
-    {
-        std::vector<lit> res_vars;
-        res_vars.push_back(rho);
-        std::queue<const flaw *> q;
-        q.push(&effect);
-        while (!q.empty())
-        {
-            for (const auto &c : q.front()->get_causes())
-                if (slv.sat_cr.value(c->get_rho()) != False) // if false, the edge is broken..
-                {
-                    res_vars.push_back(c->get_rho());
-                    q.push(&c->get_effect()); // we push its effect..
-                }
-            q.pop();
-        }
-        if (slv.sat_cr.check(res_vars))                                            // we check whether the resolver can be actually applied..
-            slv.set_est_cost(*this, 0);                                            // it can! we have an estimated solution for this resolver..
-        else if (!slv.sat_cr.new_clause({lit(rho, false)}) || !slv.sat_cr.check()) // it can't! we set its rho variable to false..
-            throw unsolvable_exception();
-    }
-    else if (precs.size() > slv.accuracy) // we create sets having the size of the accuracy..
+    if (precs.size() > slv.accuracy) // we create sets having the size of the accuracy..
     {
         std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(precs.begin(), precs.end()), slv.accuracy);
-        for (const auto &fs : fss) // we create a new super flaw..
+        for (const auto &fs : fss) // we create a new super flaw for each of the possible combinations..
             slv.new_flaw(*new super_flaw(slv, this, fs));
     }
-    else // we create a new super flaw including all the preconditions of this resolver..
+    else if (!precs.empty()) // we create a new super flaw including all the preconditions of this resolver..
         slv.new_flaw(*new super_flaw(slv, this, std::vector<flaw *>(precs.begin(), precs.end())));
 }
 }
