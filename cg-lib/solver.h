@@ -83,6 +83,7 @@ private:
   std::unordered_map<var, std::vector<flaw *>> phis;     // the phi variables (boolean variable to flaws) of the flaws..
   std::unordered_map<var, std::vector<resolver *>> rhos; // the rho variables (boolean variable to resolver) of the resolvers..
   std::unordered_map<const atom *, atom_flaw *> reason;  // the reason for having introduced an atom..
+  std::map<std::set<flaw *>, super_flaw *> super_flaws;  // the enclosing flaws for each super-flaw..
   std::vector<layer> trail;                              // the list of resolvers in chronological order..
 };
 }

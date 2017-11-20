@@ -51,7 +51,6 @@ void solver::new_fact(atom &atm)
 {
     // we create a new atom flaw representing a fact..
     atom_flaw *af = new atom_flaw(*this, res, atm, true);
-    reason.insert({&atm, af});
     new_flaw(*af);
 
     if (&atm.tp.get_scope() != this)
@@ -73,7 +72,6 @@ void solver::new_goal(atom &atm)
 {
     // we create a new atom flaw representing a goal..
     atom_flaw *af = new atom_flaw(*this, res, atm, false);
-    reason.insert({&atm, af});
     new_flaw(*af);
 
     if (&atm.tp.get_scope() != this)
@@ -375,33 +373,7 @@ void solver::apply_resolver(resolver &r)
     res = nullptr;
 
     if (r.preconditions.empty() && sat_cr.value(r.rho) != False) // there are no preconditions for this resolver..
-    {
-        std::vector<lit> res_vars;
-        res_vars.push_back(r.rho);
-        std::queue<const flaw *> q;
-        q.push(&r.effect);
-        while (!q.empty())
-        {
-            for (const auto &c : q.front()->get_causes())
-                if (sat_cr.value(c->get_rho()) != False) // if false, the edge is broken..
-                {
-                    res_vars.push_back(c->get_rho());
-                    q.push(&c->get_effect()); // we push its effect..
-                }
-            q.pop();
-        }
-        if (sat_cr.check(res_vars)) // we check whether the resolver can be actually applied..
-            set_est_cost(r, 0);     // it can! we have an estimated solution for this resolver..
-        else
-        {
-            // we try to learn something..
-            std::vector<lit> n_vars;
-            for (const auto &v : res_vars)
-                n_vars.push_back(!v);
-            if (!sat_cr.new_clause(n_vars))
-                throw unsolvable_exception();
-        }
-    }
+        set_est_cost(r, 0);
 }
 
 void solver::new_flaw(flaw &f)

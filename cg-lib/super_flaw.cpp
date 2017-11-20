@@ -15,7 +15,12 @@ inline const std::vector<resolver *> get_cause(resolver *const cause)
         return {};
 }
 
-super_flaw::super_flaw(solver &slv, resolver *const cause, const std::vector<flaw *> &fs) : flaw(slv, get_cause(cause)), flaws(fs) {}
+super_flaw::super_flaw(solver &slv, resolver *const cause, const std::vector<flaw *> &fs) : flaw(slv, get_cause(cause)), flaws(fs)
+{
+    std::set<flaw *> c_fs(fs.begin(), fs.end());
+    assert(slv.super_flaws.find(c_fs) == slv.super_flaws.end());
+    slv.super_flaws.insert({c_fs, this});
+}
 super_flaw::~super_flaw() {}
 
 void super_flaw::compute_resolvers()
@@ -54,9 +59,29 @@ void super_flaw::super_resolver::apply()
     {
         std::vector<std::vector<flaw *>> fss = combinations(std::vector<flaw *>(precs.begin(), precs.end()), slv.accuracy);
         for (const auto &fs : fss) // we create a new super flaw for each of the possible combinations..
-            slv.new_flaw(*new super_flaw(slv, this, fs));
+        {
+            std::set<flaw *> c_fs(fs.begin(), fs.end());
+            const auto &at_sf = slv.super_flaws.find(c_fs);
+            if (at_sf != slv.super_flaws.end())
+            {
+                slv.new_causal_link(*at_sf->second, *this);
+                slv.set_est_cost(*this, at_sf->second->get_cost());
+            }
+            else
+                slv.new_flaw(*new super_flaw(slv, this, fs));
+        }
     }
     else if (!precs.empty()) // we create a new super flaw including all the preconditions of this resolver..
-        slv.new_flaw(*new super_flaw(slv, this, std::vector<flaw *>(precs.begin(), precs.end())));
+    {
+        std::set<flaw *> c_fs(precs.begin(), precs.end());
+        const auto &at_sf = slv.super_flaws.find(c_fs);
+        if (at_sf != slv.super_flaws.end())
+        {
+            slv.new_causal_link(*at_sf->second, *this);
+            slv.set_est_cost(*this, at_sf->second->get_cost());
+        }
+        else
+            slv.new_flaw(*new super_flaw(slv, this, precs));
+    }
 }
 }
